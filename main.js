@@ -23,7 +23,6 @@ class TrendService {
       items.forEach((item, index) => {
         if (index >= 10) return;
         const title = item.querySelector("title")?.textContent;
-        
         const getNS = (tagName) => {
           const el = item.getElementsByTagNameNS("*", tagName)[0] || 
                      item.getElementsByTagName("ht:" + tagName)[0];
@@ -31,11 +30,17 @@ class TrendService {
         };
 
         const traffic = getNS("approx_traffic") || "N/A";
-        
         const newsElements = item.getElementsByTagNameNS("*", "news_item");
         const newsLinks = [];
         const videoLinks = [];
         let summaryContext = "";
+
+        // Add a guaranteed YouTube search link
+        videoLinks.push({
+          title: `YouTube: '${title}' 관련 뉴스 및 영상 검색`,
+          url: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " 뉴스")}`,
+          isSystem: true
+        });
 
         for (let i = 0; i < newsElements.length; i++) {
           const n = newsElements[i];
@@ -46,8 +51,7 @@ class TrendService {
 
           if (nTitle && nUrl) {
             const linkObj = { title: `[${nSource || 'News'}] ${nTitle}`, url: nUrl };
-            // Simple URL pattern check for videos
-            if (nUrl.includes('youtube.com') || nUrl.includes('youtu.be') || nUrl.includes('vimeo')) {
+            if (nUrl.includes('youtube.com') || nUrl.includes('youtu.be')) {
               videoLinks.push(linkObj);
             } else {
               newsLinks.push(linkObj);
@@ -56,36 +60,31 @@ class TrendService {
           if (i === 0) summaryContext = nSnippet || nTitle;
         }
 
-        // Logic to generate a cleaner "Why it's trending" analysis
-        let analysis = "";
-        if (summaryContext) {
-          analysis = summaryContext.replace(/<[^>]*>?/gm, '');
-          if (analysis.length < 30) analysis = `${title}에 대한 새로운 소식과 대중의 관심이 급증하며 트렌드로 부상했습니다.`;
-        } else {
-          analysis = `${title} 키워드가 현재 실시간 검색 및 소셜 미디어에서 높은 주목을 받고 있습니다.`;
-        }
-
         trends.push({ 
           title, 
-          category: "Trending Now", 
           growth: traffic, 
-          analysis: analysis,
+          analysis: summaryContext ? summaryContext.replace(/<[^>]*>?/gm, '') : "Trend analysis loading...",
           newsLinks, 
-          videoLinks,
-          picture: "" 
+          videoLinks 
         });
       });
       return trends;
-    } catch (e) { 
-      return []; 
-    }
+    } catch (e) { return []; }
   }
 
   getCountries() {
     return [
-      { code: 'KR', name: 'South Korea', flag: '🇰🇷', lang: 'ko' },
-      { code: 'JP', name: 'Japan', flag: '🇯🇵', lang: 'ja' },
-      { code: 'US', name: 'USA', flag: '🇺🇸', lang: 'en' }
+      { code: 'KR', name: 'Korea', flag: '🇰🇷' },
+      { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+      { code: 'US', name: 'USA', flag: '🇺🇸' }
+    ];
+  }
+
+  getLanguages() {
+    return [
+      { code: 'ko', name: '한국어', flag: '🇰🇷' },
+      { code: 'ja', name: '日本語', flag: '🇯🇵' },
+      { code: 'en', name: 'English', flag: '🇺🇸' }
     ];
   }
 
@@ -101,9 +100,9 @@ class TrendService {
 
 // --- Localization ---
 const i18n = {
-  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "트렌드 요약 및 분석", news: "관련 기사", videos: "관련 영상", infoTitle: "TrendUp 정보", infoDesc: "실시간 급상승 키워드를 한눈에 확인하세요.", loading: "데이터 로딩 중..." },
-  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "トレンド分析", news: "関連記事", videos: "関連動画", infoTitle: "TrendUpについて", infoDesc: "急上昇ワードをリアルタイムでチェック。", loading: "読み込み中..." },
-  en: { title: "Trending Now", update: "Last Updated", summary: "Trend Analysis", news: "News Articles", videos: "Video Content", infoTitle: "About TrendUp", infoDesc: "Stay updated with real-time trends.", loading: "Loading..." }
+  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "트렌드 요약 및 분석", news: "관련 기사", videos: "관련 영상 소식", infoTitle: "TrendUp 정보", infoDesc: "실시간 급상승 키워드를 한눈에 확인하세요.", loading: "데이터 로딩 중...", youtubeSearch: "YouTube 검색 결과" },
+  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "トレンド分析", news: "関連記事", videos: "関連動画・ニュース", infoTitle: "TrendUpについて", infoDesc: "急上昇ワード를 실시간으로 체크.", loading: "読み込み中...", youtubeSearch: "YouTube検索結果" },
+  en: { title: "Trending Now", update: "Last Updated", summary: "Trend Analysis", news: "News Articles", videos: "Related Videos", infoTitle: "About TrendUp", infoDesc: "Stay updated with real-time trends.", loading: "Loading...", youtubeSearch: "Search on YouTube" }
 };
 
 // --- Web Components ---
@@ -154,37 +153,32 @@ class TrendModal extends HTMLElement {
       <style>
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
         .overlay.active { opacity: 1; pointer-events: auto; }
-        .modal { background: var(--bg); width: 95%; max-width: 550px; max-height: 90vh; border-radius: 20px; padding: 2rem; position: relative; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; }
+        .modal { background: var(--bg); width: 95%; max-width: 550px; max-height: 90vh; border-radius: 20px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; }
         .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: none; font-size: 1.5rem; color: var(--text); }
         .title { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: var(--text); }
-        .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 1rem; text-transform: uppercase; }
+        .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.9rem; text-transform: uppercase; }
         .text { line-height: 1.7; color: var(--text); margin-bottom: 1rem; font-size: 1.05rem; }
         .link-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; text-decoration: none; color: var(--text); font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+        .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; text-decoration: none; color: var(--text); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; }
         .link:hover { border-color: var(--primary); background: var(--border); }
-        .icon { font-size: 1.1rem; }
+        .system-link { background: oklch(0.6 0.2 20 / 0.1); border-color: oklch(0.6 0.2 20 / 0.3); font-weight: 600; }
       </style>
       <div class="overlay">
         <div class="modal">
           <button class="close">&times;</button>
           <h2 class="title">${trend.title}</h2>
-          
           <span class="section-title">✨ ${t.summary}</span>
           <p class="text">${trend.analysis}</p>
           
-          ${trend.newsLinks.length > 0 ? `
-            <span class="section-title">📰 ${t.news}</span>
-            <div class="link-group">
-              ${trend.newsLinks.map(l => `<a href="${l.url}" target="_blank" class="link"><span class="icon">📄</span> ${l.title}</a>`).join('')}
-            </div>
-          ` : ''}
+          <span class="section-title">📰 ${t.news}</span>
+          <div class="link-group">
+            ${trend.newsLinks.map(l => `<a href="${l.url}" target="_blank" class="link">📄 ${l.title}</a>`).join('')}
+          </div>
           
-          ${trend.videoLinks.length > 0 ? `
-            <span class="section-title">🎬 ${t.videos}</span>
-            <div class="link-group">
-              ${trend.videoLinks.map(l => `<a href="${l.url}" target="_blank" class="link"><span class="icon">▶️</span> ${l.title}</a>`).join('')}
-            </div>
-          ` : ''}
+          <span class="section-title">🎬 ${t.videos}</span>
+          <div class="link-group">
+            ${trend.videoLinks.map(l => `<a href="${l.url}" target="_blank" class="link ${l.isSystem ? 'system-link' : ''}">▶️ ${l.title}</a>`).join('')}
+          </div>
         </div>
       </div>
     `;
@@ -200,6 +194,7 @@ class App {
   constructor() {
     this.service = new TrendService();
     this.currentCountry = this.service.autoDetectCountry();
+    this.currentLang = localStorage.getItem('lang') || (this.currentCountry === 'KR' ? 'ko' : this.currentCountry === 'JP' ? 'ja' : 'en');
     this.theme = localStorage.getItem('theme') || 'light';
     this.init();
   }
@@ -215,37 +210,46 @@ class App {
       localStorage.setItem('theme', this.theme);
     };
 
-    this.renderNav();
+    this.renderNavs();
     await this.update();
-    document.getElementById('top-trends').addEventListener('trend-click', e => this.modal.show(e.detail, this.lang));
+    document.getElementById('top-trends').addEventListener('trend-click', e => this.modal.show(e.detail, this.currentLang));
     setInterval(() => this.update(), this.service.refreshInterval);
   }
 
-  get lang() { return this.service.getCountries().find(c => c.code === this.currentCountry).lang; }
-
-  renderNav() {
-    const nav = document.getElementById('country-nav');
-    nav.innerHTML = this.service.getCountries().map(c => `
-      <button class="country-btn ${c.code === this.currentCountry ? 'active' : ''}" data-code="${c.code}">
-        ${c.flag} ${c.code}
-      </button>
+  renderNavs() {
+    const cNav = document.getElementById('country-nav');
+    cNav.innerHTML = this.service.getCountries().map(c => `
+      <button class="country-btn ${c.code === this.currentCountry ? 'active' : ''}" data-code="${c.code}">${c.flag} ${c.code}</button>
     `).join('');
-    nav.querySelectorAll('button').forEach(btn => btn.onclick = () => this.switch(btn.dataset.code));
+    cNav.querySelectorAll('button').forEach(btn => btn.onclick = () => this.switchCountry(btn.dataset.code));
+
+    const lNav = document.getElementById('lang-nav');
+    lNav.innerHTML = this.service.getLanguages().map(l => `
+      <button class="country-btn ${l.code === this.currentLang ? 'active' : ''}" data-code="${l.code}">${l.flag} ${l.code.toUpperCase()}</button>
+    `).join('');
+    lNav.querySelectorAll('button').forEach(btn => btn.onclick = () => this.switchLang(btn.dataset.code));
   }
 
-  async switch(code) {
+  async switchCountry(code) {
     this.currentCountry = code;
-    this.renderNav();
+    this.renderNavs();
+    await this.update();
+  }
+
+  async switchLang(code) {
+    this.currentLang = code;
+    localStorage.setItem('lang', code);
+    this.renderNavs();
     await this.update();
   }
 
   async update() {
     const trends = await this.service.getTrends(this.currentCountry);
-    const t = i18n[this.lang] || i18n.en;
+    const t = i18n[this.currentLang] || i18n.en;
     document.getElementById('current-country-title').textContent = t.title;
     document.querySelector('.info-card h3').textContent = t.infoTitle;
     document.querySelector('.info-card p').textContent = t.infoDesc;
-    document.getElementById('top-trends').data = { trends, lang: this.lang };
+    document.getElementById('top-trends').data = { trends, lang: this.currentLang };
     const now = new Date();
     document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString()}`;
   }

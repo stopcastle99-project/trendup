@@ -82,7 +82,40 @@
   .logo { display: flex; align-items: center; gap: 0.5rem; }
   .logo h1 { font-size: 1.25rem; color: var(--primary); }
 
+  .nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .nav-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .pill-nav {
+    display: flex;
+    gap: 0.2rem;
+    background: var(--border);
+    padding: 0.2rem;
+    border-radius: 100px;
+  }
+
   .header-actions { display: flex; align-items: center; gap: 1rem; }
+
+  @media (max-width: 1000px) {
+    .nav-wrapper { display: none; } /* Hide on small screens for now or mobile menu */
+  }
 
   main { padding: 2rem 0 5rem; }
 
