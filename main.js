@@ -5,6 +5,7 @@ class TrendService {
   constructor() {
     this.proxyUrl = 'https://api.allorigins.win/get?url=';
     this.refreshInterval = 15 * 60 * 1000;
+    this.cache = new Map();
   }
 
   async getTrends(country, targetLang) {
@@ -13,7 +14,6 @@ class TrendService {
     
     try {
       const response = await fetch(`${this.proxyUrl}${targetUrl}`);
-      if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(data.contents, "text/xml");
@@ -33,7 +33,7 @@ class TrendService {
         const newsElements = item.getElementsByTagNameNS("*", "news_item");
         const newsLinks = [];
         const videoLinks = [];
-        let summaryContext = "";
+        let firstSnippet = "";
 
         videoLinks.push({
           title: `YouTube: '${title}'`,
@@ -53,25 +53,22 @@ class TrendService {
             if (nUrl.includes('youtube.com') || nUrl.includes('youtu.be')) videoLinks.push(linkObj);
             else newsLinks.push(linkObj);
           }
-          if (j === 0) summaryContext = nSnippet || nTitle;
+          if (j === 0) firstSnippet = nSnippet;
         }
 
         rawTrends.push({ 
           title, 
           growth: traffic, 
-          analysis: summaryContext ? summaryContext.replace(/<[^>]*>?/gm, '') : "...",
+          rawAnalysis: firstSnippet ? firstSnippet.replace(/<[^>]*>?/gm, '') : `${title} 관련 최신 트렌드 뉴스입니다.`,
           newsLinks, 
           videoLinks 
         });
       }
 
-      // Parallel Translation for all trends
+      // Optimization: Only translate titles for the initial list
       const translatedTrends = await Promise.all(rawTrends.map(async (t) => {
-        const [translatedTitle, translatedAnalysis] = await Promise.all([
-          this.translate(t.title, targetLang),
-          this.translate(t.analysis, targetLang)
-        ]);
-        return { ...t, title: translatedTitle, analysis: translatedAnalysis };
+        const translatedTitle = await this.translate(t.title, targetLang);
+        return { ...t, title: translatedTitle };
       }));
 
       return translatedTrends;
@@ -79,28 +76,26 @@ class TrendService {
   }
 
   async translate(text, targetLang) {
-    if (!text || text === "..." || targetLang === 'en') return text; // Google RSS often provides English context for JP/KR tags sometimes, but let's assume auto-detect
+    if (!text || text === "..." || targetLang === 'en' && /^[a-zA-Z0-9\s.,!?-]+$/.test(text)) return text;
+    
+    const cacheKey = `${targetLang}:${text}`;
+    if (this.cache.has(cacheKey)) return this.cache.get(cacheKey);
+
     try {
       const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
       const data = await res.json();
-      return data[0].map(x => x[0]).join('');
+      const result = data[0].map(x => x[0]).join('');
+      this.cache.set(cacheKey, result);
+      return result;
     } catch (e) { return text; }
   }
 
   getCountries() {
-    return [
-      { code: 'KR', name: 'Korea', flag: '🇰🇷' },
-      { code: 'JP', name: 'Japan', flag: '🇯🇵' },
-      { code: 'US', name: 'USA', flag: '🇺🇸' }
-    ];
+    return [{ code: 'KR', flag: '🇰🇷' }, { code: 'JP', flag: '🇯🇵' }, { code: 'US', flag: '🇺🇸' }];
   }
 
   getLanguages() {
-    return [
-      { code: 'ko', name: 'KO', flag: '🇰🇷' },
-      { code: 'ja', name: 'JA', flag: '🇯🇵' },
-      { code: 'en', name: 'EN', flag: '🇺🇸' }
-    ];
+    return [{ code: 'ko', flag: '🇰🇷' }, { code: 'ja', flag: '🇯🇵' }, { code: 'en', flag: '🇺🇸' }];
   }
 
   autoDetectCountry() {
@@ -115,9 +110,9 @@ class TrendService {
 
 // --- Localization ---
 const i18n = {
-  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "트렌드 요약 및 분석", news: "관련 기사", videos: "관련 영상 소식", infoTitle: "TrendUp 정보", infoDesc: "실시간 급상승 키워드를 한눈에 확인하세요.", loading: "번역 및 로딩 중..." },
-  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "トレンド分析", news: "関連記事", videos: "関連動画", infoTitle: "TrendUpについて", infoDesc: "急上昇ワード를 실시간으로 체크.", loading: "翻訳・読み込み中..." },
-  en: { title: "Trending Now", update: "Last Updated", summary: "Trend Analysis", news: "News Articles", videos: "Related Videos", infoTitle: "About TrendUp", infoDesc: "Stay updated with real-time trends.", loading: "Translating..." }
+  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "트렌드 요약", news: "관련 기사", videos: "영상 소식", loading: "로딩 중...", T: "T", L: "L" },
+  ja: { title: "トレンド", update: "最終更新", summary: "要約", news: "記事", videos: "動画", loading: "読み込み中...", T: "T", L: "L" },
+  en: { title: "Trending", update: "Updated", summary: "Analysis", news: "News", videos: "Videos", loading: "Loading...", T: "T", L: "L" }
 };
 
 // --- Web Components ---
@@ -132,14 +127,14 @@ class TrendList extends HTMLElement {
         .list { display: flex; flex-direction: column; gap: 0.75rem; }
         .item {
           display: grid; grid-template-columns: 40px 1fr auto; align-items: center;
-          background: var(--surface); padding: 1.25rem; border-radius: 12px;
-          border: 1px solid var(--border); transition: all 0.2s; color: var(--text); cursor: pointer;
+          background: var(--surface); padding: 1.2rem; border-radius: 16px;
+          border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer;
         }
-        .item:hover { border-color: var(--primary); transform: scale(1.01); box-shadow: var(--shadow-hover); }
-        .rank { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
-        .title { font-size: 1.05rem; font-weight: 700; padding-right: 1rem; }
-        .growth { font-size: 0.8rem; font-weight: 700; color: oklch(0.6 0.15 140); background: oklch(0.6 0.15 140 / 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; }
-        .loading { text-align: center; padding: 3rem; color: var(--text-muted); font-weight: 600; }
+        .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; }
+        .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; }
+        .growth { font-size: 0.75rem; font-weight: 800; color: oklch(0.6 0.15 140); background: oklch(0.6 0.15 140 / 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; }
+        .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }
       </style>
       <div class="list">
         ${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : 
@@ -160,31 +155,49 @@ class TrendList extends HTMLElement {
 
 class TrendModal extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
-  show(trend, lang) { this.render(trend, lang); this.shadowRoot.querySelector('.overlay').classList.add('active'); }
+  async show(trend, lang, translator) {
+    this.renderLoading();
+    this.shadowRoot.querySelector('.overlay').classList.add('active');
+    
+    // Lazy Translation for Analysis
+    const translatedAnalysis = await translator(trend.rawAnalysis, lang);
+    this.render(trend, lang, translatedAnalysis);
+  }
   hide() { this.shadowRoot.querySelector('.overlay').classList.remove('active'); }
-  render(trend, lang) {
+  
+  renderLoading() {
+    this.shadowRoot.innerHTML = `
+      <style>
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+        .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }
+      </style>
+      <div class="overlay"><div class="modal">Analyzing Trend...</div></div>
+    `;
+  }
+
+  render(trend, lang, analysis) {
     const t = i18n[lang] || i18n.en;
     this.shadowRoot.innerHTML = `
       <style>
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .overlay.active { opacity: 1; pointer-events: auto; }
-        .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 5000; opacity: 1; pointer-events: auto; transition: 0.3s; }
+        .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; }
         .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); }
-        .title { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; line-height: 1.3; color: var(--text); }
-        .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.85rem; text-transform: uppercase; }
-        .text { line-height: 1.6; color: var(--text); margin-bottom: 1rem; font-size: 1rem; }
+        .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; }
+        .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; }
         .link-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .link { padding: 0.75rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; }
-        .link:hover { border-color: var(--primary); transform: translateY(-1px); }
+        .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; }
+        .link:hover { border-color: var(--primary); background: var(--border); }
       </style>
       <div class="overlay">
         <div class="modal">
           <button class="close">&times;</button>
           <h2 class="title">${trend.title}</h2>
           <span class="section-title">✨ ${t.summary}</span>
-          <p class="text">${trend.analysis}</p>
+          <p class="text">${analysis}</p>
           <span class="section-title">📰 ${t.news}</span>
-          <div class="link-group">${trend.newsLinks.map(l => `<a href="${l.url}" target="_blank" class="link">📄 ${l.title}</a>`).join('')}</div>
+          <div class="link-group">${trend.newsLinks.slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link">📄 ${l.title}</a>`).join('')}</div>
           <span class="section-title">🎬 ${t.videos}</span>
           <div class="link-group">${trend.videoLinks.map(l => `<a href="${l.url}" target="_blank" class="link">▶️ ${l.title}</a>`).join('')}</div>
         </div>
@@ -220,18 +233,20 @@ class App {
 
     this.renderNavs();
     await this.update();
-    document.getElementById('top-trends').addEventListener('trend-click', e => this.modal.show(e.detail, this.currentLang));
+    document.getElementById('top-trends').addEventListener('trend-click', e => this.modal.show(e.detail, this.currentLang, (text, lang) => this.service.translate(text, lang)));
     
-    // Close dropdowns on outside click
-    window.addEventListener('click', () => {
-      document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
-    });
-
+    window.addEventListener('click', () => document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded')));
     setInterval(() => this.update(), this.service.refreshInterval);
   }
 
   renderNavs() {
-    const renderGroup = (id, items, current, onSelect) => {
+    const isMobile = window.innerWidth <= 600;
+    const t = i18n[this.currentLang] || i18n.en;
+
+    const renderGroup = (id, items, current, labelKey, onSelect) => {
+      const group = document.querySelector(`#${id}`).parentElement;
+      group.querySelector('.nav-label').textContent = isMobile ? t[labelKey] : (labelKey === 'T' ? 'Trends:' : 'Language:');
+      
       const nav = document.getElementById(id);
       const activeItem = items.find(i => i.code === current);
       
@@ -256,8 +271,8 @@ class App {
       });
     };
 
-    renderGroup('country-nav', this.service.getCountries(), this.currentCountry, (code) => this.switchCountry(code));
-    renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, (code) => this.switchLang(code));
+    renderGroup('country-nav', this.service.getCountries(), this.currentCountry, 'T', (code) => this.switchCountry(code));
+    renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, 'L', (code) => this.switchLang(code));
   }
 
   async switchCountry(code) {
@@ -274,9 +289,7 @@ class App {
   }
 
   async update() {
-    // Show loading state
     document.getElementById('top-trends').data = { trends: [], lang: this.currentLang };
-    
     const trends = await this.service.getTrends(this.currentCountry, this.currentLang);
     const t = i18n[this.currentLang] || i18n.en;
     document.getElementById('current-country-title').textContent = t.title;
@@ -284,7 +297,7 @@ class App {
     document.querySelector('.info-card p').textContent = t.infoDesc;
     document.getElementById('top-trends').data = { trends, lang: this.currentLang };
     const now = new Date();
-    document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString()}`;
+    document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
   }
 }
 
