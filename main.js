@@ -221,14 +221,12 @@ class App {
       const nav = document.getElementById(id);
       nav.innerHTML = items.map(item => `
         <button class="country-btn ${item.code === current ? 'active' : ''}" data-code="${item.code}">
-          ${item.flag} ${item.code.toUpperCase()}
+          ${item.flag}
         </button>
       `).join('');
       
-      nav.onclick = (e) => {
-        if (window.innerWidth <= 1000) {
-          nav.classList.toggle('expanded');
-        }
+      nav.onclick = () => {
+        nav.classList.toggle('expanded');
       };
 
       nav.querySelectorAll('button').forEach(btn => btn.onclick = (e) => {
