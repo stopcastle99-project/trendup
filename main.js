@@ -217,17 +217,29 @@ class App {
   }
 
   renderNavs() {
-    const cNav = document.getElementById('country-nav');
-    cNav.innerHTML = this.service.getCountries().map(c => `
-      <button class="country-btn ${c.code === this.currentCountry ? 'active' : ''}" data-code="${c.code}">${c.flag} ${c.code}</button>
-    `).join('');
-    cNav.querySelectorAll('button').forEach(btn => btn.onclick = () => this.switchCountry(btn.dataset.code));
+    const renderGroup = (id, items, current, onSelect) => {
+      const nav = document.getElementById(id);
+      nav.innerHTML = items.map(item => `
+        <button class="country-btn ${item.code === current ? 'active' : ''}" data-code="${item.code}">
+          ${item.flag} ${item.code.toUpperCase()}
+        </button>
+      `).join('');
+      
+      nav.onclick = (e) => {
+        if (window.innerWidth <= 1000) {
+          nav.classList.toggle('expanded');
+        }
+      };
 
-    const lNav = document.getElementById('lang-nav');
-    lNav.innerHTML = this.service.getLanguages().map(l => `
-      <button class="country-btn ${l.code === this.currentLang ? 'active' : ''}" data-code="${l.code}">${l.flag} ${l.code.toUpperCase()}</button>
-    `).join('');
-    lNav.querySelectorAll('button').forEach(btn => btn.onclick = () => this.switchLang(btn.dataset.code));
+      nav.querySelectorAll('button').forEach(btn => btn.onclick = (e) => {
+        e.stopPropagation();
+        onSelect(btn.dataset.code);
+        nav.classList.remove('expanded');
+      });
+    };
+
+    renderGroup('country-nav', this.service.getCountries(), this.currentCountry, (code) => this.switchCountry(code));
+    renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, (code) => this.switchLang(code));
   }
 
   async switchCountry(code) {

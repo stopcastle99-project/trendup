@@ -11,58 +11,21 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **SEO & AdSense Optimized:** Proper semantic HTML, placeholder ad slots, and fast loading times.
 - **3D Interactive Background:** Subtle 3D effects (Three.js) for a premium feel.
 
-## **Implemented Design & Styles** (Current State: Initial)
-- **Baseline CSS:** Utilizing Container Queries, `:has()`, and OKLCH colors.
-- **Expressive Typography:** High-contrast headings and readable body text.
-- **Interactive UI:** Smooth transitions and hover effects for trend items.
-- **Texture & Depth:** Subtle noise textures and multi-layered drop shadows.
+## **Phase 4: UI Refinement & Intelligent Localization (Done)**
+- Implemented Light/Dark mode with persistence.
+- Added country auto-detection and UI localization (i18n).
+- Separated data source (Trends) and UI language (Language) settings.
 
-## **Phase 1: Foundation & Core Features (Current Request)**
-1.  **Architecture Setup:**
-    - Initialize `blueprint.md` (Done).
-    - Configure modern CSS variables and global styles.
-2.  **UI Implementation:**
-    -   **Layout:** Header with logo, main content area, and footer with legal links (AdSense requirement).
-    -   **Country Selector:** Interactive component to switch between Korea and Japan.
-    -   **Trend List:** Web Component `<trend-list>` to display TOP 10 items with rank, keyword, and change indicators.
-3.  **Data Management:**
-    - Create a `TrendService` to fetch/mock real-time data for KR and JP.
-    - Implement a refresh mechanism.
-4.  **AdSense Readiness:**
-    -   Add `About`, `Privacy Policy`, and `Terms` page placeholders.
-    -   Reserve designated ad slots (`<div class="ad-slot">`).
-    -   Meta tags for SEO.
-5.  **Visual Polish:**
-    -   Add subtle animations and 3D background elements using Three.js.
-    -   Apply premium textures and shadows.
-
-## **Phase 2: Trend Analysis & Detailed View (Current Request)**
-1.  **Data Expansion:**
-    - Update `TrendService` to include detailed explanations (mocking AI analysis) for each trend item.
-2.  **Interactive Components:**
-    - Enhance `<trend-list>` to handle click events and emit details.
-    - Create a `<trend-modal>` component to display the "Why it's trending" analysis.
-3.  **UI/UX Enhancement:**
-    - Implement a polished, glass-morphism modal for content reading.
-    - Add loading states to simulate "Analyzing..." process for a premium feel.
-
-## **Phase 3: Related Content Integration (Current Request)**
-1.  **Link Aggregation:**
-    - Update `TrendService` to include related news articles and video links (YouTube) for each trend.
-2.  **Enhanced Modal UI:**
-    - Add a "Related Sources" section to the modal with icons (News, Video).
-    - Style links as interactive buttons for better engagement.
-
-## **Phase 4: UI Refinement & Intelligent Localization (Current Request)**
-1.  **Theming System:**
-    - Implement a robust Light/Dark mode toggle using CSS Variables and `color-scheme`.
-    - Simplify the UI for better readability (cleaner cards, less noise).
-2.  **Localization & Auto-Detection:**
-    - Integrate IP-based or Browser-locale-based country auto-detection.
-    - Add country flags (SVG or Emoji) to the selector.
-    - Implement a simple i18n system for UI text (Headers, Labels, Footers) based on the detected or selected country.
-3.  **Visual Polish:**
-    - Refine shadows and transitions for a "lighter" feel in light mode and "premium" feel in dark mode.
+## **Phase 5: Mobile-First UI & Adaptive Navigation (Current Request)**
+1.  **Adaptive Navigation:**
+    - On mobile, replace horizontal pill navs with a "Selected-Only" view that expands into a list on click.
+    - Ensure a compact header for smaller screens to maximize content space.
+2.  **Mobile Styling:**
+    - Adjust font sizes and paddings for smartphone viewports.
+    - Full-width cards for mobile to improve readability.
+    - Optimize the trend modal for mobile (responsive width and height).
+3.  **Related Content Integration (Enhanced):**
+    - Ensure YouTube search links are always present for video content availability.
 
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -73,6 +36,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Implement Trend Analysis Modal and detailed content logic.
 - [x] Update data service with trend explanations.
 - [x] Add related links (News, YouTube) to the trend data and modal UI.
-- [ ] Implement Light/Dark mode toggle and simplified UI styles.
-- [ ] Add country auto-detection and UI localization.
-- [ ] Final visual refinement and verification.
+- [x] Implement Light/Dark mode toggle and simplified UI styles.
+- [x] Add country auto-detection and UI localization.
+- [ ] Implement Mobile-adaptive navigation and responsive UI tweaks.
+- [ ] Final verification and push to GitHub.
