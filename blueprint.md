@@ -53,6 +53,17 @@ TrendUp is a modern, high-performance web application that provides real-time To
     - Add a "Related Sources" section to the modal with icons (News, Video).
     - Style links as interactive buttons for better engagement.
 
+## **Phase 4: UI Refinement & Intelligent Localization (Current Request)**
+1.  **Theming System:**
+    - Implement a robust Light/Dark mode toggle using CSS Variables and `color-scheme`.
+    - Simplify the UI for better readability (cleaner cards, less noise).
+2.  **Localization & Auto-Detection:**
+    - Integrate IP-based or Browser-locale-based country auto-detection.
+    - Add country flags (SVG or Emoji) to the selector.
+    - Implement a simple i18n system for UI text (Headers, Labels, Footers) based on the detected or selected country.
+3.  **Visual Polish:**
+    - Refine shadows and transitions for a "lighter" feel in light mode and "premium" feel in dark mode.
+
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features (OKLCH, Container Queries).
@@ -62,3 +73,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Implement Trend Analysis Modal and detailed content logic.
 - [x] Update data service with trend explanations.
 - [x] Add related links (News, YouTube) to the trend data and modal UI.
+- [ ] Implement Light/Dark mode toggle and simplified UI styles.
+- [ ] Add country auto-detection and UI localization.
+- [ ] Final visual refinement and verification.
