@@ -52,18 +52,22 @@ class TrendService {
             const linkObj = { title: `[${nSource || 'News'}] ${nTitle}`, url: nUrl };
             if (nUrl.includes('youtube.com') || nUrl.includes('youtu.be')) videoLinks.push(linkObj);
             else newsLinks.push(linkObj);
+            
+            // Add narrative snippet: "Source reported: Title. Snippet"
+            const cleanSnippet = nSnippet ? nSnippet.replace(/<[^>]*>?/gm, '') : "";
+            const narrative = `${nSource || '뉴스'}: "${nTitle}". ${cleanSnippet}`;
+            if (narrative.length > 30) snippets.push(narrative);
           }
-          if (nSnippet) snippets.push(nSnippet.replace(/<[^>]*>?/gm, ''));
         }
 
         const rawAnalysis = snippets.length > 0 
-          ? snippets.filter(s => s.length > 20).slice(0, 3).join(' ') 
+          ? snippets.slice(0, 3).join('\n\n') 
           : `${title} 주제가 현재 ${traffic} 이상의 검색량을 기록하며 뉴스 및 소셜 미디어를 통해 급격히 확산되고 있습니다. 관련 주요 보도와 커뮤니티의 관심이 집중되면서 실시간 트렌드에 올랐습니다.`;
 
         rawTrends.push({ 
           title, 
           growth: traffic, 
-          rawAnalysis: rawAnalysis.length > 300 ? rawAnalysis.substring(0, 297) + '...' : rawAnalysis,
+          rawAnalysis: rawAnalysis.length > 600 ? rawAnalysis.substring(0, 597) + '...' : rawAnalysis,
           newsLinks, 
           videoLinks 
         });
