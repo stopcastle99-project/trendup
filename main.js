@@ -20,16 +20,15 @@ class TrendService {
       const items = xmlDoc.querySelectorAll("item");
       const trends = [];
 
+      const rawTrends = [];
       for (let i = 0; i < Math.min(items.length, 10); i++) {
         const item = items[i];
-        let title = item.querySelector("title")?.textContent || "";
-        
+        const title = item.querySelector("title")?.textContent || "";
         const getNS = (tagName) => {
           const el = item.getElementsByTagNameNS("*", tagName)[0] || 
                      item.getElementsByTagName("ht:" + tagName)[0];
           return el?.textContent || "";
         };
-
         const traffic = getNS("approx_traffic") || "N/A";
         const newsElements = item.getElementsByTagNameNS("*", "news_item");
         const newsLinks = [];
@@ -37,7 +36,7 @@ class TrendService {
         let summaryContext = "";
 
         videoLinks.push({
-          title: `YouTube: '${title}' search`,
+          title: `YouTube: '${title}'`,
           url: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " news")}`,
           isSystem: true
         });
@@ -57,28 +56,30 @@ class TrendService {
           if (j === 0) summaryContext = nSnippet || nTitle;
         }
 
-        let analysis = summaryContext ? summaryContext.replace(/<[^>]*>?/gm, '') : "Trend analysis loading...";
-
-        // Real-time Translation for Title and Analysis
-        if (targetLang !== 'ko' && country === 'KR') {
-          title = await this.translate(title, targetLang);
-          analysis = await this.translate(analysis, targetLang);
-        } else if (targetLang !== 'ja' && country === 'JP') {
-          title = await this.translate(title, targetLang);
-          analysis = await this.translate(analysis, targetLang);
-        } else if (targetLang !== 'en' && country === 'US') {
-          title = await this.translate(title, targetLang);
-          analysis = await this.translate(analysis, targetLang);
-        }
-
-        trends.push({ title, growth: traffic, analysis, newsLinks, videoLinks });
+        rawTrends.push({ 
+          title, 
+          growth: traffic, 
+          analysis: summaryContext ? summaryContext.replace(/<[^>]*>?/gm, '') : "...",
+          newsLinks, 
+          videoLinks 
+        });
       }
-      return trends;
+
+      // Parallel Translation for all trends
+      const translatedTrends = await Promise.all(rawTrends.map(async (t) => {
+        const [translatedTitle, translatedAnalysis] = await Promise.all([
+          this.translate(t.title, targetLang),
+          this.translate(t.analysis, targetLang)
+        ]);
+        return { ...t, title: translatedTitle, analysis: translatedAnalysis };
+      }));
+
+      return translatedTrends;
     } catch (e) { return []; }
   }
 
   async translate(text, targetLang) {
-    if (!text || text === "...") return text;
+    if (!text || text === "..." || targetLang === 'en') return text; // Google RSS often provides English context for JP/KR tags sometimes, but let's assume auto-detect
     try {
       const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
       const data = await res.json();
@@ -114,9 +115,9 @@ class TrendService {
 
 // --- Localization ---
 const i18n = {
-  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "트렌드 요약 및 분석", news: "관련 기사", videos: "관련 영상 소식", infoTitle: "TrendUp 정보", infoDesc: "실시간 급상승 키워드를 한눈에 확인하세요.", loading: "데이터 로딩 중...", youtubeSearch: "YouTube 검색 결과" },
-  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "トレンド分析", news: "関連記事", videos: "関連動画・ニュース", infoTitle: "TrendUpについて", infoDesc: "急上昇ワード를 실시간으로 체크.", loading: "読み込み中...", youtubeSearch: "YouTube検索結果" },
-  en: { title: "Trending Now", update: "Last Updated", summary: "Trend Analysis", news: "News Articles", videos: "Related Videos", infoTitle: "About TrendUp", infoDesc: "Stay updated with real-time trends.", loading: "Loading...", youtubeSearch: "Search on YouTube" }
+  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "트렌드 요약 및 분석", news: "관련 기사", videos: "관련 영상 소식", infoTitle: "TrendUp 정보", infoDesc: "실시간 급상승 키워드를 한눈에 확인하세요.", loading: "번역 및 로딩 중..." },
+  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "トレンド分析", news: "関連記事", videos: "関連動画", infoTitle: "TrendUpについて", infoDesc: "急上昇ワード를 실시간으로 체크.", loading: "翻訳・読み込み中..." },
+  en: { title: "Trending Now", update: "Last Updated", summary: "Trend Analysis", news: "News Articles", videos: "Related Videos", infoTitle: "About TrendUp", infoDesc: "Stay updated with real-time trends.", loading: "Translating..." }
 };
 
 // --- Web Components ---
@@ -130,15 +131,15 @@ class TrendList extends HTMLElement {
         :host { display: block; }
         .list { display: flex; flex-direction: column; gap: 0.75rem; }
         .item {
-          display: grid; grid-template-columns: 50px 1fr auto; align-items: center;
+          display: grid; grid-template-columns: 40px 1fr auto; align-items: center;
           background: var(--surface); padding: 1.25rem; border-radius: 12px;
           border: 1px solid var(--border); transition: all 0.2s; color: var(--text); cursor: pointer;
         }
-        .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        .item:hover { border-color: var(--primary); transform: scale(1.01); box-shadow: var(--shadow-hover); }
         .rank { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
-        .title { font-size: 1.1rem; font-weight: 700; }
-        .growth { font-size: 0.85rem; font-weight: 700; color: oklch(0.6 0.15 140); }
-        .loading { text-align: center; padding: 2rem; color: var(--text-muted); }
+        .title { font-size: 1.05rem; font-weight: 700; padding-right: 1rem; }
+        .growth { font-size: 0.8rem; font-weight: 700; color: oklch(0.6 0.15 140); background: oklch(0.6 0.15 140 / 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; }
+        .loading { text-align: center; padding: 3rem; color: var(--text-muted); font-weight: 600; }
       </style>
       <div class="list">
         ${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : 
@@ -165,17 +166,16 @@ class TrendModal extends HTMLElement {
     const t = i18n[lang] || i18n.en;
     this.shadowRoot.innerHTML = `
       <style>
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; }
         .overlay.active { opacity: 1; pointer-events: auto; }
-        .modal { background: var(--bg); width: 95%; max-width: 550px; max-height: 90vh; border-radius: 20px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; }
-        .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: none; font-size: 1.5rem; color: var(--text); }
-        .title { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: var(--text); }
-        .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.9rem; text-transform: uppercase; }
-        .text { line-height: 1.7; color: var(--text); margin-bottom: 1rem; font-size: 1.05rem; }
+        .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; }
+        .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); }
+        .title { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; line-height: 1.3; color: var(--text); }
+        .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.85rem; text-transform: uppercase; }
+        .text { line-height: 1.6; color: var(--text); margin-bottom: 1rem; font-size: 1rem; }
         .link-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; text-decoration: none; color: var(--text); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; }
-        .link:hover { border-color: var(--primary); background: var(--border); }
-        .system-link { background: oklch(0.6 0.2 20 / 0.1); border-color: oklch(0.6 0.2 20 / 0.3); font-weight: 600; }
+        .link { padding: 0.75rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; }
+        .link:hover { border-color: var(--primary); transform: translateY(-1px); }
       </style>
       <div class="overlay">
         <div class="modal">
@@ -183,16 +183,10 @@ class TrendModal extends HTMLElement {
           <h2 class="title">${trend.title}</h2>
           <span class="section-title">✨ ${t.summary}</span>
           <p class="text">${trend.analysis}</p>
-          
           <span class="section-title">📰 ${t.news}</span>
-          <div class="link-group">
-            ${trend.newsLinks.map(l => `<a href="${l.url}" target="_blank" class="link">📄 ${l.title}</a>`).join('')}
-          </div>
-          
+          <div class="link-group">${trend.newsLinks.map(l => `<a href="${l.url}" target="_blank" class="link">📄 ${l.title}</a>`).join('')}</div>
           <span class="section-title">🎬 ${t.videos}</span>
-          <div class="link-group">
-            ${trend.videoLinks.map(l => `<a href="${l.url}" target="_blank" class="link ${l.isSystem ? 'system-link' : ''}">▶️ ${l.title}</a>`).join('')}
-          </div>
+          <div class="link-group">${trend.videoLinks.map(l => `<a href="${l.url}" target="_blank" class="link">▶️ ${l.title}</a>`).join('')}</div>
         </div>
       </div>
     `;
@@ -227,37 +221,43 @@ class App {
     this.renderNavs();
     await this.update();
     document.getElementById('top-trends').addEventListener('trend-click', e => this.modal.show(e.detail, this.currentLang));
+    
+    // Close dropdowns on outside click
+    window.addEventListener('click', () => {
+      document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
+    });
+
     setInterval(() => this.update(), this.service.refreshInterval);
   }
 
   renderNavs() {
     const renderGroup = (id, items, current, onSelect) => {
       const nav = document.getElementById(id);
-      nav.innerHTML = items.map(item => `
-        <button class="country-btn ${item.code === current ? 'active' : ''}" data-code="${item.code}">
-          ${item.flag}
-        </button>
-      `).join('');
+      const activeItem = items.find(i => i.code === current);
+      
+      nav.innerHTML = `
+        <button class="country-btn active">${activeItem.flag}</button>
+        ${items.filter(i => i.code !== current).map(item => `
+          <button class="country-btn" data-code="${item.code}">${item.flag}</button>
+        `).join('')}
+      `;
       
       nav.onclick = (e) => {
         e.stopPropagation();
-        document.querySelectorAll('.pill-nav').forEach(n => { if(n !== nav) n.classList.remove('expanded'); });
-        nav.classList.toggle('expanded');
+        const wasExpanded = nav.classList.contains('expanded');
+        document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
+        if (!wasExpanded) nav.classList.add('expanded');
       };
 
-      nav.querySelectorAll('button').forEach(btn => btn.onclick = (e) => {
+      nav.querySelectorAll('button[data-code]').forEach(btn => btn.onclick = (e) => {
         e.stopPropagation();
-        if (btn.dataset.code !== current) {
-          onSelect(btn.dataset.code);
-        }
+        onSelect(btn.dataset.code);
         nav.classList.remove('expanded');
       });
     };
 
     renderGroup('country-nav', this.service.getCountries(), this.currentCountry, (code) => this.switchCountry(code));
     renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, (code) => this.switchLang(code));
-    
-    window.onclick = () => document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
   }
 
   async switchCountry(code) {
@@ -274,6 +274,9 @@ class App {
   }
 
   async update() {
+    // Show loading state
+    document.getElementById('top-trends').data = { trends: [], lang: this.currentLang };
+    
     const trends = await this.service.getTrends(this.currentCountry, this.currentLang);
     const t = i18n[this.currentLang] || i18n.en;
     document.getElementById('current-country-title').textContent = t.title;
