@@ -1,1 +1,243 @@
-/* Add styles here */
+@layer reset, base, layout, components, utilities;
+
+@layer reset {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: 'Pretendard', system-ui, -apple-system, sans-serif;
+    background-color: oklch(0.12 0.02 240);
+    color: oklch(0.95 0.01 240);
+    overflow-x: hidden;
+  }
+}
+
+@layer base {
+  :root {
+    --primary: oklch(0.65 0.25 20); /* Vibrant Coral/Red */
+    --secondary: oklch(0.55 0.2 260); /* Deep Blue */
+    --accent: oklch(0.85 0.2 90); /* Yellow Gold */
+    --surface: oklch(0.18 0.03 240 / 0.7);
+    --surface-glass: oklch(0.25 0.04 240 / 0.4);
+    --border: oklch(0.3 0.03 240 / 0.5);
+    --text-muted: oklch(0.7 0.02 240);
+    
+    --shadow-soft: 0 4px 20px -5px oklch(0 0 0 / 0.5);
+    --shadow-deep: 0 10px 40px -10px oklch(0 0 0 / 0.8);
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 8px;
+  }
+
+  h1, h2, h3 {
+    line-height: 1.1;
+    font-weight: 800;
+  }
+}
+
+@layer layout {
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header .container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .logo h1 {
+    font-size: 1.5rem;
+    background: linear-gradient(45deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  main {
+    padding-top: 3rem;
+    padding-bottom: 5rem;
+  }
+
+  #hero {
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+
+  #hero h2 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  #last-updated {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  #content-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2.5rem;
+  }
+
+  @media (max-width: 900px) {
+    #content-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  #bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  footer {
+    padding: 4rem 0;
+    border-top: 1px solid var(--border);
+    background-color: oklch(0.1 0.02 240);
+  }
+
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted);
+  }
+
+  .footer-links {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+  }
+
+  .footer-links a {
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover {
+    color: var(--primary);
+  }
+}
+
+@layer components {
+  /* Country Selector */
+  #country-nav {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--surface-glass);
+    padding: 0.4rem;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+  }
+
+  .country-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0.5rem 1.2rem;
+    border-radius: 100px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .country-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 15px oklch(0.65 0.25 20 / 0.4);
+  }
+
+  /* Ad Slots */
+  .ad-slot {
+    background: var(--surface-glass);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    min-height: 250px;
+    margin-bottom: 2rem;
+  }
+
+  .banner-ad {
+    width: 100%;
+    min-height: 100px;
+    margin-top: 3rem;
+  }
+
+  /* Info Card */
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .info-card h3 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+
+  .info-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+}
+
+/* Texture Overlay */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 9999;
+}

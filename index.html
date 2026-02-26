@@ -1,14 +1,89 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="실시간 국가별 트렌드 TOP 10을 확인하세요. 한국, 일본 등 다양한 국가의 인기 검색어와 트렌드를 실시간으로 제공합니다.">
+  <meta name="keywords" content="실시간 트렌드, 급상승 검색어, 한국 트렌드, 일본 트렌드, TrendUp, 실시간 이슈">
+  <title>TrendUp | 실시간 글로벌 트렌드 TOP 10</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Three.js for visual effects -->
+  <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+  <div id="app">
+    <canvas id="bg-canvas"></canvas>
+    
+    <header>
+      <div class="container">
+        <div class="logo">
+          <span class="logo-icon">🔥</span>
+          <h1>TrendUp</h1>
+        </div>
+        <nav id="country-nav">
+          <!-- Country selector will be injected here -->
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="hero">
+        <h2 id="current-country-title">실시간 인기 트렌드</h2>
+        <p id="last-updated">최근 업데이트: --:--</p>
+      </section>
+
+      <section id="content-grid">
+        <div id="main-content">
+          <trend-list id="top-trends"></trend-list>
+        </div>
+        
+        <aside id="sidebar">
+          <div class="ad-slot sidebar-ad" data-ad-id="placeholder-1">
+            <p>Advertisement</p>
+          </div>
+          <div class="info-card">
+            <h3>TrendUp 정보</h3>
+            <p>다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.</p>
+          </div>
+        </aside>
+      </section>
+
+      <section id="bottom-ads">
+        <div class="ad-slot banner-ad" data-ad-id="placeholder-2">
+          <p>Advertisement</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <p>&copy; 2024 TrendUp. All rights reserved.</p>
+          <ul class="footer-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="main.js"></script>
 </body>
 </html>
