@@ -180,7 +180,8 @@ class TrendModal extends HTMLElement {
     const t = i18n[lang] || i18n.en;
     this.shadowRoot.innerHTML = `
       <style>
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 5000; opacity: 1; pointer-events: auto; transition: 0.3s; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .overlay.active { opacity: 1; pointer-events: auto; }
         .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; }
         .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); }
         .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; }
@@ -190,7 +191,7 @@ class TrendModal extends HTMLElement {
         .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; }
         .link:hover { border-color: var(--primary); background: var(--border); }
       </style>
-      <div class="overlay">
+      <div class="overlay active">
         <div class="modal">
           <button class="close">&times;</button>
           <h2 class="title">${trend.title}</h2>
@@ -204,6 +205,9 @@ class TrendModal extends HTMLElement {
       </div>
     `;
     this.shadowRoot.querySelector('.close').onclick = () => this.hide();
+    this.shadowRoot.querySelector('.overlay').onclick = (e) => {
+      if (e.target === e.currentTarget) this.hide();
+    };
   }
 }
 
