@@ -23,28 +23,57 @@ class TrendService {
       items.forEach((item, index) => {
         if (index >= 10) return;
         const title = item.querySelector("title")?.textContent;
-        const traffic = item.getElementsByTagName("ht:approx_traffic")[0]?.textContent || "N/A";
+        
+        // Use getElementsByTagNameNS or fallback to localName for better namespace handling
+        const getNS = (tagName) => {
+          const el = item.getElementsByTagNameNS("*", tagName)[0] || 
+                     item.getElementsByTagName("ht:" + tagName)[0] ||
+                     item.getElementsByTagName(tagName)[0];
+          return el?.textContent || "";
+        };
+
+        const traffic = getNS("approx_traffic") || "N/A";
         const description = item.querySelector("description")?.textContent || "";
-        const newsElements = item.getElementsByTagName("ht:news_item");
+        
+        // News items parsing
+        const newsElements = item.getElementsByTagNameNS("*", "news_item");
         const links = [];
-        let analysis = description;
+        let firstSnippet = "";
 
         for (let i = 0; i < newsElements.length; i++) {
-          const newsTitle = newsElements[i].getElementsByTagName("ht:news_item_title")[0]?.textContent;
-          const newsUrl = newsElements[i].getElementsByTagName("ht:news_item_url")[0]?.textContent;
-          const newsSnippet = newsElements[i].getElementsByTagName("ht:news_item_snippet")[0]?.textContent;
-          const newsSource = newsElements[i].getElementsByTagName("ht:news_item_source")[0]?.textContent;
+          const n = newsElements[i];
+          const nTitle = n.getElementsByTagNameNS("*", "news_item_title")[0]?.textContent;
+          const nUrl = n.getElementsByTagNameNS("*", "news_item_url")[0]?.textContent;
+          const nSource = n.getElementsByTagNameNS("*", "news_item_source")[0]?.textContent;
+          const nSnippet = n.getElementsByTagNameNS("*", "news_item_snippet")[0]?.textContent;
 
-          if (newsTitle && newsUrl) {
-            links.push({ type: i === 0 ? 'news' : 'video', title: `[${newsSource}] ${newsTitle}`, url: newsUrl });
+          if (nTitle && nUrl) {
+            links.push({ 
+              type: i === 0 ? 'news' : 'video', 
+              title: `[${nSource || 'News'}] ${nTitle}`, 
+              url: nUrl 
+            });
           }
-          if (i === 0 && newsSnippet) analysis = newsSnippet;
+          if (i === 0) firstSnippet = nSnippet;
         }
 
-        trends.push({ title, category: "Trending Now", growth: traffic, analysis: analysis || "...", links, picture: "" });
+        // Analysis logic: Snippet > Description > Title as fallback
+        const analysis = firstSnippet || description || `${title}에 대한 실시간 트렌드 정보입니다.`;
+
+        trends.push({ 
+          title, 
+          category: "Trending Now", 
+          growth: traffic, 
+          analysis: analysis.replace(/<[^>]*>?/gm, ''), // Strip any HTML tags
+          links, 
+          picture: "" 
+        });
       });
       return trends;
-    } catch (e) { return []; }
+    } catch (e) { 
+      console.error("Fetch Error:", e);
+      return []; 
+    }
   }
 
   getCountries() {
