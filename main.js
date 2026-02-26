@@ -33,7 +33,7 @@ class TrendService {
         const newsElements = item.getElementsByTagNameNS("*", "news_item");
         const newsLinks = [];
         const videoLinks = [];
-        let firstSnippet = "";
+        const snippets = [];
 
         videoLinks.push({
           title: `YouTube: '${title}'`,
@@ -53,13 +53,17 @@ class TrendService {
             if (nUrl.includes('youtube.com') || nUrl.includes('youtu.be')) videoLinks.push(linkObj);
             else newsLinks.push(linkObj);
           }
-          if (j === 0) firstSnippet = nSnippet;
+          if (nSnippet) snippets.push(nSnippet.replace(/<[^>]*>?/gm, ''));
         }
+
+        const rawAnalysis = snippets.length > 0 
+          ? snippets.filter(s => s.length > 20).slice(0, 3).join(' ') 
+          : `${title} 주제가 현재 ${traffic} 이상의 검색량을 기록하며 뉴스 및 소셜 미디어를 통해 급격히 확산되고 있습니다. 관련 주요 보도와 커뮤니티의 관심이 집중되면서 실시간 트렌드에 올랐습니다.`;
 
         rawTrends.push({ 
           title, 
           growth: traffic, 
-          rawAnalysis: firstSnippet ? firstSnippet.replace(/<[^>]*>?/gm, '') : `${title} 관련 최신 트렌드 뉴스입니다.`,
+          rawAnalysis: rawAnalysis.length > 300 ? rawAnalysis.substring(0, 297) + '...' : rawAnalysis,
           newsLinks, 
           videoLinks 
         });
@@ -76,8 +80,12 @@ class TrendService {
   }
 
   async translate(text, targetLang) {
-    if (!text || text === "..." || targetLang === 'en' && /^[a-zA-Z0-9\s.,!?-]+$/.test(text)) return text;
+    if (!text || text === "..." || text.length < 2) return text;
     
+    // Skip translation if text is already in target language (basic check)
+    if (targetLang === 'ko' && /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text)) return text;
+    if (targetLang === 'en' && /^[a-zA-Z0-9\s.,!?-]+$/.test(text)) return text;
+
     const cacheKey = `${targetLang}:${text}`;
     if (this.cache.has(cacheKey)) return this.cache.get(cacheKey);
 
@@ -110,9 +118,9 @@ class TrendService {
 
 // --- Localization ---
 const i18n = {
-  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "트렌드 요약", news: "관련 기사", videos: "영상 소식", loading: "로딩 중...", T: "T", L: "L" },
-  ja: { title: "トレンド", update: "最終更新", summary: "要約", news: "記事", videos: "動画", loading: "読み込み中...", T: "T", L: "L" },
-  en: { title: "Trending", update: "Updated", summary: "Analysis", news: "News", videos: "Videos", loading: "Loading...", T: "T", L: "L" }
+  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "급상승 배경", news: "관련 기사", videos: "영상 소식", loading: "트렌드 분석 중...", T: "T", L: "L", infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요." },
+  ja: { title: "トレンド", update: "最終更新", summary: "急上昇の背景", news: "記事", videos: "動画", loading: "分析中...", T: "T", L: "L", infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。" },
+  en: { title: "Trending", update: "Updated", summary: "Trending Context", news: "News", videos: "Videos", loading: "Analyzing...", T: "T", L: "L", infoTitle: "About TrendUp", infoDesc: "Explore real-time trending keywords from various countries and stay updated with global topics." }
 };
 
 // --- Web Components ---
