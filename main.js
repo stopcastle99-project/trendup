@@ -7,7 +7,7 @@ class TrendService {
     this.refreshInterval = 15 * 60 * 1000;
   }
 
-  async getTrends(country) {
+  async getTrends(country, targetLang) {
     const rssUrl = `https://trends.google.com/trending/rss?geo=${country}`;
     const targetUrl = encodeURIComponent(rssUrl);
     
@@ -20,9 +20,10 @@ class TrendService {
       const items = xmlDoc.querySelectorAll("item");
       const trends = [];
 
-      items.forEach((item, index) => {
-        if (index >= 10) return;
-        const title = item.querySelector("title")?.textContent;
+      for (let i = 0; i < Math.min(items.length, 10); i++) {
+        const item = items[i];
+        let title = item.querySelector("title")?.textContent || "";
+        
         const getNS = (tagName) => {
           const el = item.getElementsByTagNameNS("*", tagName)[0] || 
                      item.getElementsByTagName("ht:" + tagName)[0];
@@ -35,15 +36,14 @@ class TrendService {
         const videoLinks = [];
         let summaryContext = "";
 
-        // Add a guaranteed YouTube search link
         videoLinks.push({
-          title: `YouTube: '${title}' 관련 뉴스 및 영상 검색`,
-          url: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " 뉴스")}`,
+          title: `YouTube: '${title}' search`,
+          url: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " news")}`,
           isSystem: true
         });
 
-        for (let i = 0; i < newsElements.length; i++) {
-          const n = newsElements[i];
+        for (let j = 0; j < newsElements.length; j++) {
+          const n = newsElements[j];
           const nTitle = n.getElementsByTagNameNS("*", "news_item_title")[0]?.textContent;
           const nUrl = n.getElementsByTagNameNS("*", "news_item_url")[0]?.textContent;
           const nSource = n.getElementsByTagNameNS("*", "news_item_source")[0]?.textContent;
@@ -51,25 +51,39 @@ class TrendService {
 
           if (nTitle && nUrl) {
             const linkObj = { title: `[${nSource || 'News'}] ${nTitle}`, url: nUrl };
-            if (nUrl.includes('youtube.com') || nUrl.includes('youtu.be')) {
-              videoLinks.push(linkObj);
-            } else {
-              newsLinks.push(linkObj);
-            }
+            if (nUrl.includes('youtube.com') || nUrl.includes('youtu.be')) videoLinks.push(linkObj);
+            else newsLinks.push(linkObj);
           }
-          if (i === 0) summaryContext = nSnippet || nTitle;
+          if (j === 0) summaryContext = nSnippet || nTitle;
         }
 
-        trends.push({ 
-          title, 
-          growth: traffic, 
-          analysis: summaryContext ? summaryContext.replace(/<[^>]*>?/gm, '') : "Trend analysis loading...",
-          newsLinks, 
-          videoLinks 
-        });
-      });
+        let analysis = summaryContext ? summaryContext.replace(/<[^>]*>?/gm, '') : "Trend analysis loading...";
+
+        // Real-time Translation for Title and Analysis
+        if (targetLang !== 'ko' && country === 'KR') {
+          title = await this.translate(title, targetLang);
+          analysis = await this.translate(analysis, targetLang);
+        } else if (targetLang !== 'ja' && country === 'JP') {
+          title = await this.translate(title, targetLang);
+          analysis = await this.translate(analysis, targetLang);
+        } else if (targetLang !== 'en' && country === 'US') {
+          title = await this.translate(title, targetLang);
+          analysis = await this.translate(analysis, targetLang);
+        }
+
+        trends.push({ title, growth: traffic, analysis, newsLinks, videoLinks });
+      }
       return trends;
     } catch (e) { return []; }
+  }
+
+  async translate(text, targetLang) {
+    if (!text || text === "...") return text;
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      return data[0].map(x => x[0]).join('');
+    } catch (e) { return text; }
   }
 
   getCountries() {
@@ -82,9 +96,9 @@ class TrendService {
 
   getLanguages() {
     return [
-      { code: 'ko', name: '한국어', flag: '🇰🇷' },
-      { code: 'ja', name: '日本語', flag: '🇯🇵' },
-      { code: 'en', name: 'English', flag: '🇺🇸' }
+      { code: 'ko', name: 'KO', flag: '🇰🇷' },
+      { code: 'ja', name: 'JA', flag: '🇯🇵' },
+      { code: 'en', name: 'EN', flag: '🇺🇸' }
     ];
   }
 
@@ -225,19 +239,25 @@ class App {
         </button>
       `).join('');
       
-      nav.onclick = () => {
+      nav.onclick = (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.pill-nav').forEach(n => { if(n !== nav) n.classList.remove('expanded'); });
         nav.classList.toggle('expanded');
       };
 
       nav.querySelectorAll('button').forEach(btn => btn.onclick = (e) => {
         e.stopPropagation();
-        onSelect(btn.dataset.code);
+        if (btn.dataset.code !== current) {
+          onSelect(btn.dataset.code);
+        }
         nav.classList.remove('expanded');
       });
     };
 
     renderGroup('country-nav', this.service.getCountries(), this.currentCountry, (code) => this.switchCountry(code));
     renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, (code) => this.switchLang(code));
+    
+    window.onclick = () => document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
   }
 
   async switchCountry(code) {
@@ -254,7 +274,7 @@ class App {
   }
 
   async update() {
-    const trends = await this.service.getTrends(this.currentCountry);
+    const trends = await this.service.getTrends(this.currentCountry, this.currentLang);
     const t = i18n[this.currentLang] || i18n.en;
     document.getElementById('current-country-title').textContent = t.title;
     document.querySelector('.info-card h3').textContent = t.infoTitle;
