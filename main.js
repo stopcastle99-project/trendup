@@ -115,7 +115,7 @@ class TrendService {
           const ns = n.getElementsByTagNameNS("*", "news_item_source")[0]?.textContent;
           const nsn = n.getElementsByTagNameNS("*", "news_item_snippet")[0]?.textContent;
           if (nt && nu) {
-            newsLinks.push({ title: `[${ns || 'News'}] ${nt}`, url: nu });
+            newsLinks.push({ title: nt, source: ns || 'News', url: nu });
             if (ns) sources.add(ns);
             const cleanSnippet = nsn ? nsn.replace(/<[^>]*>?/gm, '').trim() : "";
             if (cleanSnippet) snippets.push(cleanSnippet);
@@ -185,8 +185,16 @@ class TrendService {
           const match = google.find(g => g.originalTitle.toLowerCase().includes(t.originalTitle.toLowerCase()) || t.originalTitle.toLowerCase().includes(g.originalTitle.toLowerCase()));
           if (match) { t.newsLinks = match.newsLinks; t.sources = match.sources; t.snippets = match.snippets; if (t.growth === 'Portal') t.growth = match.growth; }
         }
-        if (!t.newsLinks || t.newsLinks.length === 0) { t.newsLinks = [{ title: `Search: '${t.title}'`, url: `https://www.google.com/search?q=${encodeURIComponent(t.title)}`, isSystem: true }]; }
-        t.videoLinks = [{ title: `YouTube: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(t.title + " news")}`, isSystem: true }];
+        
+        // Ensure some news exists
+        if (!t.newsLinks || t.newsLinks.length === 0) {
+          t.newsLinks = [{ title: `Google Search: '${t.title}'`, source: 'Search', url: `https://www.google.com/search?q=${encodeURIComponent(t.title)}`, isSystem: true }];
+        }
+
+        // Link YouTube directly to the most prominent news title if available, else use trend title
+        const primarySearch = (t.newsLinks[0] && !t.newsLinks[0].isSystem) ? t.newsLinks[0].title : t.title;
+        t.videoLinks = [{ title: `관련 영상 확인: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(primarySearch + " news")}`, isSystem: true }];
+
         const prevRank = this.prevRanks.get(`${country}:${t.originalTitle}`);
         const currentIndex = finalTen.indexOf(t);
         t.trendDir = 'new';
@@ -232,11 +240,17 @@ class TrendService {
 // --- Localization ---
 const i18n = {
   ko: { 
-    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "급상승 배경", news: "관련 기사", videos: "영상 소식", loading: "트렌드 분석 중...", T: "T", L: "L", 
+    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "트렌드 분석 중...", T: "T", L: "L", 
     infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.",
     cookie: "본 사이트는 사용자 경험 개선을 위해 쿠키를 사용합니다.", accept: "확인",
     siteGuide: "사이트 안내", menuAbout: "TrendUp 소개", menuPrivacy: "개인정보처리방침", menuTerms: "이용약관", menuContact: "문의하기",
-    analysisTemplate: (title, sources, snippets) => `현재 '${title}' 주제는 ${sources.join(', ')} 등 주요 매체를 통해 집중 보도되며 큰 화제가 되고 있습니다.\n\n${snippets.join('\n\n')}\n\n이러한 소식들이 다양한 채널을 통해 전해지면서 대중의 관심이 집중되어 실시간 트렌드에 올랐습니다.`,
+    analysisTemplate: (title, sources, snippets) => {
+      if (snippets.length === 0) return `'${title}' 주제가 현재 실시간 트렌드로 주목받고 있습니다. 관련 소식이 포털과 소셜 미디어를 통해 빠르게 확산되고 있습니다.`;
+      const intro = `'${title}' 키워드는 ${sources.slice(0,2).join(', ')} 등을 포함한 주요 매체에서 집중적으로 다루어지며 오늘 하루 큰 화제가 되고 있습니다.`;
+      const body = snippets.map(s => `• ${s}`).join('\n');
+      const conclusion = `특히 이러한 소식들이 다양한 채널을 통해 공유되면서, 대중들 사이에서 궁금증과 논의가 활발히 이어지고 있는 상황입니다.`;
+      return `${intro}\n\n${body}\n\n${conclusion}`;
+    },
     pages: {
       about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
       privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다.</p><h3>2. 애드센스 및 쿠키 사용</h3><p>본 사이트는 구글 애드센스(Google AdSense)를 사용하여 광고를 게재합니다. 구글은 사용자의 방문 기록을 바탕으로 맞춤형 광고 제공을 위해 쿠키를 사용하며, 사용자는 구글 광고 설정에서 이를 해제할 수 있습니다.</p><h3>3. 정보의 보관</h3><p>통계 데이터는 서비스 개선 목적으로만 사용되며, 외부로 유출되거나 상업적으로 판매되지 않습니다.</p>` },
@@ -245,24 +259,34 @@ const i18n = {
     }
   },
   ja: { 
-    title: "トレンド", update: "最終更新", summary: "急上昇の背景", news: "記事", videos: "動画", loading: "分析中...", T: "T", L: "L", 
+    title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", T: "T", L: "L", 
     infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。",
     cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "確認",
     siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
-    analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets.join('\n\n')}\n\nこれらのニュースが伝えられる中、世間の注目が集まり、リアルタイムトレンドに浮上しました。`,
+    analysisTemplate: (title, sources, snippets) => {
+      if (snippets.length === 0) return `「${title}」が現在リアルタイムトレンドとして注目されています。`;
+      const intro = `「${title}」は、${sources.slice(0,2).join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。`;
+      const body = snippets.map(s => `・ ${s}`).join('\n');
+      return `${intro}\n\n${body}`;
+    },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUpは、リアルタイムで変化하는 グローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUpの価値</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します。</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAIが分析して提供します.</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています。</li></ul>` },
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUpは、リアルタイムで変化するグローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUpの価値</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します。</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAIが分析して提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています。</li></ul>` },
       privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために、クッキーやアクセスログが自動的に生成・収集される場合があります。</p><h3>2. AdSenseとクッキーの使用</h3><p>当サイトはGoogle AdSenseを使用して広告を掲載しています。Googleはユーザーの訪問履歴に基づき、最適な広告提供のためにクッキーを使用します。ユーザーはGoogleの広告設定からこれを無効化できます。</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは、公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性には万全を期していますが、外部データソースに起因する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
       contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら、お気軽にメールにてご連絡ください。</p><p><strong>メール</strong>: help@trendup.ai</p>` }
     }
   },
   en: { 
-    title: "Trending", update: "Updated", summary: "Trending Context", news: "News", videos: "Videos", loading: "Analyzing...", T: "T", L: "L", 
+    title: "Trending", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Analyzing...", T: "T", L: "L", 
     infoTitle: "About TrendUp", infoDesc: "Explore real-time trending keywords from various countries and stay updated with global topics.",
     cookie: "This site uses cookies to improve user experience.", accept: "Accept",
     siteGuide: "Site Information", menuAbout: "About TrendUp", menuPrivacy: "Privacy Policy", menuTerms: "Terms of Service", menuContact: "Contact Us",
-    analysisTemplate: (title, sources, snippets) => `The topic '${title}' is currently gaining significant attention through major outlets such as ${sources.join(', ')}.\n\n${snippets.join('\n\n')}\n\nAs these reports circulate across various channels, public interest has surged, placing it on the real-time trending list.`,
+    analysisTemplate: (title, sources, snippets) => {
+      if (snippets.length === 0) return `The topic '${title}' is currently trending globally.`;
+      const intro = `The keyword '${title}' has gained significant attention across major outlets such as ${sources.slice(0,2).join(', ')}.`;
+      const body = snippets.map(s => `• ${s}`).join('\n');
+      return `${intro}\n\n${body}`;
+    },
     pages: {
       about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p><h3>Our Value</h3><ul><li><strong>Source Integration</strong>: Real-time validation across Google, Yahoo Japan, and other local portals.</li><li><strong>AI Summary</strong>: Deep context analysis using AI to provide storytelling beyond simple keywords.</li><li><strong>Verified News</strong>: Direct links to reputable news outlets and video content.</li></ul>` },
       privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards.</p><h3>1. Data Collection</h3><p>We do not collect personally identifiable information such as names or emails. We only use cookies and server logs for service improvement and analytics.</p><h3>2. Google AdSense</h3><p>We use Google AdSense to serve ads. Google use cookies to serve ads based on your prior visits to this or other websites.</p>` },
@@ -284,7 +308,7 @@ class TrendList extends HTMLElement {
       if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; border: 1px solid #ffaa00; padding: 0 4px; border-radius: 4px;">NEW</span>';
       return '<span style="color: var(--text-muted); opacity: 0.5;">-</span>';
     };
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; } .source-badge { font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.2rem; }</style>
+    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; } .source-badge { font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.2rem; }</style>
       <div class="list">${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span><span class="source-badge">${item.source}</span></div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { el.onclick = () => this.dispatchEvent(new CustomEvent('trend-click', { detail: trends[el.dataset.index], bubbles: true, composed: true })); });
   }
@@ -307,8 +331,8 @@ class TrendModal extends HTMLElement {
   renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; } .overlay.active { opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing Trend...</div></div>`; }
   render(trend, lang, analysis) {
     const t = i18n[lang] || i18n.en;
-    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; } .overlay.active { opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; } .link:hover { border-color: var(--primary); background: var(--border); }</style>
-      <div class="overlay active"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${trend.newsLinks.slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link">📄 ${l.title}</a>`).join('')}</div><span class="section-title">🎬 ${t.videos}</span><div class="link-group">${trend.videoLinks.map(l => `<a href="${l.url}" target="_blank" class="link">▶️ ${l.title}</a>`).join('')}</div></div></div>`;
+    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; } .overlay.active { opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; } .link:hover { border-color: var(--primary); background: var(--border); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; margin-bottom: -0.2rem; }</style>
+      <div class="overlay active"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${trend.newsLinks.slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><div><div class="link-meta">${l.source}</div><div>📄 ${l.title}</div></div></a>`).join('')}</div><span class="section-title">🎬 ${t.videos}</span><div class="link-group">${trend.videoLinks.map(l => `<a href="${l.url}" target="_blank" class="link">▶️ ${l.title}</a>`).join('')}</div></div></div>`;
     this.shadowRoot.querySelector('.close').onclick = () => this.hide();
     this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
   }
