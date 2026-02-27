@@ -132,15 +132,15 @@ const i18n = {
   },
   ja: { 
     title: "トレンド", update: "最終更新", summary: "急上昇の背景", news: "記事", videos: "動画", loading: "分析中...", T: "T", L: "L", 
-    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。",
+    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 한눈에 확인하고, 세계의 흐름을 파악해 보세요.",
     cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "確認",
     siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets.join('\n\n')}\n\nこれらのニュースが伝えられる중、世間の注目が集まり、リアルタイムトレンドに浮上しました。`,
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>TrendUpサービス紹介</h2><p>TrendUpは、リアルタイムのグローバルト레ンドをAI技術で分析・要約するダッシュボードです。</p><h3>提供情報</h3><ul><li>主要国のリアルタイム人気検索ワード TOP 10</li><li>ニュースに基づくトレンド背景の要約</li><li>関連ニュースおよび動画リンク</li></ul>` },
+      about: { title: "TrendUpについて", content: `<h2>TrendUpサービス紹介</h2><p>TrendUpは、リアルタイムのグロー바ルトレンド를 AI技術で分析・要約するダッシュボードです。</p><h3>提供情報</h3><ul><li>主要国のリアルタイム人気検索ワード TOP 10</li><li>ニュースに基づくトレンド背景の要約</li><li>関連ニュースおよび動画リンク</li></ul>` },
       privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人識別情報を収集せず、サービス改善のためのクッキーのみを使用します。第三者広告サービス（Google AdSense）は、最適な広告提供のために非識別情報を使用することがあります。</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスは公開データを収集して提供しており、情報の正確性を完全に保証するものではありません。利用によって生じる結果については、利用者が責任を負うものとします。</p>` },
-      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>お問い合わせやご提案は、help@trendup.aiまでメールをお送りください。</p>` }
+      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>お問い合わせやご提案은 help@trendup.ai까지 메일 부탁드립니다.</p>` }
     }
   },
   en: { 
@@ -210,7 +210,11 @@ class App {
     document.documentElement.setAttribute('data-theme', this.theme);
     this.modal = document.createElement('trend-modal');
     document.body.appendChild(this.modal);
-    document.getElementById('theme-toggle').onclick = () => { this.theme = this.theme === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', this.theme); localStorage.setItem('theme', this.theme); };
+    document.getElementById('theme-toggle').onclick = () => { 
+      this.theme = this.theme === 'light' ? 'dark' : 'light'; 
+      document.documentElement.setAttribute('data-theme', this.theme); 
+      localStorage.setItem('theme', this.theme); 
+    };
     this.initInfoModals();
     this.initCookieBanner();
     this.renderNavs();
@@ -271,11 +275,8 @@ class App {
       if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
       if (document.querySelector('.info-card h3')) document.querySelector('.info-card h3').textContent = t.infoTitle;
       if (document.querySelector('.info-card p')) document.querySelector('.info-card p').textContent = t.infoDesc;
-      
-      // Update Sidebar & Footer Menu Text
       const siteGuide = document.querySelector('.policy-card h4');
       if (siteGuide) siteGuide.textContent = t.siteGuide;
-      
       document.querySelectorAll('[data-page]').forEach(el => {
         const key = el.getAttribute('data-page');
         if (key === 'about') el.textContent = t.menuAbout;
@@ -283,7 +284,6 @@ class App {
         if (key === 'terms') el.textContent = t.menuTerms;
         if (key === 'contact') el.textContent = t.menuContact;
       });
-
       if (document.getElementById('top-trends')) document.getElementById('top-trends').data = { trends, lang: this.currentLang };
       if (document.getElementById('last-updated')) { const now = new Date(); document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`; }
     } catch (e) { console.error(e); }
