@@ -35,6 +35,7 @@
     --shadow-hover: 0 12px 24px oklch(0 0 0 / 0.1);
     --radius-lg: 24px;
     --radius-md: 16px;
+    --surface-glass: oklch(1 0 0 / 0.8);
   }
 
   [data-theme="dark"] {
@@ -45,16 +46,21 @@
     --border: oklch(0.25 0.03 240);
     --shadow: 0 4px 20px oklch(0 0 0 / 0.3);
     --shadow-hover: 0 12px 40px oklch(0 0 0 / 0.5);
+    --surface-glass: oklch(0.18 0.03 240 / 0.8);
   }
 
-  h1, h2, h3 { font-weight: 800; letter-spacing: -0.02em; }
+  h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.02em; }
+  ul { list-style: none; }
+  a { color: var(--primary); text-decoration: none; transition: 0.2s; }
+  a:hover { opacity: 0.8; }
+  .hidden { display: none !important; }
 }
 
 @layer layout {
   .container {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
   }
 
   header {
@@ -76,7 +82,7 @@
     align-items: center;
   }
 
-  .logo { display: flex; align-items: center; gap: 0.4rem; z-index: 2100; }
+  .logo { display: flex; align-items: center; gap: 0.4rem; z-index: 2100; cursor: pointer; }
   .logo h1 { font-size: 1.1rem; color: var(--primary); }
 
   .nav-wrapper {
@@ -87,21 +93,9 @@
     justify-content: flex-end;
   }
 
-  .nav-group {
-    display: flex;
-    align-items: center;
-    position: relative;
-  }
+  .nav-group { display: flex; align-items: center; position: relative; }
+  .nav-label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: var(--text-muted); margin-right: 0.4rem; }
 
-  .nav-label {
-    font-size: 0.65rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-right: 0.4rem;
-  }
-
-  /* Dropdown UI Refinement */
   .pill-nav {
     display: flex;
     flex-direction: column;
@@ -141,82 +135,94 @@
     transition: transform 0.2s;
   }
 
-  .country-btn.active {
-    display: flex;
-    background: var(--surface);
-    box-shadow: var(--shadow);
-  }
+  .country-btn.active { display: flex; background: var(--surface); box-shadow: var(--shadow); }
+  .pill-nav.expanded .country-btn { display: flex; margin-bottom: 6px; }
+  .pill-nav.expanded .country-btn:last-child { margin-bottom: 0; }
+  .pill-nav.expanded .country-btn:hover { background: var(--border); transform: scale(1.05); }
 
-  .pill-nav.expanded .country-btn {
-    display: flex;
-    margin-bottom: 6px;
-  }
-  
-  .pill-nav.expanded .country-btn:last-child {
-    margin-bottom: 0;
-  }
+  main { padding: 2rem 0 5rem; }
+  #hero { margin-bottom: 2.5rem; text-align: center; }
+  #hero h2 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+  #last-updated { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
 
-  .pill-nav.expanded .country-btn:hover {
-    background: var(--border);
-    transform: scale(1.05);
-  }
-
-  .header-actions { display: flex; align-items: center; padding-left: 0.5rem; }
-
-  @media (max-width: 600px) {
-    header { height: 60px; }
-    .logo h1 { font-size: 0.95rem; }
-    .nav-wrapper { gap: 0.5rem; }
-    .country-btn { width: 34px; height: 34px; font-size: 1.3rem; }
-    .pill-nav.expanded { width: 46px; }
-  }
-
-  main { padding: 1.5rem 0 5rem; }
-
-  #hero { margin-bottom: 2rem; }
-  #hero h2 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-  #last-updated { color: var(--text-muted); font-size: 0.8rem; }
-
-  #content-grid { display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; }
+  #content-grid { display: grid; grid-template-columns: 1fr 320px; gap: 2rem; }
 
   @media (max-width: 900px) {
     #content-grid { grid-template-columns: 1fr; }
-    #sidebar { display: none; }
+    #sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+    #hero h2 { font-size: 1.8rem; }
   }
 
   #bg-canvas {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -1; opacity: 0.2; pointer-events: none;
+    z-index: -1; opacity: 0.3; pointer-events: none;
   }
 
-  footer { padding: 2rem 0; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); }
-  .footer-content { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-  .footer-links { list-style: none; display: flex; gap: 1rem; }
-  .footer-links a { color: inherit; text-decoration: none; }
+  footer { padding: 4rem 0; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted); background: var(--surface); }
+  .footer-content { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; text-align: center; }
+  .footer-links { list-style: none; display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  .footer-links a { color: var(--text); font-weight: 600; }
 }
 
 @layer components {
-  /* Trend List Refinement */
-  trend-list { width: 100%; }
-  
-  .theme-toggle {
+  /* Ad Slots */
+  .ad-slot {
     background: var(--border);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: 1px dashed var(--text-muted);
+    margin-bottom: 1.5rem;
+    min-height: 100px;
   }
+  .sidebar-ad { min-height: 250px; }
+  .banner-ad { min-height: 120px; margin-top: 2rem; }
 
-  .info-card {
+  /* Info Cards */
+  .info-card, .policy-card {
     background: var(--surface);
-    padding: 1.25rem;
+    padding: 1.5rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
   }
+  .policy-card h4 { margin-bottom: 1rem; font-size: 0.9rem; color: var(--primary); }
+  .policy-card ul li { margin-bottom: 0.75rem; }
+  .policy-card a { font-size: 0.9rem; color: var(--text); font-weight: 600; display: block; }
+
+  /* Cookie Banner */
+  .cookie-banner {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 600px; background: var(--surface);
+    border: 1px solid var(--primary); padding: 1.25rem; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-hover); z-index: 9999;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  }
+  .cookie-banner p { font-size: 0.85rem; font-weight: 500; line-height: 1.4; }
+  .btn-sm { padding: 0.6rem 1.2rem; background: var(--primary); color: white; border: none; border-radius: 100px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+
+  /* Info Modals */
+  .info-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center; z-index: 6000; padding: 1.5rem;
+  }
+  .info-modal-content {
+    background: var(--bg); width: 100%; max-width: 700px; max-height: 80vh;
+    border-radius: var(--radius-lg); padding: 2.5rem; position: relative;
+    overflow-y: auto; border: 1px solid var(--border); box-shadow: var(--shadow-hover);
+  }
+  .info-modal-close { position: absolute; top: 1.5rem; right: 1.5rem; background: var(--border); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
+  
+  #info-modal-body h2 { margin-bottom: 1.5rem; color: var(--primary); }
+  #info-modal-body h3 { margin: 1.5rem 0 0.75rem; font-size: 1.1rem; }
+  #info-modal-body p { margin-bottom: 1rem; line-height: 1.7; font-size: 0.95rem; color: var(--text); }
+  #info-modal-body ul { margin-bottom: 1.5rem; padding-left: 1.2rem; list-style: disc; }
+  #info-modal-body li { margin-bottom: 0.5rem; font-size: 0.95rem; }
 }

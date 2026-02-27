@@ -172,7 +172,6 @@ class TrendService {
     const separator = " • "; 
     const combined = texts.join(separator);
     
-    // Internal translate function that doesn't use cache/batch
     const singleTranslate = async (q, tl) => {
       try {
         const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(q)}`);
@@ -185,7 +184,6 @@ class TrendService {
     let split = translated.split(/[•·\|]| \. /).map(s => s.trim()).filter(s => s.length > 0);
     
     if (split.length !== texts.length) {
-      // If batch translation fails to preserve separators, translate individually as fallback
       const individual = await Promise.all(texts.map(t => singleTranslate(t, targetLang)));
       split = individual;
     }
@@ -217,7 +215,6 @@ class TrendService {
   }
 }
 
-// --- Localization ---
 const i18n = {
   ko: { 
     title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "급상승 배경", news: "관련 기사", videos: "영상 소식", loading: "트렌드 분석 중...", T: "T", L: "L", 
@@ -236,7 +233,6 @@ const i18n = {
   }
 };
 
-// --- Web Components ---
 class TrendList extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
   set data({ trends, lang }) { this.render(trends, lang); }
@@ -279,19 +275,15 @@ class TrendModal extends HTMLElement {
   async show(trend, lang, service) {
     this.renderLoading();
     this.shadowRoot.querySelector('.overlay').classList.add('active');
-    
     const itemsToTranslate = [...trend.snippets, ...trend.sources];
     const translatedItems = await service.translateBatch(itemsToTranslate, lang);
-    
     const translatedSnippets = translatedItems.slice(0, trend.snippets.length);
     const translatedSources = translatedItems.slice(trend.snippets.length);
-    
     const t = i18n[lang] || i18n.en;
     const analysis = t.analysisTemplate(trend.title, translatedSources, translatedSnippets);
     this.render(trend, lang, analysis);
   }
   hide() { this.shadowRoot.querySelector('.overlay').classList.remove('active'); }
-  
   renderLoading() {
     this.shadowRoot.innerHTML = `
       <style>
@@ -302,7 +294,6 @@ class TrendModal extends HTMLElement {
       <div class="overlay"><div class="modal">Analyzing Trend...</div></div>
     `;
   }
-
   render(trend, lang, analysis) {
     const t = i18n[lang] || i18n.en;
     this.shadowRoot.innerHTML = `
@@ -332,16 +323,13 @@ class TrendModal extends HTMLElement {
       </div>
     `;
     this.shadowRoot.querySelector('.close').onclick = () => this.hide();
-    this.shadowRoot.querySelector('.overlay').onclick = (e) => {
-      if (e.target === e.currentTarget) this.hide();
-    };
+    this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
   }
 }
 
 customElements.define('trend-list', TrendList);
 customElements.define('trend-modal', TrendModal);
 
-// --- App ---
 class App {
   constructor() {
     this.service = new TrendService();
@@ -351,112 +339,81 @@ class App {
     this.theme = localStorage.getItem('theme') || 'light';
     this.init();
   }
-
   async init() {
     document.documentElement.setAttribute('data-theme', this.theme);
     this.modal = document.createElement('trend-modal');
     document.body.appendChild(this.modal);
-
     document.getElementById('theme-toggle').onclick = () => {
       this.theme = this.theme === 'light' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', this.theme);
       localStorage.setItem('theme', this.theme);
     };
-
+    this.initInfoModals();
+    this.initCookieBanner();
     this.renderNavs();
     await this.update();
     document.getElementById('top-trends').addEventListener('trend-click', e => this.modal.show(e.detail, this.currentLang, this.service));
-    
     window.addEventListener('click', () => document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded')));
     setInterval(() => this.update(), this.service.refreshInterval);
   }
-
+  initCookieBanner() {
+    const banner = document.getElementById('cookie-banner');
+    const acceptBtn = document.getElementById('accept-cookies');
+    if (!localStorage.getItem('cookies-accepted')) banner.classList.remove('hidden');
+    acceptBtn.onclick = () => { localStorage.setItem('cookies-accepted', 'true'); banner.classList.add('hidden'); };
+  }
+  initInfoModals() {
+    const overlay = document.getElementById('info-modal');
+    const body = document.getElementById('info-modal-body');
+    const closeBtn = document.querySelector('.info-modal-close');
+    const pages = {
+      about: { title: "TrendUp 소개", content: `<h2>TrendUp 서비스 소개</h2><p>TrendUp은 실시간 글로벌 트렌드를 AI 기술로 분석하여 요약해주는 대시보드입니다.</p><h3>제공 정보</h3><ul><li>주요 국가 실시간 인기 검색어 TOP 10</li><li>뉴스 기반 트렌드 배경 요약</li><li>관련 뉴스 및 영상 링크</li></ul>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>개인 식별 정보를 수집하지 않으며, 서비스 개선을 위한 쿠키만 활용합니다.</p>` },
+      terms: { title: "이용약관", content: `<h2>이용약관</h2><p>본 서비스에서 제공하는 정보의 정확성을 보장하지 않으며 이용에 따른 책임은 이용자에게 있습니다.</p>` },
+      contact: { title: "문의하기", content: `<h2>문의하기</h2><p>이메일: help@trendup.ai</p>` }
+    };
+    document.querySelectorAll('.info-link').forEach(link => {
+      link.onclick = (e) => {
+        e.preventDefault();
+        const pageKey = link.getAttribute('data-page');
+        if (pages[pageKey]) { body.innerHTML = pages[pageKey].content; overlay.classList.remove('hidden'); }
+      };
+    });
+    closeBtn.onclick = () => overlay.classList.add('hidden');
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.add('hidden'); };
+  }
   renderNavs() {
     try {
       const isMobile = window.innerWidth <= 600;
       const t = i18n[this.currentLang] || i18n.en;
-
       const renderGroup = (id, items, current, labelKey, onSelect) => {
         const nav = document.getElementById(id);
         if (!nav) return;
-        const group = nav.parentElement;
-        const label = group.querySelector('.nav-label');
+        const label = nav.parentElement.querySelector('.nav-label');
         if (label) label.textContent = isMobile ? t[labelKey] : (labelKey === 'T' ? 'Trends:' : 'Language:');
-        
         const activeItem = items.find(i => i.code === current);
         if (!activeItem) return;
-        
-        nav.innerHTML = `
-          <button class="country-btn active">${activeItem.flag}</button>
-          ${items.filter(i => i.code !== current).map(item => `
-            <button class="country-btn" data-code="${item.code}">${item.flag}</button>
-          `).join('')}
-        `;
-        
-        nav.onclick = (e) => {
-          e.stopPropagation();
-          const wasExpanded = nav.classList.contains('expanded');
-          document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
-          if (!wasExpanded) nav.classList.add('expanded');
-        };
-
-        nav.querySelectorAll('button[data-code]').forEach(btn => btn.onclick = (e) => {
-          e.stopPropagation();
-          onSelect(btn.dataset.code);
-          nav.classList.remove('expanded');
-        });
+        nav.innerHTML = `<button class="country-btn active">${activeItem.flag}</button>${items.filter(i => i.code !== current).map(item => `<button class="country-btn" data-code="${item.code}">${item.flag}</button>`).join('')}`;
+        nav.onclick = (e) => { e.stopPropagation(); const wasExpanded = nav.classList.contains('expanded'); document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded')); if (!wasExpanded) nav.classList.add('expanded'); };
+        nav.querySelectorAll('button[data-code]').forEach(btn => btn.onclick = (e) => { e.stopPropagation(); onSelect(btn.dataset.code); nav.classList.remove('expanded'); });
       };
-
       renderGroup('country-nav', this.service.getCountries(), this.currentCountry, 'T', (code) => this.switchCountry(code));
       renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, 'L', (code) => this.switchLang(code));
-    } catch (e) {
-      console.error("Render Navs Error:", e);
-    }
+    } catch (e) { console.error(e); }
   }
-
-  async switchCountry(code) {
-    this.currentCountry = code;
-    this.renderNavs();
-    await this.update();
-  }
-
-  async switchLang(code) {
-    this.currentLang = code;
-    localStorage.setItem('lang', code);
-    this.renderNavs();
-    await this.update();
-  }
-
+  async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(); }
+  async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); await this.update(); }
   async update() {
     try {
       const trends = await this.service.getTrends(this.currentCountry, this.currentLang);
       const t = i18n[this.currentLang] || i18n.en;
-      
-      const titleEl = document.getElementById('current-country-title');
-      if (titleEl) titleEl.textContent = t.title;
-      
-      const infoCardTitle = document.querySelector('.info-card h3');
-      const infoCardDesc = document.querySelector('.info-card p');
-      if (infoCardTitle) infoCardTitle.textContent = t.infoTitle;
-      if (infoCardDesc) infoCardDesc.textContent = t.infoDesc;
-      
-      const trendList = document.getElementById('top-trends');
-      if (trendList) trendList.data = { trends, lang: this.currentLang };
-      
-      const updatedEl = document.getElementById('last-updated');
-      if (updatedEl) {
-        const now = new Date();
-        updatedEl.textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-      }
-    } catch (e) {
-      console.error("App Update Error:", e);
-    }
+      if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
+      if (document.querySelector('.info-card h3')) document.querySelector('.info-card h3').textContent = t.infoTitle;
+      if (document.querySelector('.info-card p')) document.querySelector('.info-card p').textContent = t.infoDesc;
+      if (document.getElementById('top-trends')) document.getElementById('top-trends').data = { trends, lang: this.currentLang };
+      if (document.getElementById('last-updated')) { const now = new Date(); document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`; }
+    } catch (e) { console.error(e); }
   }
 }
-
-// Ensure execution after DOM is fully loaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => new App());
-} else {
-  new App();
-}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => new App());
+else new App();

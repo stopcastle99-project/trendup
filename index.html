@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="실시간 국가별 트렌드 TOP 10을 확인하세요. 한국, 일본 등 다양한 국가의 인기 검색어와 트렌드를 실시간으로 제공합니다.">
-  <meta name="keywords" content="실시간 트렌드, 급상승 검색어, 한국 트렌드, 일본 트렌드, TrendUp, 실시간 이슈">
-  <title>TrendUp | 실시간 글로벌 트렌드 TOP 10</title>
+  <meta name="description" content="실시간 글로벌 인기 트렌드 TOP 10을 확인하세요. 한국, 일본, 미국 등 다양한 국가의 인기 검색어와 관련 뉴스를 AI 요약과 함께 제공합니다.">
+  <meta name="keywords" content="실시간 트렌드, 급상승 검색어, 한국 트렌드, 일본 트렌드, 미국 트렌드, AI 트렌드 요약, 실시간 이슈, TrendUp">
+  <meta name="author" content="TrendUp">
+  <meta property="og:title" content="TrendUp | 실시간 글로벌 트렌드 대시보드">
+  <meta property="og:description" content="전 세계의 지금 이 순간 가장 핫한 이슈를 한눈에 확인하세요.">
+  <meta property="og:type" content="website">
+  <title>TrendUp | 실시간 글로벌 트렌드 TOP 10 & AI 요약</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,22 +64,33 @@
 
       <section id="content-grid">
         <div id="main-content">
+          <div class="ad-slot top-ad" data-ad-id="top-banner">
+            <p>Advertisement</p>
+          </div>
           <trend-list id="top-trends"></trend-list>
         </div>
         
         <aside id="sidebar">
-          <div class="ad-slot sidebar-ad" data-ad-id="placeholder-1">
+          <div class="ad-slot sidebar-ad" data-ad-id="sidebar-fixed">
             <p>Advertisement</p>
           </div>
           <div class="info-card">
             <h3>TrendUp 정보</h3>
             <p>다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.</p>
           </div>
+          <div class="policy-card">
+            <h4>사이트 안내</h4>
+            <ul>
+              <li><a href="#" class="info-link" data-page="about">TrendUp 소개</a></li>
+              <li><a href="#" class="info-link" data-page="privacy">개인정보처리방침</a></li>
+              <li><a href="#" class="info-link" data-page="terms">이용약관</a></li>
+            </ul>
+          </div>
         </aside>
       </section>
 
       <section id="bottom-ads">
-        <div class="ad-slot banner-ad" data-ad-id="placeholder-2">
+        <div class="ad-slot banner-ad" data-ad-id="bottom-banner">
           <p>Advertisement</p>
         </div>
       </section>
@@ -84,16 +99,32 @@
     <footer>
       <div class="container">
         <div class="footer-content">
-          <p>&copy; 2024 TrendUp. All rights reserved.</p>
+          <p>&copy; 2026 TrendUp. All rights reserved.</p>
           <ul class="footer-links">
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="#" class="info-link" data-page="about">About Us</a></li>
+            <li><a href="#" class="info-link" data-page="privacy">Privacy Policy</a></li>
+            <li><a href="#" class="info-link" data-page="terms">Terms of Service</a></li>
+            <li><a href="#" class="info-link" data-page="contact">Contact</a></li>
           </ul>
         </div>
       </div>
     </footer>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-banner" class="cookie-banner hidden">
+      <div class="container">
+        <p>본 사이트는 사용자 경험 개선 및 분석을 위해 쿠키를 사용합니다. 계속 이용하시면 이에 동의하는 것으로 간주됩니다.</p>
+        <button id="accept-cookies" class="btn-sm">확인</button>
+      </div>
+    </div>
+
+    <!-- Info Modals (Hidden by default) -->
+    <div id="info-modal" class="info-modal-overlay hidden">
+      <div class="info-modal-content">
+        <button class="info-modal-close">&times;</button>
+        <div id="info-modal-body"></div>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="main.js"></script>
