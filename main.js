@@ -37,7 +37,11 @@ class BackgroundScene {
 // --- Trend Service ---
 class TrendService {
   constructor() {
-    this.proxyUrl = 'https://api.allorigins.win/get?url=';
+    this.proxies = [
+      'https://api.allorigins.win/get?url=',
+      'https://corsproxy.io/?',
+      'https://thingproxy.freeboard.io/fetch/'
+    ];
     this.refreshInterval = 15 * 60 * 1000;
     this.cache = new Map();
     this.prevRanks = new Map();
@@ -54,6 +58,25 @@ class TrendService {
       }
     } catch (e) {}
   }
+
+  async fetchHtmlWithRetry(url) {
+    for (const proxy of this.proxies) {
+      try {
+        const targetUrl = proxy.includes('allorigins') ? `${proxy}${encodeURIComponent(url)}` : `${proxy}${url}`;
+        const response = await fetch(targetUrl);
+        if (!response.ok) continue;
+        if (proxy.includes('allorigins')) {
+          const data = await response.json();
+          if (data.contents) return data.contents;
+        } else {
+          const text = await response.text();
+          if (text) return text;
+        }
+      } catch (e) { continue; }
+    }
+    return null;
+  }
+
   saveCache() { 
     try { 
       const obj = {}; this.cache.forEach((v, k) => { obj[k] = v; }); 
@@ -73,10 +96,10 @@ class TrendService {
   async getGoogleTrends(country) {
     const rssUrl = `https://trends.google.com/trending/rss?geo=${country}`;
     try {
-      const response = await fetch(`${this.proxyUrl}${encodeURIComponent(rssUrl)}`);
-      const data = await response.json();
+      const contents = await this.fetchHtmlWithRetry(rssUrl);
+      if (!contents) return [];
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+      const xmlDoc = parser.parseFromString(contents, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
       return Array.from(items).map(item => {
         const title = item.querySelector("title")?.textContent || "";
@@ -106,10 +129,10 @@ class TrendService {
   async getPortalTrends(country) {
     if (country === 'KR') {
       try {
-        const response = await fetch(`${this.proxyUrl}${encodeURIComponent('https://signal.bz/')}`);
-        const data = await response.json();
+        const contents = await this.fetchHtmlWithRetry('https://signal.bz/');
+        if (!contents) return [];
         const parser = new DOMParser();
-        const doc = parser.parseFromString(data.contents, 'text/html');
+        const doc = parser.parseFromString(contents, 'text/html');
         const items = doc.querySelectorAll('.rank-item .text');
         if (items.length === 0) throw new Error("No Signal items");
         return Array.from(items).slice(0, 10).map(el => ({ 
@@ -123,11 +146,11 @@ class TrendService {
     }
     if (country === 'JP') {
       try {
-        const response = await fetch(`${this.proxyUrl}${encodeURIComponent('https://search.yahoo.co.jp/realtime/term')}`);
-        const data = await response.json();
+        const contents = await this.fetchHtmlWithRetry('https://search.yahoo.co.jp/realtime/term');
+        if (!contents) return [];
         const parser = new DOMParser();
-        const doc = parser.parseFromString(data.contents, 'text/html');
-        const selectors = ['section[class^="Trend_Trend"] a', '.Trend_Trend__item__rank a', 'a[data-cl-params*="tp_bz"]'];
+        const doc = parser.parseFromString(contents, 'text/html');
+        const selectors = ['section[class^="Trend_Trend"] a', '.Trend_Trend__item__rank a', 'a[data-cl-params*="tp_bz"]', '.Trend_Trend__item__name'];
         let items = [];
         for (const sel of selectors) {
           items = doc.querySelectorAll(sel);
@@ -226,9 +249,9 @@ const i18n = {
     infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。",
     cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "確認",
     siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
-    analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets.join('\n\n')}\n\nこれらのニュースが伝えられる中、世間の注目が集まり、リアルタイムトレンドに浮上しました.`,
+    analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets.join('\n\n')}\n\nこれらのニュースが伝えられる中、世間の注目が集まり、リアルタイムトレンドに浮上しました。`,
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは、リアルタイムで変化するグローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUpの価値</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します。</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAIが分析して提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています。</li></ul>` },
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUpは、リアルタイムで変化하는 グローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUpの価値</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します。</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAIが分析して提供します.</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています。</li></ul>` },
       privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために、クッキーやアクセスログが自動的に生成・収集される場合があります。</p><h3>2. AdSenseとクッキーの使用</h3><p>当サイトはGoogle AdSenseを使用して広告を掲載しています。Googleはユーザーの訪問履歴に基づき、最適な広告提供のためにクッキーを使用します。ユーザーはGoogleの広告設定からこれを無効化できます。</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは、公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性には万全を期していますが、外部データソースに起因する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
       contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら、お気軽にメールにてご連絡ください。</p><p><strong>メール</strong>: help@trendup.ai</p>` }
