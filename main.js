@@ -132,15 +132,15 @@ const i18n = {
   },
   ja: { 
     title: "トレンド", update: "最終更新", summary: "急上昇の背景", news: "記事", videos: "動画", loading: "分析中...", T: "T", L: "L", 
-    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 한눈에 확인하고, 세계의 흐름을 파악해 보세요.",
+    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。",
     cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "確認",
     siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
-    analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets.join('\n\n')}\n\nこれらのニュースが伝えられる중、世間の注目が集まり、リアルタイムトレンドに浮上しました。`,
+    analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets.join('\n\n')}\n\nこれらのニュースが伝えられる中、世間の注目が集まり、リアルタイムトレンドに浮上しました。`,
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>TrendUpサービス紹介</h2><p>TrendUpは、リアルタイムのグロー바ルトレンド를 AI技術で分析・要約するダッシュボードです。</p><h3>提供情報</h3><ul><li>主要国のリアルタイム人気検索ワード TOP 10</li><li>ニュースに基づくトレンド背景の要約</li><li>関連ニュースおよび動画リンク</li></ul>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人識別情報を収集せず、サービス改善のためのクッキーのみを使用します。第三者広告サービス（Google AdSense）は、最適な広告提供のために非識別情報を使用することがあります。</p>` },
+      about: { title: "TrendUpについて", content: `<h2>TrendUpサービス紹介</h2><p>TrendUpは、リアルタイムのグローバルトレンドをAI技術で分析・要約するダッシュボードです。</p><h3>提供情報</h3><ul><li>主要国のリアルタイム人気検索ワード TOP 10</li><li>ニュースに基づくトレンド背景の要約</li><li>関連ニュースおよび動画リンク</li></ul>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人識別 정보를 収集せず、サービス改善のためのクッキーのみを使用します。第三者広告サービス（Google AdSense）は、最適な広告提供のために非識別情報を使用することがあります。</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスは公開データを収集して提供しており、情報の正確性を完全に保証するものではありません。利用によって生じる結果については、利用者が責任を負うものとします。</p>` },
-      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>お問い合わせやご提案은 help@trendup.ai까지 메일 부탁드립니다.</p>` }
+      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>お問い合わせやご提案は、help@trendup.aiまでメールをお送りください。</p>` }
     }
   },
   en: { 
