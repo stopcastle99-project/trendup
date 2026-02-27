@@ -53,16 +53,30 @@ class TrendService {
             if (nUrl.includes('youtube.com') || nUrl.includes('youtu.be')) videoLinks.push(linkObj);
             else newsLinks.push(linkObj);
             
-            // Add narrative snippet: "Source reported: Title. Snippet"
-            const cleanSnippet = nSnippet ? nSnippet.replace(/<[^>]*>?/gm, '') : "";
-            const narrative = `${nSource || '뉴스'}: "${nTitle}". ${cleanSnippet}`;
-            if (narrative.length > 30) snippets.push(narrative);
+            if (nSource) sources.add(nSource);
+            
+            const cleanSnippet = nSnippet ? nSnippet.replace(/<[^>]*>?/gm, '').trim() : "";
+            // Avoid adding snippets that are just the title
+            if (cleanSnippet && cleanSnippet.length > 20 && !nTitle.includes(cleanSnippet)) {
+              snippets.push(cleanSnippet);
+            } else if (nTitle) {
+              snippets.push(nTitle);
+            }
           }
         }
 
-        const rawAnalysis = snippets.length > 0 
-          ? snippets.slice(0, 3).join('\n\n') 
-          : `${title} 주제가 현재 ${traffic} 이상의 검색량을 기록하며 뉴스 및 소셜 미디어를 통해 급격히 확산되고 있습니다. 관련 주요 보도와 커뮤니티의 관심이 집중되면서 실시간 트렌드에 올랐습니다.`;
+        // Construct a synthesized narrative summary
+        let rawAnalysis = "";
+        const sourceList = Array.from(sources).slice(0, 3).join(', ');
+        
+        if (snippets.length > 0) {
+          const mainContext = snippets[0];
+          const additionalContext = snippets.length > 1 ? snippets.slice(1, 3).join(' 또한 ') : "";
+          
+          rawAnalysis = `현재 '${title}' 주제는 ${sourceList} 등 주요 매체를 통해 집중 보도되며 큰 화제가 되고 있습니다. \n\n${mainContext} ${additionalContext ? '\n\n더불어 ' + additionalContext : ''}\n\n이와 같은 소식들이 전해지면서 대중의 관심이 집중되어 실시간 트렌드에 올랐습니다.`;
+        } else {
+          rawAnalysis = `${title} 주제가 현재 ${traffic} 이상의 검색량을 기록하며 급상승하고 있습니다. 관련 주요 보도와 커뮤니티의 관심이 집중되면서 실시간 트렌드에 올랐습니다.`;
+        }
 
         rawTrends.push({ 
           title, 
