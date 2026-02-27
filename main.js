@@ -6,6 +6,22 @@ class TrendService {
     this.proxyUrl = 'https://api.allorigins.win/get?url=';
     this.refreshInterval = 15 * 60 * 1000;
     this.cache = new Map();
+    // Load persistent cache from sessionStorage
+    try {
+      const saved = sessionStorage.getItem('trend_cache');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.keys(parsed).forEach(k => this.cache.set(k, parsed[k]));
+      }
+    } catch (e) {}
+  }
+
+  saveCache() {
+    try {
+      const obj = {};
+      this.cache.forEach((v, k) => { obj[k] = v; });
+      sessionStorage.setItem('trend_cache', JSON.stringify(obj));
+    } catch (e) {}
   }
 
   async getTrends(country, targetLang) {
@@ -18,9 +34,10 @@ class TrendService {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(data.contents, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
-      const trends = [];
-
+      
       const rawTrends = [];
+      const titlesToTranslate = [];
+
       for (let i = 0; i < Math.min(items.length, 10); i++) {
         const item = items[i];
         const title = item.querySelector("title")?.textContent || "";
@@ -34,6 +51,7 @@ class TrendService {
         const newsLinks = [];
         const videoLinks = [];
         const snippets = [];
+        const sources = new Set();
 
         videoLinks.push({
           title: `YouTube: '${title}'`,
@@ -56,7 +74,6 @@ class TrendService {
             if (nSource) sources.add(nSource);
             
             const cleanSnippet = nSnippet ? nSnippet.replace(/<[^>]*>?/gm, '').trim() : "";
-            // Avoid adding snippets that are just the title
             if (cleanSnippet && cleanSnippet.length > 20 && !nTitle.includes(cleanSnippet)) {
               snippets.push(cleanSnippet);
             } else if (nTitle) {
@@ -65,42 +82,48 @@ class TrendService {
           }
         }
 
-        // Construct a synthesized narrative summary
-        let rawAnalysis = "";
-        const sourceList = Array.from(sources).slice(0, 3).join(', ');
-        
-        if (snippets.length > 0) {
-          const mainContext = snippets[0];
-          const additionalContext = snippets.length > 1 ? snippets.slice(1, 3).join(' 또한 ') : "";
-          
-          rawAnalysis = `현재 '${title}' 주제는 ${sourceList} 등 주요 매체를 통해 집중 보도되며 큰 화제가 되고 있습니다. \n\n${mainContext} ${additionalContext ? '\n\n더불어 ' + additionalContext : ''}\n\n이와 같은 소식들이 전해지면서 대중의 관심이 집중되어 실시간 트렌드에 올랐습니다.`;
-        } else {
-          rawAnalysis = `${title} 주제가 현재 ${traffic} 이상의 검색량을 기록하며 급상승하고 있습니다. 관련 주요 보도와 커뮤니티의 관심이 집중되면서 실시간 트렌드에 올랐습니다.`;
-        }
-
         rawTrends.push({ 
           title, 
           growth: traffic, 
-          rawAnalysis: rawAnalysis.length > 600 ? rawAnalysis.substring(0, 597) + '...' : rawAnalysis,
+          sources: Array.from(sources).slice(0, 3),
+          snippets: snippets.slice(0, 3),
           newsLinks, 
           videoLinks 
         });
+        titlesToTranslate.push(title);
       }
 
-      // Optimization: Only translate titles for the initial list
-      const translatedTrends = await Promise.all(rawTrends.map(async (t) => {
-        const translatedTitle = await this.translate(t.title, targetLang);
-        return { ...t, title: translatedTitle };
+      // Batch translate all titles at once to save network calls
+      const translatedTitles = await this.translateBatch(titlesToTranslate, targetLang);
+      
+      return rawTrends.map((t, i) => ({
+        ...t,
+        title: translatedTitles[i] || t.title
       }));
-
-      return translatedTrends;
     } catch (e) { return []; }
+  }
+
+  async translateBatch(texts, targetLang) {
+    if (targetLang === 'en' && texts.every(t => /^[a-zA-Z0-9\s.,!?-]+$/.test(t))) return texts;
+    
+    // Check cache first
+    const results = texts.map(t => this.cache.get(`${targetLang}:${t}`));
+    if (results.every(r => r !== undefined)) return results;
+
+    const separator = " ||| ";
+    const combined = texts.join(separator);
+    const translated = await this.translate(combined, targetLang);
+    const split = translated.split(separator).map(s => s.trim());
+    
+    texts.forEach((t, i) => {
+      if (split[i]) this.cache.set(`${targetLang}:${t}`, split[i]);
+    });
+    this.saveCache();
+    return split;
   }
 
   async translate(text, targetLang) {
     if (!text || text === "..." || text.length < 2) return text;
-    
-    // Skip translation if text is already in target language (basic check)
     if (targetLang === 'ko' && /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text)) return text;
     if (targetLang === 'en' && /^[a-zA-Z0-9\s.,!?-]+$/.test(text)) return text;
 
@@ -136,9 +159,21 @@ class TrendService {
 
 // --- Localization ---
 const i18n = {
-  ko: { title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "급상승 배경", news: "관련 기사", videos: "영상 소식", loading: "트렌드 분석 중...", T: "T", L: "L", infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요." },
-  ja: { title: "トレンド", update: "最終更新", summary: "急上昇の背景", news: "記事", videos: "動画", loading: "分析中...", T: "T", L: "L", infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。" },
-  en: { title: "Trending", update: "Updated", summary: "Trending Context", news: "News", videos: "Videos", loading: "Analyzing...", T: "T", L: "L", infoTitle: "About TrendUp", infoDesc: "Explore real-time trending keywords from various countries and stay updated with global topics." }
+  ko: { 
+    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "급상승 배경", news: "관련 기사", videos: "영상 소식", loading: "트렌드 분석 중...", T: "T", L: "L", 
+    infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.",
+    analysisTemplate: (title, sources, snippets) => `현재 '${title}' 주제는 ${sources.join(', ')} 등 주요 매체를 통해 집중 보도되며 큰 화제가 되고 있습니다. \n\n${snippets[0]} ${snippets[1] ? '\n\n더불어 ' + snippets[1] : ''}\n\n이와 같은 소식들이 전해지면서 대중의 관심이 집중되어 실시간 트렌드에 올랐습니다.`
+  },
+  ja: { 
+    title: "トレンド", update: "最終更新", summary: "急上昇の背景", news: "記事", videos: "動画", loading: "分析中...", T: "T", L: "L", 
+    infoTitle: "TrendUpについて", infoDesc: "各국의 リアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。",
+    analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets[0]}${snippets[1] ? '\n\nさらに' + snippets[1] : ''}\n\nこれらのニュースが伝えられる中、世間の注目が集まり、リアルタイムトレンドに浮上しました. `
+  },
+  en: { 
+    title: "Trending", update: "Updated", summary: "Trending Context", news: "News", videos: "Videos", loading: "Analyzing...", T: "T", L: "L", 
+    infoTitle: "About TrendUp", infoDesc: "Explore real-time trending keywords from various countries and stay updated with global topics.",
+    analysisTemplate: (title, sources, snippets) => `The topic '${title}' is currently gaining significant attention through major outlets such as ${sources.join(', ')}. \n\n${snippets[0]} ${snippets[1] ? '\n\nFurthermore, ' + snippets[1] : ''}\n\nAs these reports circulate, public interest has surged, placing it on the real-time trending list.`
+  }
 };
 
 // --- Web Components ---
@@ -185,9 +220,14 @@ class TrendModal extends HTMLElement {
     this.renderLoading();
     this.shadowRoot.querySelector('.overlay').classList.add('active');
     
-    // Lazy Translation for Analysis
-    const translatedAnalysis = await translator(trend.rawAnalysis, lang);
-    this.render(trend, lang, translatedAnalysis);
+    // Optimization: Translate snippets individually and reconstruct locally
+    const translatedSnippets = await Promise.all(trend.snippets.map(s => translator(s, lang)));
+    const translatedSources = await Promise.all(trend.sources.map(s => translator(s, lang)));
+    
+    const t = i18n[lang] || i18n.en;
+    const analysis = t.analysisTemplate(trend.title, translatedSources, translatedSnippets);
+    
+    this.render(trend, lang, analysis);
   }
   hide() { this.shadowRoot.querySelector('.overlay').classList.remove('active'); }
   
@@ -212,7 +252,7 @@ class TrendModal extends HTMLElement {
         .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); }
         .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; }
         .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; }
         .link-group { display: flex; flex-direction: column; gap: 0.5rem; }
         .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; }
         .link:hover { border-color: var(--primary); background: var(--border); }
@@ -319,7 +359,7 @@ class App {
   }
 
   async update() {
-    document.getElementById('top-trends').data = { trends: [], lang: this.currentLang };
+    // Optimization: Don't clear data immediately to prevent flickering
     const trends = await this.service.getTrends(this.currentCountry, this.currentLang);
     const t = i18n[this.currentLang] || i18n.en;
     document.getElementById('current-country-title').textContent = t.title;
