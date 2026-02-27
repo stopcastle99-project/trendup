@@ -111,6 +111,7 @@ class TrendService {
         const parser = new DOMParser();
         const doc = parser.parseFromString(data.contents, 'text/html');
         const items = doc.querySelectorAll('.rank-item .text');
+        if (items.length === 0) throw new Error("No Signal items");
         return Array.from(items).slice(0, 10).map(el => ({ 
           title: el.textContent.trim(), 
           originalTitle: el.textContent.trim(), 
@@ -126,14 +127,25 @@ class TrendService {
         const data = await response.json();
         const parser = new DOMParser();
         const doc = parser.parseFromString(data.contents, 'text/html');
-        const items = doc.querySelectorAll('section[class^="Trend_Trend"] a');
-        return Array.from(items).slice(0, 10).map(el => ({ 
-          title: el.textContent.trim(), 
-          originalTitle: el.textContent.trim(), 
-          growth: 'Portal', 
-          source: 'Yahoo',
-          newsLinks: [], sources: [], snippets: []
-        }));
+        // More robust selectors for Yahoo Japan
+        const selectors = ['section[class^="Trend_Trend"] a', '.Trend_Trend__item__rank a', 'a[data-cl-params*="tp_bz"]'];
+        let items = [];
+        for (const sel of selectors) {
+          items = doc.querySelectorAll(sel);
+          if (items.length > 0) break;
+        }
+        if (items.length === 0) throw new Error("No Yahoo items");
+        return Array.from(items).slice(0, 10).map(el => {
+          const text = el.innerText || el.textContent;
+          const cleanText = text.replace(/^\d+\s*/, '').trim(); // Remove rank number if present
+          return { 
+            title: cleanText, 
+            originalTitle: cleanText, 
+            growth: 'Portal', 
+            source: 'Yahoo',
+            newsLinks: [], sources: [], snippets: []
+          };
+        });
       } catch (e) { return []; }
     }
     return [];
@@ -151,15 +163,18 @@ class TrendService {
       const uniqueTrends = [];
       
       for (const t of combined) {
+        if (!t.originalTitle) continue;
         const norm = t.originalTitle.toLowerCase().replace(/\s/g, '');
         if (!seen.has(norm)) {
           seen.add(norm);
           uniqueTrends.push(t);
         }
-        if (uniqueTrends.length >= 10) break;
+        if (uniqueTrends.length >= 15) break; // Collect more to ensure 10 after de-dupe
       }
 
-      for (const t of uniqueTrends) {
+      const finalTen = uniqueTrends.slice(0, 10);
+
+      for (const t of finalTen) {
         if (t.newsLinks.length === 0) {
           const match = google.find(g => g.originalTitle.toLowerCase().includes(t.originalTitle.toLowerCase()) || t.originalTitle.toLowerCase().includes(g.originalTitle.toLowerCase()));
           if (match) {
@@ -167,15 +182,15 @@ class TrendService {
             t.sources = match.sources;
             t.snippets = match.snippets;
             if (t.growth === 'Portal') t.growth = match.growth;
-          } else {
-            t.newsLinks = [{ title: `YouTube: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(t.title + " news")}`, isSystem: true }];
           }
         }
-        if (!t.videoLinks) {
-          t.videoLinks = [{ title: `YouTube: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(t.title + " news")}`, isSystem: true }];
+        if (!t.newsLinks || t.newsLinks.length === 0) {
+          t.newsLinks = [{ title: `Search: '${t.title}'`, url: `https://www.google.com/search?q=${encodeURIComponent(t.title)}`, isSystem: true }];
         }
+        t.videoLinks = [{ title: `YouTube: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(t.title + " news")}`, isSystem: true }];
+
         const prevRank = this.prevRanks.get(`${country}:${t.originalTitle}`);
-        const currentIndex = uniqueTrends.indexOf(t);
+        const currentIndex = finalTen.indexOf(t);
         t.trendDir = 'new';
         if (prevRank !== undefined) {
           if (currentIndex < prevRank) t.trendDir = 'up';
@@ -184,12 +199,12 @@ class TrendService {
         }
       }
 
-      const titlesToTranslate = uniqueTrends.map(t => t.title);
+      const titlesToTranslate = finalTen.map(t => t.title);
       const translatedTitles = await this.translateBatch(titlesToTranslate, targetLang);
-      const finalResults = uniqueTrends.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
+      const results = finalTen.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
       
-      this.saveRanks(finalResults, country);
-      return finalResults;
+      this.saveRanks(results, country);
+      return results;
     } catch (e) { console.error(e); return []; }
   }
   async translateBatch(texts, targetLang) {
@@ -376,24 +391,23 @@ class App {
     } catch (e) { console.error(e); }
   }
   async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(); }
-  async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.initCookieBanner(); await this.update(); }
-  async update() {
+  async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.initCookieBanner(); await this.update(true); }
+  async update(isLanguageSwitch = false) {
     const requestId = ++this.currentRequestId;
     const refreshIcon = document.getElementById('refresh-icon');
     if (refreshIcon) refreshIcon.classList.remove('hidden');
 
     try {
-      const delayPromise = new Promise(resolve => setTimeout(resolve, 3500));
+      const delayPromise = isLanguageSwitch ? Promise.resolve() : new Promise(resolve => setTimeout(resolve, 3500));
       const trendsPromise = this.service.getTrends(this.currentCountry, this.currentLang);
       
       const [trends] = await Promise.all([trendsPromise, delayPromise]);
       
-      // If a newer request has started, ignore this one
       if (requestId !== this.currentRequestId) return;
 
       const t = i18n[this.currentLang] || i18n.en;
 
-      if (trends && trends.length >= 10) {
+      if (trends && trends.length >= 5) {
         if (document.getElementById('top-trends')) {
           document.getElementById('top-trends').data = { trends, lang: this.currentLang };
         }
