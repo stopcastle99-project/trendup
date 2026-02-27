@@ -118,7 +118,7 @@ class TrendService {
             newsLinks.push({ title: nt, source: ns || 'News', url: nu });
             if (ns) sources.add(ns);
             const cleanSnippet = nsn ? nsn.replace(/<[^>]*>?/gm, '').trim() : "";
-            if (cleanSnippet) snippets.push(cleanSnippet);
+            if (cleanSnippet && cleanSnippet.length > 10) snippets.push(cleanSnippet);
           }
         }
         return { title, originalTitle: title, growth: traffic, sources: Array.from(sources), snippets, newsLinks, source: 'Google' };
@@ -185,16 +185,11 @@ class TrendService {
           const match = google.find(g => g.originalTitle.toLowerCase().includes(t.originalTitle.toLowerCase()) || t.originalTitle.toLowerCase().includes(g.originalTitle.toLowerCase()));
           if (match) { t.newsLinks = match.newsLinks; t.sources = match.sources; t.snippets = match.snippets; if (t.growth === 'Portal') t.growth = match.growth; }
         }
-        
-        // Ensure some news exists
         if (!t.newsLinks || t.newsLinks.length === 0) {
           t.newsLinks = [{ title: `Google Search: '${t.title}'`, source: 'Search', url: `https://www.google.com/search?q=${encodeURIComponent(t.title)}`, isSystem: true }];
         }
-
-        // Link YouTube directly to the most prominent news title if available, else use trend title
         const primarySearch = (t.newsLinks[0] && !t.newsLinks[0].isSystem) ? t.newsLinks[0].title : t.title;
         t.videoLinks = [{ title: `관련 영상 확인: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(primarySearch + " news")}`, isSystem: true }];
-
         const prevRank = this.prevRanks.get(`${country}:${t.originalTitle}`);
         const currentIndex = finalTen.indexOf(t);
         t.trendDir = 'new';
@@ -245,34 +240,34 @@ const i18n = {
     cookie: "본 사이트는 사용자 경험 개선을 위해 쿠키를 사용합니다.", accept: "확인",
     siteGuide: "사이트 안내", menuAbout: "TrendUp 소개", menuPrivacy: "개인정보처리방침", menuTerms: "이용약관", menuContact: "문의하기",
     analysisTemplate: (title, sources, snippets) => {
-      if (snippets.length === 0) return `'${title}' 주제가 현재 실시간 트렌드로 주목받고 있습니다. 관련 소식이 포털과 소셜 미디어를 통해 빠르게 확산되고 있습니다.`;
-      const intro = `'${title}' 키워드는 ${sources.slice(0,2).join(', ')} 등을 포함한 주요 매체에서 집중적으로 다루어지며 오늘 하루 큰 화제가 되고 있습니다.`;
-      const body = snippets.map(s => `• ${s}`).join('\n');
-      const conclusion = `특히 이러한 소식들이 다양한 채널을 통해 공유되면서, 대중들 사이에서 궁금증과 논의가 활발히 이어지고 있는 상황입니다.`;
-      return `${intro}\n\n${body}\n\n${conclusion}`;
+      if (snippets.length === 0) return `'${title}' 주제가 현재 검색 포털을 통해 빠르게 확산되며 대중의 큰 관심을 받고 있습니다.`;
+      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 20);
+      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
+      const sourceInfo = sources.length > 0 ? `\n\n[보도 매체: ${sources.slice(0, 3).join(', ')} 등]` : "";
+      return `${mainSummary}${sourceInfo}`;
     },
     pages: {
       about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다.</p><h3>2. 애드센스 및 쿠키 사용</h3><p>본 사이트는 구글 애드센스(Google AdSense)를 사용하여 광고를 게재합니다. 구글은 사용자의 방문 기록을 바탕으로 맞춤형 광고 제공을 위해 쿠키를 사용하며, 사용자는 구글 광고 설정에서 이를 해제할 수 있습니다.</p><h3>3. 정보의 보관</h3><p>통계 데이터는 서비스 개선 목적으로만 사용되며, 외부로 유출되거나 상업적으로 판매되지 않습니다.</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다.</p><h3>2. 애드센스 및 쿠키 사용</h3><p>본 사이트는 구글 애드센스(Google AdSense)를 사용하여 광고를 게재합니다. 구글은 사용자의 방문 기록을 바탕으로 맞춤형 광고 제공을 위해 쿠키를 사용하며, 사용자는 구글 광고 설정에서 이를 해제할 수 있습니다.</p><h3>3. 정보의 보관</h3><p>통계 데이터는 서비스 개선 목적으로만 사용되며, 외부로 유출되거나 상업적으로 판매되지 않습니다. (v1.2.4)</p>` },
       terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
       contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
     }
   },
   ja: { 
     title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", T: "T", L: "L", 
-    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。",
+    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 ひと目で確認し、世界の潮流を把握しましょう。",
     cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "確認",
     siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     analysisTemplate: (title, sources, snippets) => {
-      if (snippets.length === 0) return `「${title}」が現在リアルタイムトレンドとして注目されています。`;
-      const intro = `「${title}」は、${sources.slice(0,2).join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。`;
-      const body = snippets.map(s => `・ ${s}`).join('\n');
-      return `${intro}\n\n${body}`;
+      if (snippets.length === 0) return `「${title}」が現在リアルタイムトレンドとして大きな注目を集めています。`;
+      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
+      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
+      return `${mainSummary}\n\n[報道メディア: ${sources.slice(0, 3).join('、')} など]`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUpは、リアルタイムで変化するグローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUpの価値</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します。</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAIが分析して提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています。</li></ul>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために、クッキーやアクセスログが自動的に生成・収集される場合があります。</p><h3>2. AdSenseとクッキーの使用</h3><p>当サイトはGoogle AdSenseを使用して広告を掲載しています。Googleはユーザーの訪問履歴に基づき、最適な広告提供のためにクッキーを使用します。ユーザーはGoogleの広告設定からこれを無効化できます。</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは、公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性には万全を期していますが、外部データソースに起因する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUpは、リアルタイムで変化するグローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUpの価値</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します.</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAI가 分析して提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています。</li></ul>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために、クッキーやアクセスログが自動的に生成・収集される場合があります。</p><h3>2. AdSenseとクッキーの使用</h3><p>当サイトはGoogle AdSenseを使用して広告を掲載しています. Googleはユーザーの訪問履歴に基づき、最適な広告提供のためにクッキーを使用します. ユーザーはGoogleの広告設定からこれを無効化できます.</p>` },
+      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは、公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性には万全を期していますが、外部データソースに起인する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
       contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら、お気軽にメールにてご連絡ください。</p><p><strong>メール</strong>: help@trendup.ai</p>` }
     }
   },
@@ -282,10 +277,10 @@ const i18n = {
     cookie: "This site uses cookies to improve user experience.", accept: "Accept",
     siteGuide: "Site Information", menuAbout: "About TrendUp", menuPrivacy: "Privacy Policy", menuTerms: "Terms of Service", menuContact: "Contact Us",
     analysisTemplate: (title, sources, snippets) => {
-      if (snippets.length === 0) return `The topic '${title}' is currently trending globally.`;
-      const intro = `The keyword '${title}' has gained significant attention across major outlets such as ${sources.slice(0,2).join(', ')}.`;
-      const body = snippets.map(s => `• ${s}`).join('\n');
-      return `${intro}\n\n${body}`;
+      if (snippets.length === 0) return `The topic '${title}' is currently gaining significant traction across major portals.`;
+      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
+      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
+      return `${mainSummary}\n\n[Sources: ${sources.slice(0, 3).join(', ')}]`;
     },
     pages: {
       about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p><h3>Our Value</h3><ul><li><strong>Source Integration</strong>: Real-time validation across Google, Yahoo Japan, and other local portals.</li><li><strong>AI Summary</strong>: Deep context analysis using AI to provide storytelling beyond simple keywords.</li><li><strong>Verified News</strong>: Direct links to reputable news outlets and video content.</li></ul>` },
