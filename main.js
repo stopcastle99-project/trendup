@@ -6,59 +6,65 @@ class BackgroundScene {
     this.canvas = document.getElementById('bg-canvas');
     if (!this.canvas) return;
     
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera.position.z = 5;
-    
-    this.particles = [];
-    this.init();
-    this.animate();
-    
-    window.addEventListener('resize', () => this.onResize());
+    try {
+      this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+      this.scene = new THREE.Scene();
+      this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      this.camera.position.z = 5;
+      
+      this.particles = [];
+      this.init();
+      this.animate();
+      
+      window.addEventListener('resize', () => this.onResize());
+    } catch (e) {
+      console.error("Three.js Init Error:", e);
+    }
   }
 
   init() {
     const geometry = new THREE.IcosahedronGeometry(1, 1);
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 40; i++) {
       const material = new THREE.MeshBasicMaterial({
         color: i % 2 === 0 ? 0xff4d4d : 0xffaa00,
         wireframe: true,
         transparent: true,
-        opacity: 0.1
+        opacity: 0.08
       });
       const mesh = new THREE.Mesh(geometry, material);
       mesh.position.set(
-        (Math.random() - 0.5) * 15,
-        (Math.random() - 0.5) * 15,
-        (Math.random() - 0.5) * 15
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20
       );
       mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-      const scale = Math.random() * 0.5 + 0.2;
+      const scale = Math.random() * 0.4 + 0.1;
       mesh.scale.set(scale, scale, scale);
       this.scene.add(mesh);
       this.particles.push({
         mesh,
-        speed: Math.random() * 0.005 + 0.002,
-        rot: Math.random() * 0.01
+        speed: Math.random() * 0.004 + 0.001,
+        rot: Math.random() * 0.008
       });
     }
     this.onResize();
   }
 
   onResize() {
+    if (!this.renderer) return;
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
   }
 
   animate() {
+    if (!this.renderer) return;
     requestAnimationFrame(() => this.animate());
     this.particles.forEach(p => {
       p.mesh.rotation.x += p.rot;
       p.mesh.rotation.y += p.rot;
       p.mesh.position.y += p.speed;
-      if (p.mesh.position.y > 7) p.mesh.position.y = -7;
+      if (p.mesh.position.y > 10) p.mesh.position.y = -10;
     });
     this.renderer.render(this.scene, this.camera);
   }
@@ -151,23 +157,37 @@ class TrendService {
 
       const translatedTitles = await this.translateBatch(titlesToTranslate, targetLang);
       return rawTrends.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
-    } catch (e) { return []; }
+    } catch (e) { 
+      console.error("Fetch Trends Error:", e);
+      return []; 
+    }
   }
 
   async translateBatch(texts, targetLang) {
     if (!texts || texts.length === 0) return [];
-    if (targetLang === 'en' && texts.every(t => /^[a-zA-Z0-9\s.,!?-]+$/.test(t))) return texts;
     
     const results = texts.map(t => this.cache.get(`${targetLang}:${t}`));
     if (results.every(r => r !== undefined)) return results;
 
     const separator = " • "; 
     const combined = texts.join(separator);
-    const translated = await this.translate(combined, targetLang);
     
-    let split = translated.split(separator).map(s => s.trim());
+    // Internal translate function that doesn't use cache/batch
+    const singleTranslate = async (q, tl) => {
+      try {
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        return data[0].map(x => x[0]).join('');
+      } catch (e) { return q; }
+    };
+
+    const translated = await singleTranslate(combined, targetLang);
+    let split = translated.split(/[•·\|]| \. /).map(s => s.trim()).filter(s => s.length > 0);
+    
     if (split.length !== texts.length) {
-      split = translated.split(/[•·\|]/).map(s => s.trim()).filter(s => s.length > 0);
+      // If batch translation fails to preserve separators, translate individually as fallback
+      const individual = await Promise.all(texts.map(t => singleTranslate(t, targetLang)));
+      split = individual;
     }
     
     const finalResults = texts.map((t, i) => {
@@ -179,19 +199,21 @@ class TrendService {
     return finalResults;
   }
 
-  async translate(text, targetLang) {
-    if (!text || text === "..." || text.length < 2) return text;
-    if (targetLang === 'ko' && /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text)) return text;
-    const cacheKey = `${targetLang}:${text}`;
-    if (this.cache.has(cacheKey)) return this.cache.get(cacheKey);
+  getCountries() {
+    return [{ code: 'KR', flag: '🇰🇷' }, { code: 'JP', flag: '🇯🇵' }, { code: 'US', flag: '🇺🇸' }];
+  }
 
+  getLanguages() {
+    return [{ code: 'ko', flag: '🇰🇷' }, { code: 'ja', flag: '🇯🇵' }, { code: 'en', flag: '🇺🇸' }];
+  }
+
+  autoDetectCountry() {
     try {
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
-      const data = await res.json();
-      const result = data[0].map(x => x[0]).join('');
-      this.cache.set(cacheKey, result);
-      return result;
-    } catch (e) { return text; }
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timezone.includes('Seoul')) return 'KR';
+      if (timezone.includes('Tokyo')) return 'JP';
+      return 'US';
+    } catch (e) { return 'KR'; }
   }
 }
 
@@ -200,11 +222,11 @@ const i18n = {
   ko: { 
     title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "급상승 배경", news: "관련 기사", videos: "영상 소식", loading: "트렌드 분석 중...", T: "T", L: "L", 
     infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.",
-    analysisTemplate: (title, sources, snippets) => `현재 '${title}' 주제는 ${sources.join(', ')} 등 주요 매체를 통해 집중 보도되며 큰 화제가 되고 있습니다.\n\n${snippets.join('\n\n')}\n\n이러한 소식들이 전해지면서 대중의 관심이 집중되어 실시간 트렌드에 올랐습니다.`
+    analysisTemplate: (title, sources, snippets) => `현재 '${title}' 주제는 ${sources.join(', ')} 등 주요 매체를 통해 집중 보도되며 큰 화제가 되고 있습니다.\n\n${snippets.join('\n\n')}\n\n이러한 소식들이 다양한 채널을 통해 전해지면서 대중의 관심이 집중되어 실시간 트렌드에 올랐습니다.`
   },
   ja: { 
     title: "トレンド", update: "最終更新", summary: "急上昇の背景", news: "記事", videos: "動画", loading: "分析中...", T: "T", L: "L", 
-    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 한눈에 확인하고, 세계의 흐름을 파악해 보세요.",
+    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。",
     analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets.join('\n\n')}\n\nこれらのニュースが伝えられる中、世間の注目が集まり、リアルタイムトレンドに浮上しました。`
   },
   en: { 
@@ -350,39 +372,46 @@ class App {
   }
 
   renderNavs() {
-    const isMobile = window.innerWidth <= 600;
-    const t = i18n[this.currentLang] || i18n.en;
+    try {
+      const isMobile = window.innerWidth <= 600;
+      const t = i18n[this.currentLang] || i18n.en;
 
-    const renderGroup = (id, items, current, labelKey, onSelect) => {
-      const group = document.querySelector(`#${id}`).parentElement;
-      group.querySelector('.nav-label').textContent = isMobile ? t[labelKey] : (labelKey === 'T' ? 'Trends:' : 'Language:');
-      
-      const nav = document.getElementById(id);
-      const activeItem = items.find(i => i.code === current);
-      
-      nav.innerHTML = `
-        <button class="country-btn active">${activeItem.flag}</button>
-        ${items.filter(i => i.code !== current).map(item => `
-          <button class="country-btn" data-code="${item.code}">${item.flag}</button>
-        `).join('')}
-      `;
-      
-      nav.onclick = (e) => {
-        e.stopPropagation();
-        const wasExpanded = nav.classList.contains('expanded');
-        document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
-        if (!wasExpanded) nav.classList.add('expanded');
+      const renderGroup = (id, items, current, labelKey, onSelect) => {
+        const nav = document.getElementById(id);
+        if (!nav) return;
+        const group = nav.parentElement;
+        const label = group.querySelector('.nav-label');
+        if (label) label.textContent = isMobile ? t[labelKey] : (labelKey === 'T' ? 'Trends:' : 'Language:');
+        
+        const activeItem = items.find(i => i.code === current);
+        if (!activeItem) return;
+        
+        nav.innerHTML = `
+          <button class="country-btn active">${activeItem.flag}</button>
+          ${items.filter(i => i.code !== current).map(item => `
+            <button class="country-btn" data-code="${item.code}">${item.flag}</button>
+          `).join('')}
+        `;
+        
+        nav.onclick = (e) => {
+          e.stopPropagation();
+          const wasExpanded = nav.classList.contains('expanded');
+          document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
+          if (!wasExpanded) nav.classList.add('expanded');
+        };
+
+        nav.querySelectorAll('button[data-code]').forEach(btn => btn.onclick = (e) => {
+          e.stopPropagation();
+          onSelect(btn.dataset.code);
+          nav.classList.remove('expanded');
+        });
       };
 
-      nav.querySelectorAll('button[data-code]').forEach(btn => btn.onclick = (e) => {
-        e.stopPropagation();
-        onSelect(btn.dataset.code);
-        nav.classList.remove('expanded');
-      });
-    };
-
-    renderGroup('country-nav', this.service.getCountries(), this.currentCountry, 'T', (code) => this.switchCountry(code));
-    renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, 'L', (code) => this.switchLang(code));
+      renderGroup('country-nav', this.service.getCountries(), this.currentCountry, 'T', (code) => this.switchCountry(code));
+      renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, 'L', (code) => this.switchLang(code));
+    } catch (e) {
+      console.error("Render Navs Error:", e);
+    }
   }
 
   async switchCountry(code) {
@@ -399,15 +428,35 @@ class App {
   }
 
   async update() {
-    const trends = await this.service.getTrends(this.currentCountry, this.currentLang);
-    const t = i18n[this.currentLang] || i18n.en;
-    document.getElementById('current-country-title').textContent = t.title;
-    document.querySelector('.info-card h3').textContent = t.infoTitle;
-    document.querySelector('.info-card p').textContent = t.infoDesc;
-    document.getElementById('top-trends').data = { trends, lang: this.currentLang };
-    const now = new Date();
-    document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+    try {
+      const trends = await this.service.getTrends(this.currentCountry, this.currentLang);
+      const t = i18n[this.currentLang] || i18n.en;
+      
+      const titleEl = document.getElementById('current-country-title');
+      if (titleEl) titleEl.textContent = t.title;
+      
+      const infoCardTitle = document.querySelector('.info-card h3');
+      const infoCardDesc = document.querySelector('.info-card p');
+      if (infoCardTitle) infoCardTitle.textContent = t.infoTitle;
+      if (infoCardDesc) infoCardDesc.textContent = t.infoDesc;
+      
+      const trendList = document.getElementById('top-trends');
+      if (trendList) trendList.data = { trends, lang: this.currentLang };
+      
+      const updatedEl = document.getElementById('last-updated');
+      if (updatedEl) {
+        const now = new Date();
+        updatedEl.textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+      }
+    } catch (e) {
+      console.error("App Update Error:", e);
+    }
   }
 }
 
-new App();
+// Ensure execution after DOM is fully loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => new App());
+} else {
+  new App();
+}
