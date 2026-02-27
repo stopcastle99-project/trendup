@@ -165,6 +165,32 @@
 }
 
 @layer components {
+  /* Theme Toggle FAB */
+  .theme-toggle-fab {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 56px;
+    height: 56px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s;
+  }
+  .theme-toggle-fab:hover { transform: scale(1.1) rotate(15deg); }
+  .theme-toggle-fab svg { width: 24px; height: 24px; fill: currentColor; transition: transform 0.5s ease; }
+  
+  [data-theme="dark"] .theme-toggle-fab { background: var(--surface); color: var(--primary); border: 1px solid var(--border); }
+  [data-theme="dark"] .sun-icon { display: none; }
+  [data-theme="light"] .moon-icon { display: none; }
+
   /* Ad Slots */
   .ad-slot {
     background: var(--border);
@@ -199,14 +225,14 @@
 
   /* Cookie Banner */
   .cookie-banner {
-    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-    width: 90%; max-width: 600px; background: var(--surface);
-    border: 1px solid var(--primary); padding: 1.25rem; border-radius: var(--radius-lg);
+    position: fixed; bottom: 2rem; left: 2rem;
+    width: auto; max-width: 400px; background: var(--surface);
+    border: 1px solid var(--border); padding: 1.25rem; border-radius: var(--radius-lg);
     box-shadow: var(--shadow-hover); z-index: 9999;
     display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   }
-  .cookie-banner p { font-size: 0.85rem; font-weight: 500; line-height: 1.4; }
-  .btn-sm { padding: 0.6rem 1.2rem; background: var(--primary); color: white; border: none; border-radius: 100px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .cookie-banner p { font-size: 0.8rem; font-weight: 500; line-height: 1.4; color: var(--text); }
+  .btn-sm { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 100px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
 
   /* Info Modals */
   .info-modal-overlay {
