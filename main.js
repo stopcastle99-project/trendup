@@ -312,6 +312,7 @@ class App {
     this.currentCountry = this.service.autoDetectCountry();
     this.currentLang = localStorage.getItem('lang') || (this.currentCountry === 'KR' ? 'ko' : this.currentCountry === 'JP' ? 'ja' : 'en');
     this.theme = localStorage.getItem('theme') || 'light';
+    this.currentRequestId = 0; // Track current request
     this.init();
   }
   async init() {
@@ -377,18 +378,21 @@ class App {
   async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.initCookieBanner(); await this.update(); }
   async update() {
+    const requestId = ++this.currentRequestId;
     const refreshIcon = document.getElementById('refresh-icon');
     if (refreshIcon) refreshIcon.classList.remove('hidden');
 
     try {
-      // Minimum 3.5s delay for the "refreshing" feel
       const delayPromise = new Promise(resolve => setTimeout(resolve, 3500));
       const trendsPromise = this.service.getTrends(this.currentCountry, this.currentLang);
       
       const [trends] = await Promise.all([trendsPromise, delayPromise]);
+      
+      // If a newer request has started, ignore this one
+      if (requestId !== this.currentRequestId) return;
+
       const t = i18n[this.currentLang] || i18n.en;
 
-      // Ensure we have a full set of 10 trends; if not, keep previous data
       if (trends && trends.length >= 10) {
         if (document.getElementById('top-trends')) {
           document.getElementById('top-trends').data = { trends, lang: this.currentLang };
@@ -415,9 +419,9 @@ class App {
         document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`; 
       }
     } catch (e) { 
-      console.error("Update failed:", e);
+      if (requestId === this.currentRequestId) console.error("Update failed:", e);
     } finally {
-      if (refreshIcon) refreshIcon.classList.add('hidden');
+      if (requestId === this.currentRequestId && refreshIcon) refreshIcon.classList.add('hidden');
     }
   }
 }
