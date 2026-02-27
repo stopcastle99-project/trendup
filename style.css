@@ -53,7 +53,30 @@
   ul { list-style: none; }
   a { color: var(--primary); text-decoration: none; transition: 0.2s; }
   a:hover { opacity: 0.8; }
-  .hidden { display: none !important; }
+  /* Refresh Icon & Update Status */
+.update-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.refresh-icon {
+  display: inline-block;
+  font-size: 1rem;
+  animation: rotate 1.5s linear infinite;
+  user-select: none;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hidden { display: none !important; }
+
+/* ... existing styles ... */
 }
 
 @layer layout {

@@ -316,14 +316,31 @@ class App {
   async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.initCookieBanner(); await this.update(); }
   async update() {
+    const refreshIcon = document.getElementById('refresh-icon');
+    if (refreshIcon) refreshIcon.classList.remove('hidden');
+
     try {
-      const trends = await this.service.getTrends(this.currentCountry, this.currentLang);
+      // Minimum 3.5s delay for the "refreshing" feel
+      const delayPromise = new Promise(resolve => setTimeout(resolve, 3500));
+      const trendsPromise = this.service.getTrends(this.currentCountry, this.currentLang);
+      
+      const [trends] = await Promise.all([trendsPromise, delayPromise]);
       const t = i18n[this.currentLang] || i18n.en;
+
+      // Ensure we have a full set of 10 trends; if not, keep previous data
+      if (trends && trends.length >= 10) {
+        if (document.getElementById('top-trends')) {
+          document.getElementById('top-trends').data = { trends, lang: this.currentLang };
+        }
+      }
+
       if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
       if (document.querySelector('.info-card h3')) document.querySelector('.info-card h3').textContent = t.infoTitle;
       if (document.querySelector('.info-card p')) document.querySelector('.info-card p').textContent = t.infoDesc;
+      
       const siteGuide = document.querySelector('.policy-card h4');
       if (siteGuide) siteGuide.textContent = t.siteGuide;
+
       document.querySelectorAll('[data-page]').forEach(el => {
         const key = el.getAttribute('data-page');
         if (key === 'about') el.textContent = t.menuAbout;
@@ -331,9 +348,16 @@ class App {
         if (key === 'terms') el.textContent = t.menuTerms;
         if (key === 'contact') el.textContent = t.menuContact;
       });
-      if (document.getElementById('top-trends')) document.getElementById('top-trends').data = { trends, lang: this.currentLang };
-      if (document.getElementById('last-updated')) { const now = new Date(); document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`; }
-    } catch (e) { console.error(e); }
+
+      if (document.getElementById('last-updated')) { 
+        const now = new Date(); 
+        document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`; 
+      }
+    } catch (e) { 
+      console.error("Update failed:", e);
+    } finally {
+      if (refreshIcon) refreshIcon.classList.add('hidden');
+    }
   }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => new App());
