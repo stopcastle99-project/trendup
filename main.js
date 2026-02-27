@@ -1,5 +1,69 @@
 import * as THREE from 'three';
 
+// --- Background Animation (Three.js) ---
+class BackgroundScene {
+  constructor() {
+    this.canvas = document.getElementById('bg-canvas');
+    if (!this.canvas) return;
+    
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera.position.z = 5;
+    
+    this.particles = [];
+    this.init();
+    this.animate();
+    
+    window.addEventListener('resize', () => this.onResize());
+  }
+
+  init() {
+    const geometry = new THREE.IcosahedronGeometry(1, 1);
+    for (let i = 0; i < 50; i++) {
+      const material = new THREE.MeshBasicMaterial({
+        color: i % 2 === 0 ? 0xff4d4d : 0xffaa00,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.1
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(
+        (Math.random() - 0.5) * 15,
+        (Math.random() - 0.5) * 15,
+        (Math.random() - 0.5) * 15
+      );
+      mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+      const scale = Math.random() * 0.5 + 0.2;
+      mesh.scale.set(scale, scale, scale);
+      this.scene.add(mesh);
+      this.particles.push({
+        mesh,
+        speed: Math.random() * 0.005 + 0.002,
+        rot: Math.random() * 0.01
+      });
+    }
+    this.onResize();
+  }
+
+  onResize() {
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+  }
+
+  animate() {
+    requestAnimationFrame(() => this.animate());
+    this.particles.forEach(p => {
+      p.mesh.rotation.x += p.rot;
+      p.mesh.rotation.y += p.rot;
+      p.mesh.position.y += p.speed;
+      if (p.mesh.position.y > 7) p.mesh.position.y = -7;
+    });
+    this.renderer.render(this.scene, this.camera);
+  }
+}
+
 // --- Trend Service ---
 class TrendService {
   constructor() {
@@ -103,7 +167,7 @@ class TrendService {
     
     let split = translated.split(separator).map(s => s.trim());
     if (split.length !== texts.length) {
-      split = translated.split(/•|•|\|\|\|/).map(s => s.trim());
+      split = translated.split(/[•·\|]/).map(s => s.trim()).filter(s => s.length > 0);
     }
     
     const finalResults = texts.map((t, i) => {
@@ -136,11 +200,11 @@ const i18n = {
   ko: { 
     title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "급상승 배경", news: "관련 기사", videos: "영상 소식", loading: "트렌드 분석 중...", T: "T", L: "L", 
     infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.",
-    analysisTemplate: (title, sources, snippets) => `현재 '${title}' 주제는 ${sources.join(', ')} 등 주요 매체를 통해 집중 보도되며 큰 화제가 되고 있습니다.\n\n${snippets.join('\n\n')}\n\n이러한 소식들이 다양한 채널을 통해 전해지면서 대중의 관심이 집중되어 실시간 트렌드에 올랐습니다.`
+    analysisTemplate: (title, sources, snippets) => `현재 '${title}' 주제는 ${sources.join(', ')} 등 주요 매체를 통해 집중 보도되며 큰 화제가 되고 있습니다.\n\n${snippets.join('\n\n')}\n\n이러한 소식들이 전해지면서 대중의 관심이 집중되어 실시간 트렌드에 올랐습니다.`
   },
   ja: { 
     title: "トレンド", update: "最終更新", summary: "急上昇の背景", news: "記事", videos: "動画", loading: "分析中...", T: "T", L: "L", 
-    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流를 파악합시다.",
+    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 한눈에 확인하고, 세계의 흐름을 파악해 보세요.",
     analysisTemplate: (title, sources, snippets) => `現在「${title}」は、${sources.join('、')}などの主要メディアで集中的に報じられ、大きな話題となっています。\n\n${snippets.join('\n\n')}\n\nこれらのニュースが伝えられる中、世間の注目が集まり、リアルタイムトレンドに浮上しました。`
   },
   en: { 
@@ -194,7 +258,6 @@ class TrendModal extends HTMLElement {
     this.renderLoading();
     this.shadowRoot.querySelector('.overlay').classList.add('active');
     
-    // Batch translate all modal content (snippets + sources) at once
     const itemsToTranslate = [...trend.snippets, ...trend.sources];
     const translatedItems = await service.translateBatch(itemsToTranslate, lang);
     
@@ -260,6 +323,7 @@ customElements.define('trend-modal', TrendModal);
 class App {
   constructor() {
     this.service = new TrendService();
+    this.scene = new BackgroundScene();
     this.currentCountry = this.service.autoDetectCountry();
     this.currentLang = localStorage.getItem('lang') || (this.currentCountry === 'KR' ? 'ko' : this.currentCountry === 'JP' ? 'ja' : 'en');
     this.theme = localStorage.getItem('theme') || 'light';
