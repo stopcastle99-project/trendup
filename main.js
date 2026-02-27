@@ -40,15 +40,35 @@ class TrendService {
     this.proxyUrl = 'https://api.allorigins.win/get?url=';
     this.refreshInterval = 15 * 60 * 1000;
     this.cache = new Map();
+    this.prevRanks = new Map();
     try {
       const saved = sessionStorage.getItem('trend_cache');
       if (saved) {
         const parsed = JSON.parse(saved);
         Object.keys(parsed).forEach(k => this.cache.set(k, parsed[k]));
       }
+      const savedRanks = sessionStorage.getItem('prev_ranks');
+      if (savedRanks) {
+        const parsedRanks = JSON.parse(savedRanks);
+        Object.keys(parsedRanks).forEach(k => this.prevRanks.set(k, parsedRanks[k]));
+      }
     } catch (e) {}
   }
-  saveCache() { try { const obj = {}; this.cache.forEach((v, k) => { obj[k] = v; }); sessionStorage.setItem('trend_cache', JSON.stringify(obj)); } catch (e) {} }
+  saveCache() { 
+    try { 
+      const obj = {}; this.cache.forEach((v, k) => { obj[k] = v; }); 
+      sessionStorage.setItem('trend_cache', JSON.stringify(obj)); 
+    } catch (e) {} 
+  }
+  saveRanks(trends, country) {
+    try {
+      const ranks = {};
+      trends.forEach((t, i) => { ranks[`${country}:${t.title}`] = i; });
+      const currentRanks = JSON.parse(sessionStorage.getItem('prev_ranks') || '{}');
+      sessionStorage.setItem('prev_ranks', JSON.stringify({ ...currentRanks, ...ranks }));
+      Object.keys(ranks).forEach(k => this.prevRanks.set(k, ranks[k]));
+    } catch (e) {}
+  }
   async getTrends(country, targetLang) {
     const rssUrl = `https://trends.google.com/trending/rss?geo=${country}`;
     const targetUrl = encodeURIComponent(rssUrl);
@@ -83,11 +103,32 @@ class TrendService {
             else if (nTitle) snippets.push(nTitle);
           }
         }
-        rawTrends.push({ title, growth: traffic, sources: Array.from(sources).slice(0, 3), snippets: snippets.slice(0, 3), newsLinks: newsLinks.slice(0, 5), videoLinks: [{ title: `YouTube: '${title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " news")}`, isSystem: true }] });
+
+        // Determine trend direction
+        const prevRank = this.prevRanks.get(`${country}:${title}`);
+        let trendDir = 'new'; // default
+        if (prevRank !== undefined) {
+          if (i < prevRank) trendDir = 'up';
+          else if (i > prevRank) trendDir = 'down';
+          else trendDir = 'steady';
+        }
+
+        rawTrends.push({ 
+          originalTitle: title,
+          title, 
+          growth: traffic, 
+          trendDir,
+          sources: Array.from(sources).slice(0, 3), 
+          snippets: snippets.slice(0, 3), 
+          newsLinks: newsLinks.slice(0, 5), 
+          videoLinks: [{ title: `YouTube: '${title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " news")}`, isSystem: true }] 
+        });
         titlesToTranslate.push(title);
       }
       const translatedTitles = await this.translateBatch(titlesToTranslate, targetLang);
-      return rawTrends.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
+      const results = rawTrends.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
+      this.saveRanks(rawTrends, country); // Save using rawTrends (originalTitle)
+      return results;
     } catch (e) { console.error(e); return []; }
   }
   async translateBatch(texts, targetLang) {
@@ -164,8 +205,14 @@ class TrendList extends HTMLElement {
   set data({ trends, lang }) { this.render(trends, lang); }
   render(trends, lang) {
     const t = i18n[lang] || i18n.en;
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 0.75rem; font-weight: 800; color: oklch(0.6 0.15 140); background: oklch(0.6 0.15 140 / 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
-      <div class="list">${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><span class="title">${item.title}</span><span class="growth">${item.growth}</span></div>`).join('')}</div>`;
+    const getTrendIcon = (dir) => {
+      if (dir === 'up') return '<span style="color: #ff4d4d;">▲</span>';
+      if (dir === 'down') return '<span style="color: #4d79ff;">▼</span>';
+      if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; border: 1px solid #ffaa00; padding: 0 4px; border-radius: 4px;">NEW</span>';
+      return '<span style="color: var(--text-muted); opacity: 0.5;">-</span>';
+    };
+    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
+      <div class="list">${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><span class="title">${item.title}</span><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { el.onclick = () => this.dispatchEvent(new CustomEvent('trend-click', { detail: trends[el.dataset.index], bubbles: true, composed: true })); });
   }
 }
