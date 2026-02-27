@@ -63,72 +63,133 @@ class TrendService {
   saveRanks(trends, country) {
     try {
       const ranks = {};
-      trends.forEach((t, i) => { ranks[`${country}:${t.title}`] = i; });
+      trends.forEach((t, i) => { ranks[`${country}:${t.originalTitle}`] = i; });
       const currentRanks = JSON.parse(sessionStorage.getItem('prev_ranks') || '{}');
       sessionStorage.setItem('prev_ranks', JSON.stringify({ ...currentRanks, ...ranks }));
       Object.keys(ranks).forEach(k => this.prevRanks.set(k, ranks[k]));
     } catch (e) {}
   }
-  async getTrends(country, targetLang) {
+
+  async getGoogleTrends(country) {
     const rssUrl = `https://trends.google.com/trending/rss?geo=${country}`;
-    const targetUrl = encodeURIComponent(rssUrl);
     try {
-      const response = await fetch(`${this.proxyUrl}${targetUrl}`);
+      const response = await fetch(`${this.proxyUrl}${encodeURIComponent(rssUrl)}`);
       const data = await response.json();
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(data.contents, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
-      const rawTrends = [];
-      const titlesToTranslate = [];
-      for (let i = 0; i < Math.min(items.length, 10); i++) {
-        const item = items[i];
+      return Array.from(items).map(item => {
         const title = item.querySelector("title")?.textContent || "";
-        const getNS = (tagName) => (item.getElementsByTagNameNS("*", tagName)[0] || item.getElementsByTagName("ht:" + tagName)[0])?.textContent || "";
-        const traffic = getNS("approx_traffic") || "N/A";
-        const newsElements = item.getElementsByTagNameNS("*", "news_item");
+        const traffic = (item.getElementsByTagNameNS("*", "approx_traffic")[0] || item.getElementsByTagName("ht:approx_traffic")[0])?.textContent || "N/A";
+        const newsItems = item.getElementsByTagNameNS("*", "news_item");
         const newsLinks = [];
         const snippets = [];
         const sources = new Set();
-        for (let j = 0; j < newsElements.length; j++) {
-          const n = newsElements[j];
-          const nTitle = n.getElementsByTagNameNS("*", "news_item_title")[0]?.textContent;
-          const nUrl = n.getElementsByTagNameNS("*", "news_item_url")[0]?.textContent;
-          const nSource = n.getElementsByTagNameNS("*", "news_item_source")[0]?.textContent;
-          const nSnippet = n.getElementsByTagNameNS("*", "news_item_snippet")[0]?.textContent;
-          if (nTitle && nUrl) {
-            newsLinks.push({ title: `[${nSource || 'News'}] ${nTitle}`, url: nUrl });
-            if (nSource) sources.add(nSource);
-            const cleanSnippet = nSnippet ? nSnippet.replace(/<[^>]*>?/gm, '').trim() : "";
-            if (cleanSnippet && cleanSnippet.length > 20) snippets.push(cleanSnippet);
-            else if (nTitle) snippets.push(nTitle);
+        for (let j = 0; j < newsItems.length; j++) {
+          const n = newsItems[j];
+          const nt = n.getElementsByTagNameNS("*", "news_item_title")[0]?.textContent;
+          const nu = n.getElementsByTagNameNS("*", "news_item_url")[0]?.textContent;
+          const ns = n.getElementsByTagNameNS("*", "news_item_source")[0]?.textContent;
+          const nsn = n.getElementsByTagNameNS("*", "news_item_snippet")[0]?.textContent;
+          if (nt && nu) {
+            newsLinks.push({ title: `[${ns || 'News'}] ${nt}`, url: nu });
+            if (ns) sources.add(ns);
+            const cleanSnippet = nsn ? nsn.replace(/<[^>]*>?/gm, '').trim() : "";
+            if (cleanSnippet) snippets.push(cleanSnippet);
           }
         }
+        return { title, originalTitle: title, growth: traffic, sources: Array.from(sources), snippets, newsLinks, source: 'Google' };
+      });
+    } catch (e) { return []; }
+  }
 
-        // Determine trend direction
-        const prevRank = this.prevRanks.get(`${country}:${title}`);
-        let trendDir = 'new'; // default
-        if (prevRank !== undefined) {
-          if (i < prevRank) trendDir = 'up';
-          else if (i > prevRank) trendDir = 'down';
-          else trendDir = 'steady';
+  async getPortalTrends(country) {
+    if (country === 'KR') {
+      try {
+        const response = await fetch(`${this.proxyUrl}${encodeURIComponent('https://signal.bz/')}`);
+        const data = await response.json();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, 'text/html');
+        const items = doc.querySelectorAll('.rank-item .text');
+        return Array.from(items).slice(0, 10).map(el => ({ 
+          title: el.textContent.trim(), 
+          originalTitle: el.textContent.trim(), 
+          growth: 'Portal', 
+          source: 'Signal',
+          newsLinks: [], sources: [], snippets: []
+        }));
+      } catch (e) { return []; }
+    }
+    if (country === 'JP') {
+      try {
+        const response = await fetch(`${this.proxyUrl}${encodeURIComponent('https://search.yahoo.co.jp/realtime/term')}`);
+        const data = await response.json();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, 'text/html');
+        const items = doc.querySelectorAll('section[class^="Trend_Trend"] a');
+        return Array.from(items).slice(0, 10).map(el => ({ 
+          title: el.textContent.trim(), 
+          originalTitle: el.textContent.trim(), 
+          growth: 'Portal', 
+          source: 'Yahoo',
+          newsLinks: [], sources: [], snippets: []
+        }));
+      } catch (e) { return []; }
+    }
+    return [];
+  }
+
+  async getTrends(country, targetLang) {
+    try {
+      const [google, portal] = await Promise.all([
+        this.getGoogleTrends(country),
+        this.getPortalTrends(country)
+      ]);
+
+      const combined = [...portal, ...google];
+      const seen = new Set();
+      const uniqueTrends = [];
+      
+      for (const t of combined) {
+        const norm = t.originalTitle.toLowerCase().replace(/\s/g, '');
+        if (!seen.has(norm)) {
+          seen.add(norm);
+          uniqueTrends.push(t);
         }
-
-        rawTrends.push({ 
-          originalTitle: title,
-          title, 
-          growth: traffic, 
-          trendDir,
-          sources: Array.from(sources).slice(0, 3), 
-          snippets: snippets.slice(0, 3), 
-          newsLinks: newsLinks.slice(0, 5), 
-          videoLinks: [{ title: `YouTube: '${title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " news")}`, isSystem: true }] 
-        });
-        titlesToTranslate.push(title);
+        if (uniqueTrends.length >= 10) break;
       }
+
+      for (const t of uniqueTrends) {
+        if (t.newsLinks.length === 0) {
+          const match = google.find(g => g.originalTitle.toLowerCase().includes(t.originalTitle.toLowerCase()) || t.originalTitle.toLowerCase().includes(g.originalTitle.toLowerCase()));
+          if (match) {
+            t.newsLinks = match.newsLinks;
+            t.sources = match.sources;
+            t.snippets = match.snippets;
+            if (t.growth === 'Portal') t.growth = match.growth;
+          } else {
+            t.newsLinks = [{ title: `YouTube: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(t.title + " news")}`, isSystem: true }];
+          }
+        }
+        if (!t.videoLinks) {
+          t.videoLinks = [{ title: `YouTube: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(t.title + " news")}`, isSystem: true }];
+        }
+        const prevRank = this.prevRanks.get(`${country}:${t.originalTitle}`);
+        const currentIndex = uniqueTrends.indexOf(t);
+        t.trendDir = 'new';
+        if (prevRank !== undefined) {
+          if (currentIndex < prevRank) t.trendDir = 'up';
+          else if (currentIndex > prevRank) t.trendDir = 'down';
+          else t.trendDir = 'steady';
+        }
+      }
+
+      const titlesToTranslate = uniqueTrends.map(t => t.title);
       const translatedTitles = await this.translateBatch(titlesToTranslate, targetLang);
-      const results = rawTrends.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
-      this.saveRanks(rawTrends, country); // Save using rawTrends (originalTitle)
-      return results;
+      const finalResults = uniqueTrends.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
+      
+      this.saveRanks(finalResults, country);
+      return finalResults;
     } catch (e) { console.error(e); return []; }
   }
   async translateBatch(texts, targetLang) {
@@ -211,8 +272,8 @@ class TrendList extends HTMLElement {
       if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; border: 1px solid #ffaa00; padding: 0 4px; border-radius: 4px;">NEW</span>';
       return '<span style="color: var(--text-muted); opacity: 0.5;">-</span>';
     };
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
-      <div class="list">${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><span class="title">${item.title}</span><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
+    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; } .source-badge { font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.2rem; }</style>
+      <div class="list">${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span><span class="source-badge">${item.source}</span></div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { el.onclick = () => this.dispatchEvent(new CustomEvent('trend-click', { detail: trends[el.dataset.index], bubbles: true, composed: true })); });
   }
 }

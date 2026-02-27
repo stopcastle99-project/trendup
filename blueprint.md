@@ -18,10 +18,17 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Localized Templates:** Contextual summaries use native templates for each language.
 - **Persistent Caching:** Translated data is stored in `sessionStorage` for instant retrieval.
 
-## **Phase 8: Visual Trend Indicators (Current)**
+## **Phase 8: Visual Trend Indicators (Done)**
 - **Rank Comparison Logic:** Implemented persistent rank tracking in `sessionStorage` to detect rising/falling trends.
 - **Dynamic Icons:** Replaced static traffic numbers with color-coded up (▲), down (▼), and NEW indicators for better visual storytelling.
 - **Enhanced Trend List:** Updated `TrendList` component for clearer rank movement visualization.
+
+## **Phase 9: Multi-source Trend Integration (Current)**
+- **Portal Expansion:** Expanded data sources to include Signal.bz (Naver/Daum alternative for KR) and Yahoo! Japan Realtime (for JP) alongside Google Trends.
+- **Parallel Fetching:** Optimized collection speed using `Promise.all` for multi-source data retrieval.
+- **Smart Merging:** Implemented de-duplication and fallback logic to combine portal-specific trends with global data.
+- **UI Source Badges:** Added visible badges to indicate the origin of each trending keyword (Google, Signal, Yahoo).
+- **Refresh UX:** Added a 3.5s intentional delay with a simple circular loading animation to provide clear feedback during updates.
 
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -36,5 +43,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Refine theme toggle with SVG icons and FAB layout.
 - [x] Final verification of Japanese localization and cross-language consistency.
 - [x] Implement Rank Comparison Logic and Visual Trend Icons.
+- [x] Expand TrendService to fetch from Portal sources (Signal, Yahoo).
+- [x] Add circular refresh animation and intentional delay.
 - [x] Update blueprint.md.
 - [x] Push all changes to GitHub.
