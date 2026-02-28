@@ -62,7 +62,7 @@ let i18n = {
     },
     pages: {
       about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다.</p><h3>2. 애드센스 및 쿠키 사용</h3><p>본 사이트는 구글 애드센스(Google AdSense)를 사용하여 광고를 게재합니다. 구글은 사용자의 방문 기록을 바탕으로 맞춤형 광고 제공을 위해 쿠키를 사용하며, 사용자는 구글 광고 설정에서 이를 해제할 수 있습니다. (v1.5.3)</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.5.4)</p>` },
       terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
       contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
     }
@@ -70,8 +70,8 @@ let i18n = {
   ja: { 
     title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", T: "トレンド設定", L: "言語設定", 
     infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 ひと目で確認し、世界の潮流를 把握しましょう.",
-    cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています.", accept: "確認",
-    siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
+    cookie: "本사이트는 ユーザー体験向상의 위해 쿠키를 사용합니다.", accept: "確認",
+    siteGuide: "사이트 안내", menuAbout: "TrendUpについて", menuPrivacy: "個人정보보호方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
     themes: { light: "ライト", dark: "ダーク", system: "システム" },
     labels: { trends: "国:", language: "言語:", site: "サイト案内" },
@@ -82,8 +82,8 @@ let i18n = {
       return `${mainSummary}\n\n[報道メディア: ${(sources || []).slice(0, 3).join('、')} など]`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化하는 グロー바ルトレンド를 AI技術で分析し、ユーザー에 최적의 요약 정보를 제공하는 프리미엄 대시보드입니다.</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソース의 統合</strong>: Google、Yahoo! JAPAN 등의 주요 포털 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI深층分析</strong>: 単なるキーワード의 나열을 넘어, 해당 트렌드가 발생한 배경이나 문맥을 AI가 분석해서 제공합니다.</li><li><strong>信頼性の高いニュース</strong>: 検証된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護를 최우선으로 합니다.</p><h3>1. 収集하는 情報</h3><p>当 서비스는 성함이나 메일 주소 등의 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선이나 통계 분석을 위해 쿠키나 액세스 로그가 자동으로 생성·수집될 수 있습니다. (v1.5.3)</p>` },
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化するグロー바ルト레인드를 AI技術で分析し、ユーザー에 최적의 요약 정보를 제공하는 프리미엄 대시보드입니다.</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソース의 統合</strong>: Google、Yahoo! JAPAN 등의 주요 포털 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI深층分析</strong>: 単なるキーワード의 나열을 넘어, 해당 트렌드가 발생한 배경이나 문맥을 AI가 분석해서 제공합니다.</li><li><strong>信頼性の高いニュース</strong>: 検証된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護를 최우선으로 합니다.</p><h3>1. 収集하는 情報</h3><p>当 서비스는 성함이나 메일 주소 등의 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선이나 통계 분석을 위해 쿠키나 액세스 로그가 자동으로 생성·수집될 수 있습니다. (v1.5.4)</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 免責事項</h3><p>情報の正確性에는 만전을 기하고 있으나, 외부 데이터 소스의 오류에 기인하는 결과에 대해서는 법적 책임을 지지 않습니다.</p>` },
       contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら, お気軽にメールにてご連絡ください.</p><p><strong>メール</strong>: help@trendup.ai</p>` }
     }
@@ -104,7 +104,7 @@ let i18n = {
     },
     pages: {
       about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p><h3>Our Value</h3><ul><li><strong>Source Integration</strong>: Real-time validation across Google, Yahoo Japan, and other local portals.</li><li><strong>AI Summary</strong>: Deep context analysis using AI to provide storytelling beyond simple keywords.</li><li><strong>Verified News</strong>: Direct links to reputable news outlets and video content.</li></ul>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.5.3)</p>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.5.4)</p>` },
       terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p><h3>2. Limitation of Liability</h3><p>While we strive for accuracy, we are not responsible for any issues arising from inaccuracies in external data sources.</p>` },
       contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>If you have any questions or suggestions, please contact us at help@trendup.ai.</p>` }
     }
@@ -344,11 +344,15 @@ class TrendModal extends HTMLElement {
     
     const snippets = trend.snippets || [];
     const sources = trend.sources || [];
+    const t = i18n[lang] || i18n.en;
+    
+    // Immediate render with original info first for perceived speed
+    this.render(trend, lang, "Analyzing details...");
+
     const itemsToTranslate = [...snippets, ...sources];
     const translatedItems = await service.translateBatch(itemsToTranslate, lang);
     const translatedSnippets = translatedItems.slice(0, snippets.length);
     const translatedSources = translatedItems.slice(snippets.length);
-    const t = i18n[lang] || i18n.en;
     const analysis = t.analysisTemplate(trend.title, translatedSources, translatedSnippets);
     this.render(trend, lang, analysis);
   }
@@ -356,7 +360,7 @@ class TrendModal extends HTMLElement {
     const overlay = this.shadowRoot.querySelector('.overlay');
     if (overlay) overlay.classList.remove('active'); 
   }
-  renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: 0.3s; } .overlay.active { opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing Trend...</div></div>`; }
+  renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1 !important; pointer-events: auto !important; transition: 0.3s; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing Trend...</div></div>`; }
   render(trend, lang, analysis) {
     const t = i18n[lang] || i18n.en;
     this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1 !important; pointer-events: auto !important; transition: 0.3s; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; z-index: 10000; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; } .link:hover { border-color: var(--primary); background: var(--border); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; margin-bottom: -0.2rem; }</style>
@@ -381,33 +385,25 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.5.3");
-    try {
-      const app = initializeApp(firebaseConfig);
-      this.db = getFirestore(app);
-      await this.syncLocalization();
-    } catch (e) { console.error("Firebase init failed:", e); }
-
+    console.log("App Init: v1.5.4");
+    
+    // 1. Immediate UI Setup (Crucial for Speed)
     this.initThemeIcons();
     this.applyTheme(this.themeMode);
-    
     this.modal = document.createElement('trend-modal');
     document.body.appendChild(this.modal);
-    
     this.initInfoModals();
     this.initCookieBanner();
     this.initSideMenu();
     this.initThemeMenu();
     this.renderNavs();
-    await this.update();
-    this.backgroundSyncAll(); 
-    
+
+    // 2. Definitive Global Event Listener
     window.addEventListener('open-trend-modal', (e) => {
-      console.log("Global Event Caught: open-trend-modal", e.detail);
       if (this.modal) this.modal.show(e.detail, this.currentLang, this.service);
     });
 
-    window.addEventListener('click', (e) => {
+    window.addEventListener('click', () => {
       document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
       document.getElementById('theme-dropdown')?.classList.add('hidden');
     });
@@ -415,7 +411,24 @@ class App {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       if (this.themeMode === 'system') this.applyTheme('system');
     });
+
+    // 3. Start Async Tasks (Firebase & Updates) - Non-Blocking
+    this.startAsyncTasks();
     setInterval(() => this.update(), this.service.refreshInterval);
+  }
+
+  async startAsyncTasks() {
+    try {
+      const app = initializeApp(firebaseConfig);
+      this.db = getFirestore(app);
+      await this.syncLocalization();
+      this.renderNavs();
+      await this.update();
+      this.backgroundSyncAll();
+    } catch (e) { 
+      console.error("Async tasks failed:", e);
+      await this.update(); // Fallback to direct fetch
+    }
   }
 
   async syncLocalization() {
@@ -453,7 +466,7 @@ class App {
               lastUpdated: Timestamp.now()
             });
           }
-          await new Promise(res => setTimeout(res, 3000));
+          await new Promise(res => setTimeout(res, 2000));
         }
       } catch (e) { console.error(`Background sync for ${c.code} failed:`, e); }
     }
