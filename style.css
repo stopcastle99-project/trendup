@@ -136,11 +136,11 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    color: #000 !important; /* Force Black */
+    color: var(--text);
   }
   .theme-menu-btn:hover {
-    border-color: #000;
-    background: rgba(0,0,0,0.05);
+    border-color: var(--primary);
+    background: var(--border);
   }
   .theme-trigger-icon {
     font-size: 1.2rem;
@@ -150,16 +150,16 @@
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    background: rgba(255, 255, 255, 0.9); /* Force Light Background */
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(0,0,0,0.1);
+    background: var(--surface-glass);
+    backdrop-filter: blur(25px);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 0.5rem;
-    min-width: 140px;
+    min-width: 150px;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-hover);
     z-index: 3000;
     transform-origin: top right;
     transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -179,32 +179,35 @@
     background: transparent;
     border-radius: 10px;
     cursor: pointer;
-    color: #000 !important; /* Force Black */
+    color: var(--text);
     font-weight: 600;
     font-size: 0.85rem;
-    transition: background 0.2s;
+    transition: all 0.2s;
     text-align: left;
   }
   .theme-opt:hover {
-    background: rgba(0,0,0,0.05);
+    background: var(--border);
   }
   .theme-opt.active {
-    background: #000;
-    color: #fff !important;
+    background: var(--primary);
+    color: white !important;
   }
   .opt-icon { 
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    opacity: 0.8;
   }
+  .theme-opt.active .opt-icon { opacity: 1; }
+  
   .theme-trigger-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.4rem;
-    height: 1.4rem;
+    width: 1.2rem;
+    height: 1.2rem;
   }
   .theme-menu-btn svg, .theme-opt svg {
     width: 100%;
