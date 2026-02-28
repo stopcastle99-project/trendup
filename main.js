@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 
 // --- Background Animation (Three.js) ---
 class BackgroundScene {
@@ -39,6 +41,80 @@ const ICONS = {
   sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
+};
+
+// --- Localization (Initial Hardcoded as Fallback) ---
+let i18n = {
+  ko: { 
+    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "트렌드 분석 중...", T: "트렌드 설정", L: "언어 설정", 
+    infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.",
+    cookie: "본 사이트는 사용자 경험 개선을 위해 쿠키를 사용합니다.", accept: "확인",
+    siteGuide: "사이트 안내", menuAbout: "TrendUp 소개", menuPrivacy: "개인정보처리방침", menuTerms: "이용약관", menuContact: "문의하기",
+    countries: { KR: "대한민국", JP: "일본", US: "미국" },
+    themes: { light: "밝게", dark: "어둡게", system: "시스템" },
+    labels: { trends: "국가:", language: "언어:", site: "사이트 정보" },
+    analysisTemplate: (title, sources, snippets) => {
+      if (snippets.length === 0) return `'${title}' 주제가 현재 검색 포털을 통해 빠르게 확산되며 대중의 큰 관심을 받고 있습니다.`;
+      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 20);
+      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
+      const sourceInfo = sources.length > 0 ? `\n\n[보도 매체: ${sources.slice(0, 3).join(', ')} 등]` : "";
+      return `${mainSummary}${sourceInfo}`;
+    },
+    pages: {
+      about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다.</p><h3>2. 애드센스 및 쿠키 사용</h3><p>본 사이트는 구글 애드센스(Google AdSense)를 사용하여 광고를 게재합니다. 구글은 사용자의 방문 기록을 바탕으로 맞춤형 광고 제공을 위해 쿠키를 사용하며, 사용자는 구글 광고 설정에서 이를 해제할 수 있습니다.</p><h3>3. 정보의 보관</h3><p>통계 데이터는 서비스 개선 목적으로만 사용되며, 외부로 유출되거나 상업적으로 판매되지 않습니다. (v1.4.0)</p>` },
+      terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
+      contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
+    }
+  },
+  ja: { 
+    title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", T: "トレンド設定", L: "言語設定", 
+    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 ひと目で確認し、世界の潮流를 把握しましょう。",
+    cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "確認",
+    siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
+    countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
+    themes: { light: "ライト", dark: "ダーク", system: "システム" },
+    labels: { trends: "国:", language: "言語:", site: "サイト案内" },
+    analysisTemplate: (title, sources, snippets) => {
+      if (snippets.length === 0) return `「${title}」가 現在リアルタイムトレンドとして大きな注目を集めています。`;
+      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
+      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
+      return `${mainSummary}\n\n[報道メディア: ${sources.slice(0, 3).join('、')} など]`;
+    },
+    pages: {
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化するグローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します.</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAI가 분석해서提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています.</li></ul>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために, クッキーやアクセスログが自動的に生成・収集される場合があります。</p><h3>2. AdSenseとクッキーの使用</h3><p>当サイトはGoogle AdSenseを使用して広告を掲載しています. Googleはユーザーの訪問履歴に基づき, 最適な広告提供のためにクッキーを使用します. ユーザーはGoogleの広告設定からこれを無効化できます. (v1.4.0)</p>` },
+      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは, 公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性에는 万全を期していますが, 外部データソースに起因する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
+      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら, お気軽にメールにてご連絡ください。</p><p><strong>メール</strong>: help@trendup.ai</p>` }
+    }
+  },
+  en: { 
+    title: "Trending", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Analyzing...", T: "Trend Settings", L: "Language Setting", 
+    infoTitle: "About TrendUp", infoDesc: "Explore real-time trending keywords from various countries and stay updated with global topics.",
+    cookie: "This site uses cookies to improve user experience.", accept: "Accept",
+    siteGuide: "Site Information", menuAbout: "About TrendUp", menuPrivacy: "Privacy Policy", menuTerms: "Terms of Service", menuContact: "Contact Us",
+    countries: { KR: "South Korea", JP: "Japan", US: "USA" },
+    themes: { light: "Light", dark: "Dark", system: "System" },
+    labels: { trends: "Country:", language: "Language:", site: "Site Information" },
+    analysisTemplate: (title, sources, snippets) => {
+      if (snippets.length === 0) return `The topic '${title}' is currently gaining significant traction across major portals.`;
+      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
+      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
+      return `${mainSummary}\n\n[Sources: ${sources.slice(0, 3).join(', ')}]`;
+    },
+    pages: {
+      about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p><h3>Our Value</h3><ul><li><strong>Source Integration</strong>: Real-time validation across Google, Yahoo Japan, and other local portals.</li><li><strong>AI Summary</strong>: Deep context analysis using AI to provide storytelling beyond simple keywords.</li><li><strong>Verified News</strong>: Direct links to reputable news outlets and video content.</li></ul>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards.</p><h3>1. Data Collection</h3><p>We do not collect personally identifiable information such as names or emails. We only use cookies and server logs for service improvement and analytics.</p><h3>2. Google AdSense</h3><p>We use Google AdSense to serve ads. Google use cookies to serve ads based on your prior visits to this or other websites. (v1.4.0)</p>` },
+      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p><h3>2. Limitation of Liability</h3><p>While we strive for accuracy, we are not responsible for any issues arising from inaccuracies in external data sources.</p>` },
+      contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>If you have any questions or suggestions, please contact us at help@trendup.ai.</p>` }
+    }
+  }
+};
+
+// --- Firebase Configuration ---
+const firebaseConfig = {
+  projectId: "trendup-ai",
+  // In Firebase Studio, configuration is often injected or accessible via standard SDK initialization
 };
 
 // --- Trend Service ---
@@ -239,74 +315,6 @@ class TrendService {
   autoDetectCountry() { try { const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; if (timezone.includes('Seoul')) return 'KR'; if (timezone.includes('Tokyo')) return 'JP'; return 'US'; } catch (e) { return 'KR'; } }
 }
 
-// --- Localization ---
-const i18n = {
-  ko: { 
-    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "트렌드 분석 중...", T: "트렌드 설정", L: "언어 설정", 
-    infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.",
-    cookie: "본 사이트는 사용자 경험 개선을 위해 쿠키를 사용합니다.", accept: "확인",
-    siteGuide: "사이트 안내", menuAbout: "TrendUp 소개", menuPrivacy: "개인정보처리방침", menuTerms: "이용약관", menuContact: "문의하기",
-    countries: { KR: "대한민국", JP: "일본", US: "미국" },
-    themes: { light: "밝게", dark: "어둡게", system: "시스템" },
-    labels: { trends: "국가:", language: "언어:", site: "사이트 정보" },
-    analysisTemplate: (title, sources, snippets) => {
-      if (snippets.length === 0) return `'${title}' 주제가 현재 검색 포털을 통해 빠르게 확산되며 대중의 큰 관심을 받고 있습니다.`;
-      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 20);
-      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
-      const sourceInfo = sources.length > 0 ? `\n\n[보도 매체: ${sources.slice(0, 3).join(', ')} 등]` : "";
-      return `${mainSummary}${sourceInfo}`;
-    },
-    pages: {
-      about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다.</p><h3>2. 애드센스 및 쿠키 사용</h3><p>본 사이트는 구글 애드센스(Google AdSense)를 사용하여 광고를 게재합니다. 구글은 사용자의 방문 기록을 바탕으로 맞춤형 광고 제공을 위해 쿠키를 사용하며, 사용자는 구글 광고 설정에서 이를 해제할 수 있습니다.</p><h3>3. 정보의 보관</h3><p>통계 데이터는 서비스 개선 목적으로만 사용되며, 외부로 유출되거나 상업적으로 판매되지 않습니다. (v1.3.7)</p>` },
-      terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
-      contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
-    }
-  },
-  ja: { 
-    title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", T: "トレンド設定", L: "言語設定", 
-    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 ひと目で確認し、世界の潮流를 把握しましょう。",
-    cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "確認",
-    siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
-    countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
-    themes: { light: "ライト", dark: "ダーク", system: "システム" },
-    labels: { trends: "国:", language: "言語:", site: "サイト案内" },
-    analysisTemplate: (title, sources, snippets) => {
-      if (snippets.length === 0) return `「${title}」가 現在リアルタイムトレンドとして大きな注目を集めています。`;
-      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
-      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
-      return `${mainSummary}\n\n[報道メディア: ${sources.slice(0, 3).join('、')} など]`;
-    },
-    pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化するグローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します.</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAI가 분석해서提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています.</li></ul>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために, クッキーやアクセスログが自動的に生成・収集される場合があります。</p><h3>2. AdSenseとクッキーの使用</h3><p>当サイトはGoogle AdSenseを使用して広告を掲載しています. Googleはユーザーの訪問履歴に基づき, 最適な広告提供のためにクッキーを使用します. ユーザーはGoogleの広告設定からこれを無効化できます. (v1.3.7)</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは, 公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性에는 万全を期していますが, 外部データソースに起因する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
-      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら, お気軽にメールにてご連絡ください。</p><p><strong>メール</strong>: help@trendup.ai</p>` }
-    }
-  },
-  en: { 
-    title: "Trending", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Analyzing...", T: "Trend Settings", L: "Language Setting", 
-    infoTitle: "About TrendUp", infoDesc: "Explore real-time trending keywords from various countries and stay updated with global topics.",
-    cookie: "This site uses cookies to improve user experience.", accept: "Accept",
-    siteGuide: "Site Information", menuAbout: "About TrendUp", menuPrivacy: "Privacy Policy", menuTerms: "Terms of Service", menuContact: "Contact Us",
-    countries: { KR: "South Korea", JP: "Japan", US: "USA" },
-    themes: { light: "Light", dark: "Dark", system: "System" },
-    labels: { trends: "Country:", language: "Language:", site: "Site Information" },
-    analysisTemplate: (title, sources, snippets) => {
-      if (snippets.length === 0) return `The topic '${title}' is currently gaining significant traction across major portals.`;
-      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
-      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
-      return `${mainSummary}\n\n[Sources: ${sources.slice(0, 3).join(', ')}]`;
-    },
-    pages: {
-      about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p><h3>Our Value</h3><ul><li><strong>Source Integration</strong>: Real-time validation across Google, Yahoo Japan, and other local portals.</li><li><strong>AI Summary</strong>: Deep context analysis using AI to provide storytelling beyond simple keywords.</li><li><strong>Verified News</strong>: Direct links to reputable news outlets and video content.</li></ul>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards.</p><h3>1. Data Collection</h3><p>We do not collect personally identifiable information such as names or emails. We only use cookies and server logs for service improvement and analytics.</p><h3>2. Google AdSense</h3><p>We use Google AdSense to serve ads. Google use cookies to serve ads based on your prior visits to this or other websites. (v1.3.7)</p>` },
-      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p><h3>2. Limitation of Liability</h3><p>While we strive for accuracy, we are not responsible for any issues arising from inaccuracies in external data sources.</p>` },
-      contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>If you have any questions or suggestions, please contact us at help@trendup.ai.</p>` }
-    }
-  }
-};
-
 // --- Web Components ---
 class TrendList extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
@@ -360,9 +368,16 @@ class App {
     this.currentLang = localStorage.getItem('lang') || (this.currentCountry === 'KR' ? 'ko' : this.currentCountry === 'JP' ? 'ja' : 'en');
     this.themeMode = localStorage.getItem('theme-mode') || 'system';
     this.currentRequestId = 0;
+    this.db = null;
     this.init();
   }
   async init() {
+    try {
+      const app = initializeApp(firebaseConfig);
+      this.db = getFirestore(app);
+      await this.syncLocalization();
+    } catch (e) { console.error("Firebase init failed:", e); }
+
     this.initThemeIcons();
     this.applyTheme(this.themeMode);
     this.modal = document.createElement('trend-modal');
@@ -387,6 +402,32 @@ class App {
 
     setInterval(() => this.update(), this.service.refreshInterval);
   }
+
+  async syncLocalization() {
+    if (!this.db) return;
+    try {
+      // 1. Check if local cache exists for versioning (optional)
+      const cached = localStorage.getItem('i18n_cache');
+      if (cached) { i18n = JSON.parse(cached); }
+
+      // 2. Fetch from Firestore
+      const colRef = collection(this.db, 'localization');
+      const snapshot = await getDocs(colRef);
+      
+      if (snapshot.empty) {
+        // Seed DB if empty
+        for (const lang of Object.keys(i18n)) {
+          await setDoc(doc(this.db, 'localization', lang), i18n[lang]);
+        }
+      } else {
+        const remoteData = {};
+        snapshot.forEach(doc => { remoteData[doc.id] = doc.data(); });
+        i18n = remoteData;
+        localStorage.setItem('i18n_cache', JSON.stringify(i18n));
+      }
+    } catch (e) { console.error("Localization sync failed:", e); }
+  }
+
   initThemeIcons() {
     const sunIcons = document.querySelectorAll('.sun-svg');
     const moonIcons = document.querySelectorAll('.moon-svg');
