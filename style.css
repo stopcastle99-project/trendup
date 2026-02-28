@@ -471,6 +471,8 @@
   .btn-sm { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 100px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
 
   /* Info Modals */
+  trend-modal, trend-list { display: block; }
+  
   .info-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
     display: flex; align-items: center; justify-content: center; z-index: 6000; padding: 1.5rem;
