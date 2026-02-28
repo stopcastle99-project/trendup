@@ -72,30 +72,57 @@
     
     <header>
       <div class="container">
-        <div class="logo">
-          <span class="logo-icon">🔥</span>
-          <h1>TrendUp</h1>
-        </div>
-        
-        <div class="nav-wrapper">
-          <div class="settings-menu">
-            <button id="settings-toggle" class="settings-toggle" aria-label="Settings">
-              <span class="settings-icon">⚙️</span>
-            </button>
-            <div id="settings-submenu" class="settings-submenu hidden">
-              <div class="nav-group">
-                <span class="nav-label">Trends:</span>
-                <nav id="country-nav" class="pill-nav"></nav>
-              </div>
-              <div class="nav-group">
-                <span class="nav-label">Language:</span>
-                <nav id="lang-nav" class="pill-nav"></nav>
-              </div>
-            </div>
+        <div class="header-left">
+          <button id="menu-toggle" class="menu-toggle" aria-label="Open Menu">
+            <span class="menu-icon">≡</span>
+          </button>
+          <div class="logo">
+            <span class="logo-icon">🔥</span>
+            <h1>TrendUp</h1>
           </div>
         </div>
       </div>
     </header>
+
+    <!-- Side Navigation Menu -->
+    <div id="side-menu-overlay" class="side-menu-overlay hidden"></div>
+    <div id="side-menu" class="side-menu">
+      <div class="side-menu-header">
+        <div class="logo">
+          <span class="logo-icon">🔥</span>
+          <h1>TrendUp</h1>
+        </div>
+        <button id="menu-close" class="menu-close">&times;</button>
+      </div>
+      
+      <div class="side-menu-content">
+        <section class="menu-section">
+          <h3 class="menu-title">Trend Settings</h3>
+          <div class="nav-group">
+            <span class="nav-label">Trends:</span>
+            <nav id="country-nav" class="pill-nav"></nav>
+          </div>
+          <div class="nav-group">
+            <span class="nav-label">Language:</span>
+            <nav id="lang-nav" class="pill-nav"></nav>
+          </div>
+        </section>
+
+        <section class="menu-section">
+          <h3 class="menu-title">Site Information</h3>
+          <ul class="menu-links">
+            <li><a href="#" class="info-link" data-page="about">TrendUp 소개</a></li>
+            <li><a href="#" class="info-link" data-page="privacy">개인정보처리방침</a></li>
+            <li><a href="#" class="info-link" data-page="terms">이용약관</a></li>
+            <li><a href="#" class="info-link" data-page="contact">문의하기</a></li>
+          </ul>
+        </section>
+      </div>
+      
+      <div class="side-menu-footer">
+        <p>&copy; 2026 TrendUp. All rights reserved.</p>
+      </div>
+    </div>
 
     <main class="container">
       <section id="hero">
@@ -122,14 +149,6 @@
             <h3>TrendUp 정보</h3>
             <p>다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.</p>
           </div>
-          <div class="policy-card">
-            <h4>사이트 안내</h4>
-            <ul>
-              <li><a href="#" class="info-link" data-page="about">TrendUp 소개</a></li>
-              <li><a href="#" class="info-link" data-page="privacy">개인정보처리방침</a></li>
-              <li><a href="#" class="info-link" data-page="terms">이용약관</a></li>
-            </ul>
-          </div>
         </aside>
       </section>
 
@@ -143,7 +162,7 @@
     <footer>
       <div class="container">
         <div class="footer-content">
-          <p>&copy; 2026 TrendUp. All rights reserved. (v1.2.8)</p>
+          <p>&copy; 2026 TrendUp. All rights reserved. (v1.2.9)</p>
           <ul class="footer-links">
             <li><a href="#" class="info-link" data-page="about">About Us</a></li>
             <li><a href="#" class="info-link" data-page="privacy">Privacy Policy</a></li>
