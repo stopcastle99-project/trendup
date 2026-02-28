@@ -62,7 +62,7 @@ let i18n = {
     },
     pages: {
       about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.5.4)</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.5.5)</p>` },
       terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
       contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
     }
@@ -82,10 +82,10 @@ let i18n = {
       return `${mainSummary}\n\n[報道メディア: ${(sources || []).slice(0, 3).join('、')} など]`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化するグロー바ルト레인드를 AI技術で分析し、ユーザー에 최적의 요약 정보를 제공하는 프리미엄 대시보드입니다.</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソース의 統合</strong>: Google、Yahoo! JAPAN 등의 주요 포털 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI深층分析</strong>: 単なるキーワード의 나열을 넘어, 해당 트렌드가 발생한 배경이나 문맥을 AI가 분석해서 제공합니다.</li><li><strong>信頼性の高いニュース</strong>: 検証된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護를 최우선으로 합니다.</p><h3>1. 収集하는 情報</h3><p>当 서비스는 성함이나 메일 주소 등의 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선이나 통계 분석을 위해 쿠키나 액세스 로그가 자동으로 생성·수집될 수 있습니다. (v1.5.4)</p>` },
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUp은, リアルタイムで変化するグロー바ルトレンド를 AI技術で分析し、ユーザー에 최적의 요약 정보를 제공하는 프리미엄 대시보드입니다.</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソース의 統合</strong>: Google、Yahoo! JAPAN 등의 주요 포털 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI深층分析</strong>: 単なるキーワード의 나열을 넘어, 해당 트렌드가 발생한 배경이나 문맥을 AI가 분석해서 제공합니다.</li><li><strong>信頼性の高いニュース</strong>: 検証된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護를 최우선으로 합니다.</p><h3>1. 収集하는 情報</h3><p>当 서비스는 성함이나 메일 주소 등의 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선이나 통계 분석을 위해 쿠키나 액세스 로그가 자동으로 생성·수집될 수 있습니다. (v1.5.5)</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 免責事項</h3><p>情報の正確性에는 만전을 기하고 있으나, 외부 데이터 소스의 오류에 기인하는 결과에 대해서는 법적 책임을 지지 않습니다.</p>` },
-      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら, お気軽にメールにてご連絡ください.</p><p><strong>メール</strong>: help@trendup.ai</p>` }
+      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案가 있다면 お気軽にメールにてご連絡ください.</p><p><strong>メール</strong>: help@trendup.ai</p>` }
     }
   },
   en: { 
@@ -104,7 +104,7 @@ let i18n = {
     },
     pages: {
       about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p><h3>Our Value</h3><ul><li><strong>Source Integration</strong>: Real-time validation across Google, Yahoo Japan, and other local portals.</li><li><strong>AI Summary</strong>: Deep context analysis using AI to provide storytelling beyond simple keywords.</li><li><strong>Verified News</strong>: Direct links to reputable news outlets and video content.</li></ul>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.5.4)</p>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.5.5)</p>` },
       terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p><h3>2. Limitation of Liability</h3><p>While we strive for accuracy, we are not responsible for any issues arising from inaccuracies in external data sources.</p>` },
       contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>If you have any questions or suggestions, please contact us at help@trendup.ai.</p>` }
     }
@@ -322,14 +322,13 @@ class TrendList extends HTMLElement {
     };
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank, .title-group, .growth { pointer-events: none; } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; } .source-badge { font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.2rem; }</style>
       <div class="list">${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span><span class="source-badge">${item.source}</span></div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
-    
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
-      el.addEventListener('click', (e) => {
+      el.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         const trendData = trends[parseInt(el.dataset.index)];
         window.dispatchEvent(new CustomEvent('open-trend-modal', { detail: trendData, bubbles: true, composed: true }));
-      });
+      };
     });
   }
 }
@@ -341,18 +340,14 @@ class TrendModal extends HTMLElement {
     this.renderLoading();
     const overlay = this.shadowRoot.querySelector('.overlay');
     if (overlay) overlay.classList.add('active');
-    
+    this.render(trend, lang, "Analyzing details..."); // Initial quick render
     const snippets = trend.snippets || [];
     const sources = trend.sources || [];
-    const t = i18n[lang] || i18n.en;
-    
-    // Immediate render with original info first for perceived speed
-    this.render(trend, lang, "Analyzing details...");
-
     const itemsToTranslate = [...snippets, ...sources];
     const translatedItems = await service.translateBatch(itemsToTranslate, lang);
     const translatedSnippets = translatedItems.slice(0, snippets.length);
     const translatedSources = translatedItems.slice(snippets.length);
+    const t = i18n[lang] || i18n.en;
     const analysis = t.analysisTemplate(trend.title, translatedSources, translatedSnippets);
     this.render(trend, lang, analysis);
   }
@@ -360,12 +355,17 @@ class TrendModal extends HTMLElement {
     const overlay = this.shadowRoot.querySelector('.overlay');
     if (overlay) overlay.classList.remove('active'); 
   }
-  renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1 !important; pointer-events: auto !important; transition: 0.3s; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing Trend...</div></div>`; }
+  renderLoading() { 
+    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1 !important; pointer-events: auto !important; transition: 0.3s; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay active"><div class="modal">Analyzing Trend...</div></div>`; 
+    this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
+  }
   render(trend, lang, analysis) {
     const t = i18n[lang] || i18n.en;
     this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1 !important; pointer-events: auto !important; transition: 0.3s; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; z-index: 10000; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; } .link:hover { border-color: var(--primary); background: var(--border); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; margin-bottom: -0.2rem; }</style>
       <div class="overlay active"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><div><div class="link-meta">${l.source}</div><div>📄 ${l.title}</div></div></a>`).join('')}</div><span class="section-title">🎬 ${t.videos}</span><div class="link-group">${(trend.videoLinks || []).map(l => `<a href="${l.url}" target="_blank" class="link">▶️ ${l.title}</a>`).join('')}</div></div></div>`;
-    this.shadowRoot.querySelector('.close').onclick = () => this.hide();
+    
+    // Re-attach close events immediately after innerHTML update
+    this.shadowRoot.querySelector('.close').onclick = (e) => { e.stopPropagation(); this.hide(); };
     this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
   }
 }
@@ -385,9 +385,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.5.4");
-    
-    // 1. Immediate UI Setup (Crucial for Speed)
+    console.log("App Init: v1.5.5");
     this.initThemeIcons();
     this.applyTheme(this.themeMode);
     this.modal = document.createElement('trend-modal');
@@ -397,26 +395,19 @@ class App {
     this.initSideMenu();
     this.initThemeMenu();
     this.renderNavs();
-
-    // 2. Definitive Global Event Listener
     window.addEventListener('open-trend-modal', (e) => {
       if (this.modal) this.modal.show(e.detail, this.currentLang, this.service);
     });
-
     window.addEventListener('click', () => {
       document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
       document.getElementById('theme-dropdown')?.classList.add('hidden');
     });
-    
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       if (this.themeMode === 'system') this.applyTheme('system');
     });
-
-    // 3. Start Async Tasks (Firebase & Updates) - Non-Blocking
     this.startAsyncTasks();
     setInterval(() => this.update(), this.service.refreshInterval);
   }
-
   async startAsyncTasks() {
     try {
       const app = initializeApp(firebaseConfig);
@@ -425,12 +416,8 @@ class App {
       this.renderNavs();
       await this.update();
       this.backgroundSyncAll();
-    } catch (e) { 
-      console.error("Async tasks failed:", e);
-      await this.update(); // Fallback to direct fetch
-    }
+    } catch (e) { console.error("Async tasks failed:", e); await this.update(); }
   }
-
   async syncLocalization() {
     if (!this.db) return;
     try {
@@ -446,7 +433,6 @@ class App {
       }
     } catch (e) { console.error("Localization sync failed:", e); }
   }
-
   async backgroundSyncAll() {
     if (!this.db) return;
     const countries = this.service.getCountries();
@@ -471,7 +457,6 @@ class App {
       } catch (e) { console.error(`Background sync for ${c.code} failed:`, e); }
     }
   }
-
   initThemeIcons() {
     const sunIcons = document.querySelectorAll('.sun-svg');
     const moonIcons = document.querySelectorAll('.moon-svg');
@@ -572,7 +557,6 @@ class App {
   }
   async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(false, true); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.initCookieBanner(); await this.update(true); }
-  
   async update(isLanguageSwitch = false, isCountrySwitch = false) {
     const requestId = ++this.currentRequestId;
     try {
@@ -590,21 +574,17 @@ class App {
           }
         } catch (dbErr) { console.error("DB Load Error:", dbErr); }
       }
-
       const now = Date.now();
       const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
       const needsUpdate = isCountrySwitch || isLanguageSwitch || (now - lastUpdated > this.service.refreshInterval) || !dbData;
-
       if (needsUpdate) {
         const freshItems = await this.service.fetchFreshTrends(this.currentCountry, this.currentLang);
         if (requestId !== this.currentRequestId) return;
-
         if (freshItems && freshItems.length >= 5) {
           const trends = this.service.calculateRankChanges(freshItems, dbData?.items || null);
           if (document.getElementById('top-trends')) document.getElementById('top-trends').data = { trends, lang: this.currentLang };
           const nowObj = new Date();
           if (document.getElementById('last-updated')) document.getElementById('last-updated').textContent = `${t.update}: ${nowObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-          
           if (this.db) {
             await setDoc(doc(this.db, 'trends', this.currentCountry), {
               items: freshItems,
@@ -614,7 +594,6 @@ class App {
           }
         }
       }
-
       if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
       if (document.querySelector('.info-card h3')) document.querySelector('.info-card h3').textContent = t.infoTitle;
       if (document.querySelector('.info-card p')) document.querySelector('.info-card p').textContent = t.infoDesc;
