@@ -192,7 +192,25 @@
     background: var(--primary);
     color: white;
   }
-  .opt-icon { font-size: 1.1rem; }
+  .opt-icon { 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  .theme-trigger-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+  .theme-menu-btn svg, .theme-opt svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
 
   /* Side Menu Toggle */
   .menu-toggle {
