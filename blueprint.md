@@ -23,12 +23,17 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Dynamic Icons:** Replaced static traffic numbers with color-coded up (▲), down (▼), and NEW indicators for better visual storytelling.
 - **Enhanced Trend List:** Updated `TrendList` component for clearer rank movement visualization.
 
-## **Phase 9: Multi-source Trend Integration (Current)**
+## **Phase 9: Multi-source Trend Integration (Done)**
 - **Portal Expansion:** Expanded data sources to include Signal.bz (Naver/Daum alternative for KR) and Yahoo! Japan Realtime (for JP) alongside Google Trends.
 - **Parallel Fetching:** Optimized collection speed using `Promise.all` for multi-source data retrieval.
 - **Smart Merging:** Implemented de-duplication and fallback logic to combine portal-specific trends with global data.
 - **UI Source Badges:** Added visible badges to indicate the origin of each trending keyword (Google, Signal, Yahoo).
 - **Refresh UX:** Added a 3.5s intentional delay with a simple circular loading animation to provide clear feedback during updates.
+
+## **Phase 10: UI/UX Refinement - Settings Submenu (Current)**
+- **Consolidated Settings:** Moving Country and Language settings into a unified "Settings" submenu to declutter the header.
+- **Improved Interaction:** Implementing a toggle-based submenu for better mobile and desktop experience.
+- **Persistent State:** Ensuring settings are preserved and correctly reflected in the new UI structure.
 
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -38,12 +43,13 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Implement Trend Analysis Modal and synthesized narrative summaries.
 - [x] Optimize speed via batch translation and persistent caching.
 - [x] Add placeholder advertisement slots for AdSense layout.
-- [x] Implement localized legal pages (Privacy, Terms, etc.).
+- [x] Implement localized legal pages (Privacy, etc.).
 - [x] Add cookie consent banner.
 - [x] Refine theme toggle with SVG icons and FAB layout.
-- [x] Final verification of Japanese localization and cross-language consistency.
+- [x] Final verification of Japanese localization.
 - [x] Implement Rank Comparison Logic and Visual Trend Icons.
 - [x] Expand TrendService to fetch from Portal sources (Signal, Yahoo).
-- [x] Add circular refresh animation and intentional delay.
-- [x] Update blueprint.md.
-- [x] Push all changes to GitHub.
+- [x] Add circular refresh animation.
+- [ ] Consolidate Country/Language settings into a unified Settings submenu.
+- [ ] Update blueprint.md.
+- [ ] Push all changes to GitHub.

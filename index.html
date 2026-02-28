@@ -78,13 +78,20 @@
         </div>
         
         <div class="nav-wrapper">
-          <div class="nav-group">
-            <span class="nav-label">Trends:</span>
-            <nav id="country-nav" class="pill-nav"></nav>
-          </div>
-          <div class="nav-group">
-            <span class="nav-label">Language:</span>
-            <nav id="lang-nav" class="pill-nav"></nav>
+          <div class="settings-menu">
+            <button id="settings-toggle" class="settings-toggle" aria-label="Settings">
+              <span class="settings-icon">⚙️</span>
+            </button>
+            <div id="settings-submenu" class="settings-submenu hidden">
+              <div class="nav-group">
+                <span class="nav-label">Trends:</span>
+                <nav id="country-nav" class="pill-nav"></nav>
+              </div>
+              <div class="nav-group">
+                <span class="nav-label">Language:</span>
+                <nav id="lang-nav" class="pill-nav"></nav>
+              </div>
+            </div>
           </div>
         </div>
       </div>

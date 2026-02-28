@@ -357,11 +357,35 @@ class App {
     };
     this.initInfoModals();
     this.initCookieBanner();
+    this.initSettingsMenu();
     this.renderNavs();
     await this.update();
     document.getElementById('top-trends').addEventListener('trend-click', e => this.modal.show(e.detail, this.currentLang, this.service));
-    window.addEventListener('click', () => document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded')));
+    
+    // Global click listener to close submenus
+    window.addEventListener('click', (e) => {
+      // Close individual pill navs
+      document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
+      
+      // Close settings submenu if clicking outside
+      const settingsMenu = document.querySelector('.settings-menu');
+      const settingsSubmenu = document.getElementById('settings-submenu');
+      if (settingsMenu && !settingsMenu.contains(e.target)) {
+        settingsSubmenu.classList.add('hidden');
+      }
+    });
+    
     setInterval(() => this.update(), this.service.refreshInterval);
+  }
+  initSettingsMenu() {
+    const toggle = document.getElementById('settings-toggle');
+    const submenu = document.getElementById('settings-submenu');
+    if (!toggle || !submenu) return;
+    toggle.onclick = (e) => {
+      e.stopPropagation();
+      submenu.classList.toggle('hidden');
+    };
+    submenu.onclick = (e) => e.stopPropagation();
   }
   initCookieBanner() {
     const banner = document.getElementById('cookie-banner');
@@ -395,7 +419,10 @@ class App {
         const nav = document.getElementById(id);
         if (!nav) return;
         const label = nav.parentElement.querySelector('.nav-label');
-        if (label) label.textContent = isMobile ? t[labelKey] : (labelKey === 'T' ? 'Trends:' : 'Language:');
+        if (label) {
+          if (labelKey === 'T') label.textContent = t.title;
+          else if (labelKey === 'L') label.textContent = "Language";
+        }
         const activeItem = items.find(i => i.code === current);
         if (!activeItem) return;
         nav.innerHTML = `<button class="country-btn active">${activeItem.flag}</button>${items.filter(i => i.code !== current).map(item => `<button class="country-btn" data-code="${item.code}">${item.flag}</button>`).join('')}`;
