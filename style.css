@@ -53,27 +53,13 @@
   ul { list-style: none; }
   a { color: var(--primary); text-decoration: none; transition: 0.2s; }
   a:hover { opacity: 0.8; }
-/* Refresh Icon & Update Status */
+/* Update Status */
 .update-status {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
   margin-top: 0.5rem;
-}
-
-.refresh-icon {
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--border);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: rotate 0.8s linear infinite;
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .hidden { display: none !important; }
