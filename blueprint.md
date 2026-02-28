@@ -32,9 +32,8 @@ TrendUp is a modern, high-performance web application that provides real-time To
 
 ## **Phase 10: UI/UX Refinement - Side Navigation & Versioning (Current)**
 - **Side Drawer Implementation:** A clean, mobile-first side navigation menu (≡).
-- **Country Selection UI Refinement:** Updated country selection to show [Flag] + [Country Name] in a horizontal list for better clarity.
-- **Unified Navigation:** All settings and site information moved to the side menu.
-- **Automatic Versioning & Deployment:** Version incremented to v1.3.0 and automatic push to GitHub after each update.
+- **Unified Expandable UI:** Both Country and Language settings use a horizontal expandable round icon design. Clicking the active icon reveals other options to the right.
+- **Automatic Versioning & Deployment:** Version incremented to v1.3.1 and automatic push to GitHub.
 
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -52,6 +51,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Expand TrendService to fetch from Portal sources (Signal, Yahoo).
 - [x] Add circular refresh animation.
 - [x] Consolidate settings into a side menu (≡).
-- [ ] Refine Country Selection UI with flags and names.
-- [ ] Update version to v1.3.0 across all files.
+- [x] Refine Country Selection UI with flags and names (v1.3.0).
+- [ ] Unify Country/Language UI to horizontal expandable icons (v1.3.1).
+- [ ] Update version to v1.3.1 across all files.
 - [ ] Push all changes to GitHub.
