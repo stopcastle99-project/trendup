@@ -136,11 +136,11 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    color: var(--text);
+    color: #000 !important; /* Force Black */
   }
   .theme-menu-btn:hover {
-    border-color: var(--primary);
-    background: var(--border);
+    border-color: #000;
+    background: rgba(0,0,0,0.05);
   }
   .theme-trigger-icon {
     font-size: 1.2rem;
@@ -150,16 +150,16 @@
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    background: var(--surface-glass);
+    background: rgba(255, 255, 255, 0.9); /* Force Light Background */
     backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 16px;
     padding: 0.5rem;
     min-width: 140px;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    box-shadow: var(--shadow-hover);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     z-index: 3000;
     transform-origin: top right;
     transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -179,18 +179,18 @@
     background: transparent;
     border-radius: 10px;
     cursor: pointer;
-    color: var(--text);
+    color: #000 !important; /* Force Black */
     font-weight: 600;
     font-size: 0.85rem;
     transition: background 0.2s;
     text-align: left;
   }
   .theme-opt:hover {
-    background: var(--border);
+    background: rgba(0,0,0,0.05);
   }
   .theme-opt.active {
-    background: var(--primary);
-    color: white;
+    background: #000;
+    color: #fff !important;
   }
   .opt-icon { 
     display: flex;
