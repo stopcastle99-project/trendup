@@ -82,7 +82,7 @@ let i18n = {
       return `${mainSummary}\n\n[報道メディア: ${(sources || []).slice(0, 3).join('、')} など]`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化するグロー바ルトレンド를 AI技術で分析し、ユーザー에 최적의 요약 정보를 제공하는 프리미엄 대시보드입니다.</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソース의 統合</strong>: Google、Yahoo! JAPAN 등의 주요 포털 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI深층分析</strong>: 単なるキーワード의 나열을 넘어, 해당 트렌드가 발생한 배경이나 문맥을 AI가 분석해서 제공합니다.</li><li><strong>信頼性の高いニュース</strong>: 検証된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化하는 グロー바ルトレンド를 AI技術で分析し、ユーザー에 최적의 요약 정보를 제공하는 프리미엄 대시보드입니다.</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソース의 統合</strong>: Google、Yahoo! JAPAN 등의 주요 포털 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI深층分析</strong>: 単なるキーワード의 나열을 넘어, 해당 트렌드가 발생한 배경이나 문맥을 AI가 분석해서 제공합니다.</li><li><strong>信頼性の高いニュース</strong>: 検証된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
       privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護를 최우선으로 합니다.</p><h3>1. 収集하는 情報</h3><p>当 서비스는 성함이나 메일 주소 등의 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선이나 통계 분석을 위해 쿠키나 액세스 로그가 자동으로 생성·수집될 수 있습니다. (v1.5.3)</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 免責事項</h3><p>情報の正確性에는 만전을 기하고 있으나, 외부 데이터 소스의 오류에 기인하는 결과에 대해서는 법적 책임을 지지 않습니다.</p>` },
       contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら, お気軽にメールにてご連絡ください.</p><p><strong>メール</strong>: help@trendup.ai</p>` }
@@ -339,7 +339,8 @@ class TrendModal extends HTMLElement {
   async show(trend, lang, service) {
     if (!trend) return;
     this.renderLoading();
-    this.shadowRoot.querySelector('.overlay').classList.add('active');
+    const overlay = this.shadowRoot.querySelector('.overlay');
+    if (overlay) overlay.classList.add('active');
     
     const snippets = trend.snippets || [];
     const sources = trend.sources || [];
@@ -358,7 +359,7 @@ class TrendModal extends HTMLElement {
   renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: 0.3s; } .overlay.active { opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing Trend...</div></div>`; }
   render(trend, lang, analysis) {
     const t = i18n[lang] || i18n.en;
-    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: 0.3s; } .overlay.active { opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; } .link:hover { border-color: var(--primary); background: var(--border); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; margin-bottom: -0.2rem; }</style>
+    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1 !important; pointer-events: auto !important; transition: 0.3s; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; z-index: 10000; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; } .link:hover { border-color: var(--primary); background: var(--border); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; margin-bottom: -0.2rem; }</style>
       <div class="overlay active"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><div><div class="link-meta">${l.source}</div><div>📄 ${l.title}</div></div></a>`).join('')}</div><span class="section-title">🎬 ${t.videos}</span><div class="link-group">${(trend.videoLinks || []).map(l => `<a href="${l.url}" target="_blank" class="link">▶️ ${l.title}</a>`).join('')}</div></div></div>`;
     this.shadowRoot.querySelector('.close').onclick = () => this.hide();
     this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
@@ -390,7 +391,6 @@ class App {
     this.initThemeIcons();
     this.applyTheme(this.themeMode);
     
-    // Explicitly create modal and add to body
     this.modal = document.createElement('trend-modal');
     document.body.appendChild(this.modal);
     
@@ -402,12 +402,12 @@ class App {
     await this.update();
     this.backgroundSyncAll(); 
     
-    // Definitive Global Event Listener for Detail Modal
     window.addEventListener('open-trend-modal', (e) => {
+      console.log("Global Event Caught: open-trend-modal", e.detail);
       if (this.modal) this.modal.show(e.detail, this.currentLang, this.service);
     });
 
-    window.addEventListener('click', () => {
+    window.addEventListener('click', (e) => {
       document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
       document.getElementById('theme-dropdown')?.classList.add('hidden');
     });
@@ -453,7 +453,7 @@ class App {
               lastUpdated: Timestamp.now()
             });
           }
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise(res => setTimeout(res, 3000));
         }
       } catch (e) { console.error(`Background sync for ${c.code} failed:`, e); }
     }
