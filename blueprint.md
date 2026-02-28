@@ -36,35 +36,24 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Advanced Theme Selection:** Header dropdown offering Light, Dark, and System Default options.
 - **Minimalist Iconography:** Replaced complex icons with ultra-simple, line-based monochrome SVGs for a modern aesthetic.
 
-## **Phase 11: Database Integration - Cloud Firestore (Current)**
-- **Remote Configuration:** Moving static UI strings (menus, labels, policy contents) to Firebase Firestore.
-- **Dynamic Localization:** Fetching localized text from DB based on user language.
-- **Fast Loading (Caching):** Implementing a caching layer using `localStorage` to ensure near-instant UI rendering while DB syncs in the background.
-- **Automatic Seeding:** Logic to populate Firestore with initial translations if the collection is empty.
-- **Automatic Versioning & Deployment:** Version incremented to v1.4.0 and automatic push to GitHub.
+## **Phase 11: Database Integration - Cloud Firestore (Done)**
+- **Remote Configuration:** Static UI strings (menus, labels, policy contents) moved to Firebase Firestore.
+- **Dynamic Localization:** Localized text fetched from DB with `localStorage` caching.
+
+## **Phase 12: Persistent Trend Storage & Seamless Rank Tracking (Current)**
+- **DB-First Rendering:** Application shows the most recent trends from Firestore immediately upon load, eliminating empty states.
+- **Intelligent Background Refresh:** Checks `lastUpdated` timestamp and triggers a new fetch only if 10 minutes have passed, optimizing API usage.
+- **Robust Rank Comparison:** Compares new results with the previous state stored in DB to determine rank movement (Up, Down, Steady, NEW).
+- **Automated Data Lifecycle:** Successfully fetched data updates the "Current" state, pushes old data to "Previous", and prunes obsolete records.
+- **Automatic Versioning & Deployment:** Version incremented to v1.5.0 and automatic push to GitHub.
 
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features.
 - [x] Implement `main.js` with Web Components and `TrendService`.
-- [x] Add Three.js for visual enhancements.
-- [x] Implement Trend Analysis Modal and synthesized narrative summaries.
-- [x] Optimize speed via batch translation and persistent caching.
-- [x] Add placeholder advertisement slots for AdSense layout.
-- [x] Implement localized legal pages (Privacy, etc.).
-- [x] Add cookie consent banner.
-- [x] Refine theme toggle with SVG icons and FAB layout.
-- [x] Final verification of Japanese localization.
-- [x] Implement Rank Comparison Logic and Visual Trend Icons.
-- [x] Expand TrendService to fetch from Portal sources (Signal, Yahoo).
-- [x] Add circular refresh animation.
-- [x] Consolidate settings into a side menu (≡).
-- [x] Unify Country/Language UI to horizontal expandable icons (v1.3.1).
-- [x] Implement advanced theme selection menu in header (v1.3.2).
-- [x] Replace theme emojis with monochrome SVG icons (v1.3.3).
-- [x] Fix theme menu visibility with high-contrast (v1.3.6).
-- [x] Comprehensive translation review (v1.3.7).
-- [ ] Integrate Firebase Firestore for remote UI strings (v1.4.0).
-- [ ] Implement caching logic for instant loading.
-- [ ] Update version to v1.4.0 across all files.
+...
+- [x] Integrate Firebase Firestore for remote UI strings (v1.4.0).
+- [ ] Implement DB-driven trend storage and comparison (v1.5.0).
+- [ ] Set 10-minute update interval for background sync.
+- [ ] Update version to v1.5.0 across all files.
 - [ ] Push all changes to GitHub.

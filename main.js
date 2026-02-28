@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp } from 'firebase/firestore';
 
 // --- Background Animation (Three.js) ---
 class BackgroundScene {
@@ -62,7 +62,7 @@ let i18n = {
     },
     pages: {
       about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다.</p><h3>2. 애드센스 및 쿠키 사용</h3><p>본 사이트는 구글 애드센스(Google AdSense)를 사용하여 광고를 게재합니다. 구글은 사용자의 방문 기록을 바탕으로 맞춤형 광고 제공을 위해 쿠키를 사용하며, 사용자는 구글 광고 설정에서 이를 해제할 수 있습니다.</p><h3>3. 정보의 보관</h3><p>통계 데이터는 서비스 개선 목적으로만 사용되며, 외부로 유출되거나 상업적으로 판매되지 않습니다. (v1.4.0)</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다.</p><h3>2. 애드센스 및 쿠키 사용</h3><p>본 사이트는 구글 애드센스(Google AdSense)를 사용하여 광고를 게재합니다. 구글은 사용자의 방문 기록을 바탕으로 맞춤형 광고 제공을 위해 쿠키를 사용하며, 사용자는 구글 광고 설정에서 이를 해제할 수 있습니다. (v1.5.0)</p>` },
       terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
       contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
     }
@@ -70,8 +70,8 @@ let i18n = {
   ja: { 
     title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", T: "トレンド設定", L: "言語設定", 
     infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 ひと目で確認し、世界の潮流를 把握しましょう。",
-    cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "確認",
-    siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
+    cookie: "本サイト은 ユーザー体験向상의 위해 쿠키를 사용합니다.", accept: "確認",
+    siteGuide: "사이트 안내", menuAbout: "TrendUpについて", menuPrivacy: "個人정보保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
     themes: { light: "ライト", dark: "ダーク", system: "システム" },
     labels: { trends: "国:", language: "言語:", site: "サイト案内" },
@@ -82,8 +82,8 @@ let i18n = {
       return `${mainSummary}\n\n[報道メディア: ${sources.slice(0, 3).join('、')} など]`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化するグローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します.</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAI가 분석해서提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています.</li></ul>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために, クッキーやアクセスログが自動的に生成・収集される場合があります。</p><h3>2. AdSenseとクッキーの使用</h3><p>当サイトはGoogle AdSenseを使用して広告を掲載しています. Googleはユーザーの訪問履歴に基づき, 最適な広告提供のためにクッキーを使用します. ユーザーはGoogleの広告設定からこれを無効化できます. (v1.4.0)</p>` },
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化하는 グローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します.</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAI가 분석해서提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています.</li></ul>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために, クッキーやアクセスログが自動的に生成・収集される場合があります。 (v1.5.0)</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは, 公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性에는 万全を期していますが, 外部データソースに起因する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
       contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら, お気軽にメールにてご連絡ください。</p><p><strong>メール</strong>: help@trendup.ai</p>` }
     }
@@ -104,7 +104,7 @@ let i18n = {
     },
     pages: {
       about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p><h3>Our Value</h3><ul><li><strong>Source Integration</strong>: Real-time validation across Google, Yahoo Japan, and other local portals.</li><li><strong>AI Summary</strong>: Deep context analysis using AI to provide storytelling beyond simple keywords.</li><li><strong>Verified News</strong>: Direct links to reputable news outlets and video content.</li></ul>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards.</p><h3>1. Data Collection</h3><p>We do not collect personally identifiable information such as names or emails. We only use cookies and server logs for service improvement and analytics.</p><h3>2. Google AdSense</h3><p>We use Google AdSense to serve ads. Google use cookies to serve ads based on your prior visits to this or other websites. (v1.4.0)</p>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.5.0)</p>` },
       terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p><h3>2. Limitation of Liability</h3><p>While we strive for accuracy, we are not responsible for any issues arising from inaccuracies in external data sources.</p>` },
       contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>If you have any questions or suggestions, please contact us at help@trendup.ai.</p>` }
     }
@@ -113,8 +113,7 @@ let i18n = {
 
 // --- Firebase Configuration ---
 const firebaseConfig = {
-  projectId: "trendup-ai",
-  // In Firebase Studio, configuration is often injected or accessible via standard SDK initialization
+  projectId: "trendup-ai"
 };
 
 // --- Trend Service ---
@@ -125,19 +124,13 @@ class TrendService {
       'https://corsproxy.io/?',
       'https://thingproxy.freeboard.io/fetch/'
     ];
-    this.refreshInterval = 15 * 60 * 1000;
+    this.refreshInterval = 10 * 60 * 1000; // 10 minutes
     this.cache = new Map();
-    this.prevRanks = new Map();
     try {
       const saved = sessionStorage.getItem('trend_cache');
       if (saved) {
         const parsed = JSON.parse(saved);
         Object.keys(parsed).forEach(k => this.cache.set(k, parsed[k]));
-      }
-      const savedRanks = sessionStorage.getItem('prev_ranks');
-      if (savedRanks) {
-        const parsedRanks = JSON.parse(savedRanks);
-        Object.keys(parsedRanks).forEach(k => this.prevRanks.set(k, parsedRanks[k]));
       }
     } catch (e) {}
   }
@@ -165,15 +158,6 @@ class TrendService {
       const obj = {}; this.cache.forEach((v, k) => { obj[k] = v; }); 
       sessionStorage.setItem('trend_cache', JSON.stringify(obj)); 
     } catch (e) {} 
-  }
-  saveRanks(trends, country) {
-    try {
-      const ranks = {};
-      trends.forEach((t, i) => { ranks[`${country}:${t.originalTitle}`] = i; });
-      const currentRanks = JSON.parse(sessionStorage.getItem('prev_ranks') || '{}');
-      sessionStorage.setItem('prev_ranks', JSON.stringify({ ...currentRanks, ...ranks }));
-      Object.keys(ranks).forEach(k => this.prevRanks.set(k, ranks[k]));
-    } catch (e) {}
   }
 
   async getGoogleTrends(country) {
@@ -250,7 +234,7 @@ class TrendService {
     return [];
   }
 
-  async getTrends(country, targetLang) {
+  async fetchFreshTrends(country, targetLang) {
     try {
       const [google, portal] = await Promise.all([this.getGoogleTrends(country), this.getPortalTrends(country)]);
       const combined = [...portal, ...google];
@@ -273,21 +257,25 @@ class TrendService {
         }
         const primarySearch = (t.newsLinks[0] && !t.newsLinks[0].isSystem) ? t.newsLinks[0].title : t.title;
         t.videoLinks = [{ title: `관련 영상 확인: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(primarySearch + " news")}`, isSystem: true }];
-        const prevRank = this.prevRanks.get(`${country}:${t.originalTitle}`);
-        const currentIndex = finalTen.indexOf(t);
-        t.trendDir = 'new';
-        if (prevRank !== undefined) {
-          if (currentIndex < prevRank) t.trendDir = 'up';
-          else if (currentIndex > prevRank) t.trendDir = 'down';
-          else t.trendDir = 'steady';
-        }
       }
+      // Translate only titles for initial display
       const titlesToTranslate = finalTen.map(t => t.title);
       const translatedTitles = await this.translateBatch(titlesToTranslate, targetLang);
-      const results = finalTen.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
-      this.saveRanks(results, country);
-      return results;
+      return finalTen.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
     } catch (e) { console.error(e); return []; }
+  }
+
+  calculateRankChanges(newItems, oldItems) {
+    return newItems.map((item, index) => {
+      const prevRank = oldItems ? oldItems.findIndex(o => o.originalTitle.toLowerCase() === item.originalTitle.toLowerCase()) : -1;
+      let trendDir = 'new';
+      if (prevRank !== -1) {
+        if (index < prevRank) trendDir = 'up';
+        else if (index > prevRank) trendDir = 'down';
+        else trendDir = 'steady';
+      }
+      return { ...item, trendDir };
+    });
   }
 
   async translateBatch(texts, targetLang) {
@@ -406,19 +394,12 @@ class App {
   async syncLocalization() {
     if (!this.db) return;
     try {
-      // 1. Check if local cache exists for versioning (optional)
       const cached = localStorage.getItem('i18n_cache');
       if (cached) { i18n = JSON.parse(cached); }
-
-      // 2. Fetch from Firestore
       const colRef = collection(this.db, 'localization');
       const snapshot = await getDocs(colRef);
-      
       if (snapshot.empty) {
-        // Seed DB if empty
-        for (const lang of Object.keys(i18n)) {
-          await setDoc(doc(this.db, 'localization', lang), i18n[lang]);
-        }
+        for (const lang of Object.keys(i18n)) { await setDoc(doc(this.db, 'localization', lang), i18n[lang]); }
       } else {
         const remoteData = {};
         snapshot.forEach(doc => { remoteData[doc.id] = doc.data(); });
@@ -527,42 +508,64 @@ class App {
       renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, 'L', (code) => this.switchLang(code));
     } catch (e) { console.error(e); }
   }
-  async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(); }
+  async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(false, true); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.initCookieBanner(); await this.update(true); }
-  async update(isLanguageSwitch = false) {
+  
+  async update(isLanguageSwitch = false, isCountrySwitch = false) {
     const requestId = ++this.currentRequestId;
     const refreshIcon = document.getElementById('refresh-icon');
     if (refreshIcon) refreshIcon.classList.remove('hidden');
+    
     try {
-      const delayPromise = isLanguageSwitch ? Promise.resolve() : new Promise(resolve => setTimeout(resolve, 3500));
-      const trendsPromise = this.service.getTrends(this.currentCountry, this.currentLang);
-      const [trends] = await Promise.all([trendsPromise, delayPromise]);
-      if (requestId !== this.currentRequestId) return;
       const t = i18n[this.currentLang] || i18n.en;
-      if (trends && trends.length >= 5) {
-        if (document.getElementById('top-trends')) {
+      
+      // 1. Try to load from DB first for immediate display
+      let dbData = null;
+      if (this.db) {
+        const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
+        if (trendDoc.exists()) {
+          dbData = trendDoc.data();
+          const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
           document.getElementById('top-trends').data = { trends, lang: this.currentLang };
         }
       }
+
+      // 2. Check if we need to fetch fresh data (if DB is old or empty or country switch)
+      const now = Date.now();
+      const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
+      const needsUpdate = isCountrySwitch || (now - lastUpdated > this.service.refreshInterval);
+
+      if (needsUpdate) {
+        const freshItems = await this.service.fetchFreshTrends(this.currentCountry, this.currentLang);
+        if (requestId !== this.currentRequestId) return;
+
+        if (freshItems && freshItems.length >= 5) {
+          const trends = this.service.calculateRankChanges(freshItems, dbData?.items || null);
+          document.getElementById('top-trends').data = { trends, lang: this.currentLang };
+          
+          // 3. Save back to DB
+          if (this.db) {
+            await setDoc(doc(this.db, 'trends', this.currentCountry), {
+              items: freshItems,
+              previousItems: dbData?.items || [],
+              lastUpdated: Timestamp.now()
+            });
+          }
+        }
+      }
+
+      // Update UI texts
       if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
       if (document.querySelector('.info-card h3')) document.querySelector('.info-card h3').textContent = t.infoTitle;
       if (document.querySelector('.info-card p')) document.querySelector('.info-card p').textContent = t.infoDesc;
-      
       const menuSections = document.querySelectorAll('.menu-section');
-      if (menuSections[0]) {
-        menuSections[0].querySelector('.menu-title').textContent = t.T;
-      }
-      if (menuSections[1]) {
-        menuSections[1].querySelector('.menu-title').textContent = t.labels.site;
-      }
-
-      // Update theme menu labels
+      if (menuSections[0]) menuSections[0].querySelector('.menu-title').textContent = t.T;
+      if (menuSections[1]) menuSections[1].querySelector('.menu-title').textContent = t.labels.site;
       document.querySelectorAll('.theme-opt').forEach(opt => {
         const key = opt.dataset.theme;
         const label = opt.querySelector('.opt-label');
         if (label && t.themes[key]) label.textContent = t.themes[key];
       });
-
       document.querySelectorAll('[data-page]').forEach(el => {
         const key = el.getAttribute('data-page');
         if (key === 'about') el.textContent = t.menuAbout;
@@ -571,8 +574,8 @@ class App {
         if (key === 'contact') el.textContent = t.menuContact;
       });
       if (document.getElementById('last-updated')) { 
-        const now = new Date(); 
-        document.getElementById('last-updated').textContent = `${t.update}: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`; 
+        const date = dbData ? dbData.lastUpdated.toDate() : new Date();
+        document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`; 
       }
     } catch (e) { if (requestId === this.currentRequestId) console.error("Update failed:", e); }
     finally { if (requestId === this.currentRequestId && refreshIcon) refreshIcon.classList.add('hidden'); }
