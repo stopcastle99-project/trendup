@@ -70,7 +70,7 @@ let i18n = {
   ja: { 
     title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", T: "トレンド設定", L: "言語設定", 
     infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワード를 ひと目で確認し、世界の潮流를 把握しましょう。",
-    cookie: "本サイト은 ユーザー体験向상의 위해 쿠키를 사용합니다.", accept: "確認",
+    cookie: "本사이트는 ユーザー体験向상의 위해 쿠키를 사용합니다.", accept: "確認",
     siteGuide: "사이트 안내", menuAbout: "TrendUpについて", menuPrivacy: "個人정보保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
     themes: { light: "ライト", dark: "ダーク", system: "システム" },
@@ -82,9 +82,9 @@ let i18n = {
       return `${mainSummary}\n\n[報道メディア: ${sources.slice(0, 3).join('、')} など]`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化하는 グローバルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します.</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAI가 분석해서提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています.</li></ul>` },
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流를 読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化하는 グローバルトレンド를 AI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボード입니다.</p><h3>TrendUp의 가치</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します.</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAI가 분석해서 제공합니다.</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています.</li></ul>` },
       privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために, クッキーやアクセスログが自動的に生成・収集される場合があります。 (v1.5.0)</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは, 公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性에는 万全を期していますが, 外部データソースに起因する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
+      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは, 公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性에는 万全를 期していますが, 外部データソースに起인하는 誤りについて、当社は一切の責任를 負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
       contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案がございましたら, お気軽にメールにてご連絡ください。</p><p><strong>メール</strong>: help@trendup.ai</p>` }
     }
   },
@@ -258,7 +258,6 @@ class TrendService {
         const primarySearch = (t.newsLinks[0] && !t.newsLinks[0].isSystem) ? t.newsLinks[0].title : t.title;
         t.videoLinks = [{ title: `관련 영상 확인: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(primarySearch + " news")}`, isSystem: true }];
       }
-      // Translate only titles for initial display
       const titlesToTranslate = finalTen.map(t => t.title);
       const translatedTitles = await this.translateBatch(titlesToTranslate, targetLang);
       return finalTen.map((t, i) => ({ ...t, title: translatedTitles[i] || t.title }));
@@ -266,6 +265,7 @@ class TrendService {
   }
 
   calculateRankChanges(newItems, oldItems) {
+    if (!newItems) return [];
     return newItems.map((item, index) => {
       const prevRank = oldItems ? oldItems.findIndex(o => o.originalTitle.toLowerCase() === item.originalTitle.toLowerCase()) : -1;
       let trendDir = 'new';
@@ -360,6 +360,7 @@ class App {
     this.init();
   }
   async init() {
+    console.log("App Init: v1.5.0");
     try {
       const app = initializeApp(firebaseConfig);
       this.db = getFirestore(app);
@@ -398,13 +399,13 @@ class App {
       if (cached) { i18n = JSON.parse(cached); }
       const colRef = collection(this.db, 'localization');
       const snapshot = await getDocs(colRef);
-      if (snapshot.empty) {
-        for (const lang of Object.keys(i18n)) { await setDoc(doc(this.db, 'localization', lang), i18n[lang]); }
-      } else {
+      if (!snapshot.empty) {
         const remoteData = {};
         snapshot.forEach(doc => { remoteData[doc.id] = doc.data(); });
         i18n = remoteData;
         localStorage.setItem('i18n_cache', JSON.stringify(i18n));
+      } else {
+        for (const lang of Object.keys(i18n)) { await setDoc(doc(this.db, 'localization', lang), i18n[lang]); }
       }
     } catch (e) { console.error("Localization sync failed:", e); }
   }
@@ -439,7 +440,6 @@ class App {
       targetTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     document.documentElement.setAttribute('data-theme', targetTheme);
-    
     const triggerIcon = document.querySelector('.theme-trigger-icon');
     if (triggerIcon) {
       if (mode === 'light') triggerIcon.innerHTML = ICONS.sun;
@@ -518,32 +518,35 @@ class App {
     
     try {
       const t = i18n[this.currentLang] || i18n.en;
-      
-      // 1. Try to load from DB first for immediate display
       let dbData = null;
       if (this.db) {
-        const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
-        if (trendDoc.exists()) {
-          dbData = trendDoc.data();
-          const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
-          document.getElementById('top-trends').data = { trends, lang: this.currentLang };
-        }
+        try {
+          const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
+          if (trendDoc.exists()) {
+            dbData = trendDoc.data();
+            const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
+            if (document.getElementById('top-trends')) document.getElementById('top-trends').data = { trends, lang: this.currentLang };
+            const date = dbData.lastUpdated.toDate();
+            if (document.getElementById('last-updated')) document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+          }
+        } catch (dbErr) { console.error("DB Load Error:", dbErr); }
       }
 
-      // 2. Check if we need to fetch fresh data (if DB is old or empty or country switch)
       const now = Date.now();
       const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
-      const needsUpdate = isCountrySwitch || (now - lastUpdated > this.service.refreshInterval);
+      const needsUpdate = isCountrySwitch || isLanguageSwitch || (now - lastUpdated > this.service.refreshInterval) || !dbData;
 
       if (needsUpdate) {
+        console.log("Fetching fresh trends...");
         const freshItems = await this.service.fetchFreshTrends(this.currentCountry, this.currentLang);
         if (requestId !== this.currentRequestId) return;
 
         if (freshItems && freshItems.length >= 5) {
           const trends = this.service.calculateRankChanges(freshItems, dbData?.items || null);
-          document.getElementById('top-trends').data = { trends, lang: this.currentLang };
+          if (document.getElementById('top-trends')) document.getElementById('top-trends').data = { trends, lang: this.currentLang };
+          const nowObj = new Date();
+          if (document.getElementById('last-updated')) document.getElementById('last-updated').textContent = `${t.update}: ${nowObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
           
-          // 3. Save back to DB
           if (this.db) {
             await setDoc(doc(this.db, 'trends', this.currentCountry), {
               items: freshItems,
@@ -554,7 +557,6 @@ class App {
         }
       }
 
-      // Update UI texts
       if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
       if (document.querySelector('.info-card h3')) document.querySelector('.info-card h3').textContent = t.infoTitle;
       if (document.querySelector('.info-card p')) document.querySelector('.info-card p').textContent = t.infoDesc;
@@ -573,11 +575,7 @@ class App {
         if (key === 'terms') el.textContent = t.menuTerms;
         if (key === 'contact') el.textContent = t.menuContact;
       });
-      if (document.getElementById('last-updated')) { 
-        const date = dbData ? dbData.lastUpdated.toDate() : new Date();
-        document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`; 
-      }
-    } catch (e) { if (requestId === this.currentRequestId) console.error("Update failed:", e); }
+    } catch (e) { console.error("Update failed:", e); }
     finally { if (requestId === this.currentRequestId && refreshIcon) refreshIcon.classList.add('hidden'); }
   }
 }
