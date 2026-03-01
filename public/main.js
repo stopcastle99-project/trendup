@@ -68,7 +68,7 @@ let i18n = {
           <p style="margin-bottom:1rem;">TrendUp은 빅데이터와 AI 기술을 활용하여 전 세계의 실시간 트렌드를 분석하고 시각화하는 차세대 정보 플랫폼입니다.</p>
         ` 
       },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp(v1.8.4)은 이용자의 개인정보를 소중히 다룹니다.</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp(v1.8.5)은 이용자의 개인정보를 소중히 다룹니다.</p>` },
       terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스 이용에 관한 규정입니다.</p>` },
       contact: { title: "문의하기", content: `<h2>고객 지원</h2><p>Email: help@trendup.ai</p>` }
     }
@@ -90,7 +90,7 @@ let i18n = {
     },
     pages: {
       about: { title: "TrendUpについて", content: `<h2>TrendUpについて</h2><p>次世代のトレンド情報プラットフォームです。</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>利用者の個人情報を尊重します。(v1.8.4)</p>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>利用者の個人情報を尊重します。(v1.8.5)</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><p>サービス利用に関する規約です。</p>` },
       contact: { title: "お問い合わせ", content: `<h2>サポート</h2><p>メール: help@trendup.ai</p>` }
     }
@@ -112,7 +112,7 @@ let i18n = {
     },
     pages: {
       about: { title: "About TrendUp", content: `<h2>About TrendUp</h2><p>Next-generation trend intelligence platform.</p>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We respect your privacy. (v1.8.4)</p>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We respect your privacy. (v1.8.5)</p>` },
       terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><p>Terms and conditions for use.</p>` },
       contact: { title: "Contact Us", content: `<h2>Customer Support</h2><p>Email: help@trendup.ai</p>` }
     }
@@ -199,7 +199,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.8.4");
+    console.log("App Init: v1.8.5");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -247,7 +247,7 @@ class App {
         if (text.includes('lang')) label.textContent = t.labels.language;
       });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.4)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.5)`;
     } catch (e) {}
   }
   initThemeIcons() {
