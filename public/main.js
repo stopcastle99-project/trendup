@@ -38,7 +38,7 @@ class BackgroundScene {
 
 // --- Icons ---
 const ICONS = {
-  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" x1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" x1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" x1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" x1="18.36" x2="19.78" y2="19.78"></line><line x1="1" x1="12" x2="3" y2="12"></line><line x1="21" x1="12" x2="23" y2="12"></line><line x1="4.22" x1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
 };
@@ -71,7 +71,7 @@ let i18n = {
         title: "개인정보처리방침", 
         content: `
           <h2 style="margin-bottom:1rem;">개인정보처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 매우 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률" 등 모든 관련 법령을 철저히 준수하고 있습니다. 본 방침은 귀하가 본 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지에 대해 투명하게 설명합니다. (v1.9.1)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 매우 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률" 등 모든 관련 법령을 철저히 준수하고 있습니다. 본 방침은 귀하가 본 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지에 대해 투명하게 설명합니다. (v1.9.2)</p>
           
           <h3 style="margin:1.5rem 0 0.5rem;">1. 수집하는 정보의 항목 및 수집 방법</h3>
           <p>본 서비스는 별도의 회원가입 절차 없이 누구나 자유롭게 이용할 수 있습니다. 다만, 서비스 이용 과정에서 다음과 같은 정보들이 자동으로 생성되어 수집될 수 있습니다.</p>
@@ -121,8 +121,8 @@ let i18n = {
     analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '詳細がありません。',
     pages: {
       about: { title: "TrendUpについて", content: `<h2>TrendUpについて</h2><p>TrendUp은 빅데이터와 AI 기술을 활용하여 전 세계의 실시간 트렌드를 분석하고 시각화하는 차세대 정보 플랫폼입니다.</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.9.1)</p><h3>Google AdSenseについて</h3><p>当サイト는 Google AdSenseを使用しています。Googleなどの第三者配信事業者は、Cookieを使用して、ユーザーが当サイトや他のウェブサイトに過去にアクセスした際の情報に基づいて広告を配信します。</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスの利用条件、およびユーザーと運営者の権利・義務を規定します。提供される情報は参考用であり、完全性を保証するものではありません。</p>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUp（以下「当サービス」）은 ユーザー의 個人정보를 尊重하고、関連법규를 遵守합니다。(v1.9.2)</p><h3>Google AdSenseについて</h3><p>当사이트는 Google AdSenseを使用しています。Googleなどの第三者配信事業者は、Cookieを使用して、ユーザーが当사이트や他の웹사이트에 過去にアクセスした際の情報に基づいて광고를 配信します。</p>` },
+      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスの利用条件、およびユーザーと運営者の権利・義務を規定します. 제공되는 정보는 참고용이며、完全성을 보장하는 것은 아닙니다.</p>` },
       contact: { title: "お問い合わせ", content: `<h2>サポート</h2><p>メール: help@trendup.ai</p>` }
     }
   },
@@ -149,7 +149,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.9.1)</p>
+          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.9.2)</p>
           <h3 style="margin:1.5rem 0 0.5rem;">Google AdSense</h3>
           <p>This site uses Google AdSense. Third party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites.</p>
           <p>Users may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank">Ads Settings</a>.</p>
@@ -223,10 +223,13 @@ class TrendModal extends HTMLElement {
   hide() { this.isVisible = false; this.shadowRoot.innerHTML = ''; }
   render(trend, lang, analysis) {
     const t = i18n[lang] || i18n.en;
-    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; flex-direction: column; } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; }</style>
+    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; cursor: default; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); display: flex; align-items: center; justify-content: center; } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; flex-direction: column; } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; }</style>
       <div class="overlay"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.displayTitle || trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('')}</div></div></div>`;
-    this.shadowRoot.querySelector('.close').onclick = () => this.hide();
+    
+    // Close on 'X' or click outside
+    this.shadowRoot.querySelector('.close').onclick = (e) => { e.stopPropagation(); this.hide(); };
     this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
+    this.shadowRoot.querySelector('.modal').onclick = (e) => { e.stopPropagation(); };
   }
 }
 
@@ -244,7 +247,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.9.1");
+    console.log("App Init: v1.9.2");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -291,7 +294,7 @@ class App {
         if (text.includes('lang')) label.textContent = t.labels.language;
       });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.1)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.2)`;
     } catch (e) {}
   }
   initThemeIcons() {
