@@ -381,7 +381,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.5.7");
+    console.log("App Init: v1.5.8");
     this.initThemeIcons();
     this.applyTheme(this.themeMode);
     this.modal = document.createElement('trend-modal');
@@ -391,6 +391,7 @@ class App {
     this.initSideMenu();
     this.initThemeMenu();
     this.renderNavs();
+    this.refreshUIText();
     window.addEventListener('open-trend-modal', (e) => {
       if (this.modal) this.modal.show(e.detail, this.currentLang, this.service);
     });
@@ -409,6 +410,7 @@ class App {
       const app = initializeApp(firebaseConfig);
       this.db = getFirestore(app);
       await this.syncLocalization();
+      this.refreshUIText();
       this.renderNavs();
       await this.update();
       this.backgroundSyncAll();
@@ -428,7 +430,68 @@ class App {
       localStorage.setItem('i18n_cache', JSON.stringify(i18n));
     } catch (e) { console.error("Localization sync failed:", e); }
   }
-  async backgroundSyncAll() {
+  refreshUIText() {
+    const t = i18n[this.currentLang] || i18n.en;
+    
+    // Header/Hero
+    if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
+    
+    // Sidebar/Info Card
+    const infoCardH3 = document.querySelector('.info-card h3');
+    const infoCardP = document.querySelector('.info-card p');
+    if (infoCardH3) infoCardH3.textContent = t.infoTitle;
+    if (infoCardP) infoCardP.textContent = t.infoDesc;
+
+    // Menu Labels
+    const menuSections = document.querySelectorAll('.menu-section');
+    if (menuSections[0]) {
+      const menuTitle = menuSections[0].querySelector('.menu-title');
+      if (menuTitle) menuTitle.textContent = t.T;
+    }
+    if (menuSections[1]) {
+      const menuTitle = menuSections[1].querySelector('.menu-title');
+      if (menuTitle) menuTitle.textContent = t.labels.site;
+    }
+
+    // Pill Nav Labels (Trends:, Language:)
+    document.querySelectorAll('.nav-label').forEach(label => {
+      const text = label.textContent.toLowerCase();
+      if (text.includes('trend') || text.includes('국가') || text.includes('国')) label.textContent = t.labels.trends;
+      if (text.includes('lang') || text.includes('언어') || text.includes('言語')) label.textContent = t.labels.language;
+    });
+
+    // Menu & Footer Links
+    document.querySelectorAll('[data-page]').forEach(el => {
+      const key = el.getAttribute('data-page');
+      if (key === 'about') el.textContent = t.menuAbout;
+      else if (key === 'privacy') el.textContent = t.menuPrivacy;
+      else if (key === 'terms') el.textContent = t.menuTerms;
+      else if (key === 'contact') el.textContent = t.menuContact;
+    });
+
+    // Theme Labels
+    document.querySelectorAll('.theme-opt').forEach(opt => {
+      const key = opt.dataset.theme;
+      const label = opt.querySelector('.opt-label');
+      if (label && t.themes[key]) label.textContent = t.themes[key];
+    });
+
+    // Cookie Banner
+    const cookieBanner = document.getElementById('cookie-banner');
+    if (cookieBanner) {
+      const p = cookieBanner.querySelector('p');
+      const btn = cookieBanner.querySelector('button');
+      if (p) p.textContent = t.cookie;
+      if (btn) btn.textContent = t.accept;
+    }
+
+    // Footer Copyright
+    const footerText = document.querySelector('.footer-content p');
+    if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.5.8)`;
+    const sideMenuFooter = document.querySelector('.side-menu-footer p');
+    if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
+  }
+  backgroundSyncAll() {
     if (!this.db) return;
     const countries = this.service.getCountries();
     for (const c of countries) {

@@ -22,5 +22,11 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Remove loading animations and show actual timestamps (v1.5.2).
 - [x] Fix Modal visibility on PC/Desktop environments (v1.5.7).
 - [x] Ensure data consistency for all trend sources (v1.5.7).
-- [x] Update version to v1.5.7 across all files.
+- [x] Implement robust language switching and fixed text updates (v1.5.8).
+- [x] Update version to v1.5.8 across all files.
 - [x] Push all changes to GitHub.
+
+## **Phase 16: Robust Language Switching (Done)**
+- **Centralized UI Text Management:** Introduced `refreshUIText()` to dynamically update all fixed labels (Language, Country, Menu items) when language changes.
+- **Fixed Text Consistency:** Resolved issues where certain hardcoded UI elements in `index.html` were not reflecting language changes.
+- **Automatic Versioning & Deployment:** Version incremented to v1.5.8 and automatic push to GitHub.
