@@ -47,7 +47,6 @@ const ICONS = {
 let i18n = {
   ko: { 
     title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "트렌드 분석 중...", analyzing: "상세 내용 분석 중...", T: "트렌드 설정", L: "언어 설정", 
-    infoTitle: "TrendUp 정보", infoDesc: "다양한 국가의 실시간 급상승 키워드를 한눈에 확인하고 세상의 흐름을 읽어보세요.",
     cookie: "본 사이트는 사용자 경험 개선을 위해 쿠키를 사용합니다.", accept: "확인",
     siteGuide: "사이트 안내", menuAbout: "TrendUp 소개", menuPrivacy: "개인정보처리방침", menuTerms: "이용약관", menuContact: "문의하기",
     countries: { KR: "대한민국", JP: "일본", US: "미국" },
@@ -380,7 +379,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.6.3");
+    console.log("App Init: v1.6.4");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -448,10 +447,6 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       const titleEl = document.getElementById('current-country-title');
       if (titleEl) titleEl.textContent = t.title;
-      const infoCardH3 = document.querySelector('.info-card h3');
-      const infoCardP = document.querySelector('.info-card p');
-      if (infoCardH3) infoCardH3.textContent = t.infoTitle;
-      if (infoCardP) infoCardP.textContent = t.infoDesc;
       const menuSections = document.querySelectorAll('.menu-section');
       if (menuSections[0]) {
         const menuTitle = menuSections[0].querySelector('.menu-title');
@@ -486,7 +481,7 @@ class App {
         if (btn) btn.textContent = t.accept;
       }
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.3)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.4)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }

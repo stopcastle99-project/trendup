@@ -3,49 +3,11 @@
 ## **Overview**
 TrendUp is a modern, high-performance web application that provides real-time Top 10 trends for various countries.
 
-## **Phase 14: Minimalist UI & Accurate Timestamps (Done)**
-- **Loading UI Removal:** Removed the circular refresh icon/loading bar.
-- **Actual Update Timestamps:** UI displays the precise time the data was last persisted in DB.
-
-## **Phase 15: Cross-Platform Reliability & Event Fixes (Done)**
-- **Modal Stability Fix:** Improved event handling to ensure the detail modal works perfectly on both Mobile and Desktop (PC).
-- **Data Schema Defense:** Ensured all trend items have consistent properties (snippets, sources) to prevent crashes during modal rendering.
-- **Custom Element Styling:** Added explicit display rules for Web Components to avoid rendering inconsistencies across browsers.
-- **Automatic Versioning & Deployment:** Version incremented to v1.5.7 and automatic push to GitHub.
-
-## **Phase 16: Robust Language Switching (Done)**
-- **Centralized UI Text Management:** Introduced `refreshUIText()` to dynamically update all fixed labels (Language, Country, Menu items) when language changes.
-- **Fixed Text Consistency:** Resolved issues where certain hardcoded UI elements in `index.html` were not reflecting language changes.
-- **Automatic Versioning & Deployment:** Version incremented to v1.5.8 and automatic push to GitHub.
-
-## **Phase 17: Runtime Stability & Code Refactoring (Done)**
-- **Redundancy Removal:** Consolidated UI update logic in `App.update()` into the `refreshUIText()` method to ensure single source of truth for translations.
-- **Syntax Error Defense:** Verified and cleaned up script endings to prevent JavaScript load failures.
-- **Improved Initialization Flow:** Ensured `refreshUIText()` is called immediately during the sync process to prevent "flash of untranslated content."
-- **Automatic Versioning & Deployment:** Version incremented to v1.5.9 and automatic push to GitHub.
-
-## **Phase 18: Defensive UI & Initialization Recovery (Done)**
-- **Zero-Error Initialization:** Added extensive Optional Chaining (`?.`) and null checks across all DOM manipulations to ensure the app continues to load even if specific elements are missing.
-- **Component Recovery:** Fixed issues where sub-menus, theme selectors, and trend lists failed to appear due to initialization crashes.
-- **Initialization Reordering:** Prioritized core menu initialization before UI text refreshes to guarantee functional interactivity.
-- **Automatic Versioning & Deployment:** Version incremented to v1.6.0 and automatic push to GitHub.
-
-## **Phase 19: Performance Optimization & Instant Load (Done)**
-- **Local Cache First Strategy:** Implemented `localStorage` caching for trend data per country, allowing the UI to render in under 0.1s on subsequent visits.
-- **Stale-While-Revalidate Pattern:** The app now shows cached data immediately while fetching fresh data from Firebase/Sources in the background.
-- **Smart Scrape Reduction:** If DB data is fresh (under 10 mins), the expensive real-time scraping process is skipped to save bandwidth and improve speed.
-- **Hierarchical Data Loading:** Optimized the sequence from Local Cache -> Firestore -> Real-time Scraper for maximum responsiveness.
-- **Automatic Versioning & Deployment:** Version incremented to v1.6.1 and automatic push to GitHub.
-
-## **Phase 20: Persistent Global Warming & Sync (Done)**
-- **Global Background Sync:** Refactored `backgroundSyncAll` to run periodically every 10 minutes, ensuring Firestore data for all supported countries (KR, JP, US) is kept fresh regardless of the user's active country selection.
-- **Automatic Versioning & Deployment:** Version incremented to v1.6.2 and automatic push to GitHub.
-
-## **Phase 21: Translation Purity & i18n Perfection (Done)**
-- **Zero-Korean Policy for ja/en:** Identified and removed all hardcoded Korean strings from Japanese and English templates.
-- **System Link Translation:** "Google Search" and "Related Videos" links are now dynamically translated based on the active language.
-- **Forced DB Sync:** Enhanced `syncLocalization` to push the latest corrected translations to Firebase Firestore, ensuring all users get the highest quality text.
-- **Automatic Versioning & Deployment:** Version incremented to v1.6.3 and automatic push to GitHub.
+## **Phase 22: Clean Dashboard & Sidebar Optimization (Done)**
+- **Info Card Removal:** Deleted the "TrendUp 정보" card from the sidebar to create a cleaner, more minimalist layout.
+- **Codebase Sanitization:** Removed all CSS styles and JavaScript localization logic related to the info card.
+- **Version Increment:** Updated application version to v1.6.4 across all files.
+- **Automatic Deployment:** Automated the git push process for continuous integration.
 
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -75,4 +37,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Update version to v1.6.2 across all files.
 - [x] Purge untranslated strings and perfect i18n logic (v1.6.3).
 - [x] Update version to v1.6.3 across all files.
+- [x] Remove Info Card from sidebar and optimize UI (v1.6.4).
+- [x] Update version to v1.6.4 across all files.
 - [x] Push all changes to GitHub.

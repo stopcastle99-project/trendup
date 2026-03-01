@@ -449,16 +449,6 @@
   .sidebar-ad { min-height: 250px; }
   .banner-ad { min-height: 120px; margin-top: 2rem; }
 
-  /* Info Cards */
-  .info-card {
-    background: var(--surface);
-    padding: 1.5rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    margin-bottom: 1.5rem;
-  }
-
   /* Cookie Banner */
   .cookie-banner {
     position: fixed; bottom: 2rem; left: 2rem;
