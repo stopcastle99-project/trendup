@@ -13,6 +13,7 @@ try {
 const db = admin.firestore();
 
 class TrendUpdater {
+  // 번역 및 요약 로직
   async translateBatch(texts, targetLang) {
     if (!texts || texts.length === 0) return [];
     const translateSingle = async (text, tl) => {
@@ -23,14 +24,27 @@ class TrendUpdater {
       } catch (e) { return text; }
     };
     try {
-      const combinedText = texts.join(" ||| ");
+      const separator = " ||| ";
+      const combinedText = texts.join(separator);
       const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`);
-      if (!res.ok) throw new Error();
       const data = await res.json();
-      const translated = data[0].map(x => x[0]).join("");
-      const results = translated.split(/\|\|\||\| \| \|/).map(s => s.trim());
+      const results = data[0].map(x => x[0]).join("").split(/\|\|\||\| \| \|/).map(s => s.trim());
       return results.length === texts.length ? results : await Promise.all(texts.map(t => translateSingle(t, targetLang)));
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
+  }
+
+  // AI 스타일의 종합 리포트 생성 (가져온 뉴스 기반)
+  generateAIReport(item, lang) {
+    const newsTitles = item.newsLinks?.map(n => n.title).slice(0, 3) || [];
+    const snippets = item.snippets?.slice(0, 2) || [];
+    
+    if (lang === 'ko') {
+      return `현재 '${item.originalTitle}'(이)가 주요 이슈로 떠오르고 있습니다. 관련 보도에 따르면 ${newsTitles.join(', ')} 등의 소식이 화제가 되고 있으며, ${snippets.join(' ')} 등의 맥락이 관찰됩니다. 종합적으로 대중의 관심이 매우 높은 상태입니다.`;
+    } else if (lang === 'ja') {
+      return `'${item.originalTitle}'이 현재 큰 관심을 받고 있습니다. ${newsTitles.join(', ')} 등의 소식이 전해지고 있으며, ${snippets.join(' ')} 와 같은 배경이 있습니다.`;
+    } else {
+      return `'${item.originalTitle}' is currently a major trend. News reports highlight ${newsTitles.join(', ')}. The context includes ${snippets.join(' ')}.`;
+    }
   }
 
   async getGoogleTrends(country) {
@@ -66,10 +80,7 @@ class TrendUpdater {
       const html = await res.text();
       const dom = new JSDOM(html);
       const items = code === 'KR' ? dom.window.document.querySelectorAll('.rank-item .text') : dom.window.document.querySelectorAll('.Trend_Trend__item__name');
-      return Array.from(items).slice(0, 10).map(el => {
-        const title = el.textContent.trim();
-        return { title, originalTitle: title, growth: 'Portal', source: code === 'KR' ? 'Signal' : 'Yahoo', newsLinks: [], snippets: [] };
-      });
+      return Array.from(items).slice(0, 10).map(el => ({ title: el.textContent.trim(), originalTitle: el.textContent.trim(), growth: 'Portal', source: code === 'KR' ? 'Signal' : 'Yahoo', newsLinks: [], snippets: [] }));
     } catch (e) { return []; }
   }
 
@@ -79,22 +90,39 @@ class TrendUpdater {
     for (const code of countries) {
       console.log(`Processing ${code}...`);
       let combined = code === 'US' ? await this.getGoogleTrends(code) : [...await this.getPortalTrends(code), ...await this.getGoogleTrends(code)];
+      
       const seen = new Set();
       const unique = [];
       for (const t of combined) {
         const norm = t.originalTitle.toLowerCase().replace(/\s/g, '');
-        if (!seen.has(norm)) { seen.add(norm); unique.push(t); }
+        if (!seen.has(norm)) { 
+          seen.add(norm); 
+          // 구글 트렌드 데이터에서 정보 보강
+          if (t.source !== 'Google') {
+            const match = combined.find(g => g.source === 'Google' && (g.originalTitle.includes(t.originalTitle) || t.originalTitle.includes(g.originalTitle)));
+            if (match) { t.newsLinks = match.newsLinks; t.snippets = match.snippets; t.growth = match.growth; }
+          }
+          unique.push(t); 
+        }
         if (unique.length >= 10) break;
       }
+
       if (unique.length > 0) {
         for (const lang of langs) {
+          console.log(`Translating ${code} to ${lang}...`);
           const titles = unique.map(item => item.originalTitle);
           const translated = await this.translateBatch(titles, lang);
+          
           unique.forEach((item, idx) => {
             if (!item.translations) item.translations = {};
+            if (!item.aiReports) item.aiReports = {};
+            
             item.translations[lang] = translated[idx] || item.originalTitle;
+            // AI 분석 리포트 생성 (가져온 뉴스 및 스니펫 기반)
+            item.aiReports[lang] = this.generateAIReport(item, lang);
           });
         }
+        
         const docRef = db.collection('trends').doc(code);
         const oldDoc = await docRef.get();
         await docRef.set({
@@ -104,6 +132,7 @@ class TrendUpdater {
         });
       }
     }
+    console.log("Global Sync & AI Report Generation Completed.");
     process.exit(0);
   }
 }
