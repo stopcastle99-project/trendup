@@ -46,75 +46,31 @@ const ICONS = {
 // --- Localization (Cleaned & Perfected) ---
 let i18n = {
   ko: { 
-    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "트렌드 데이터를 불러오는 중...", analyzing: "상세 내용 분석 중...", T: "트렌드 설정", L: "언어 설정", 
-    cookie: "본 사이트는 사용자 경험 개선을 위해 쿠키를 사용합니다.", accept: "확인",
-    siteGuide: "사이트 안내", menuAbout: "TrendUp 소개", menuPrivacy: "개인정보처리방침", menuTerms: "이용약관", menuContact: "문의하기",
-    countries: { KR: "대한민국", JP: "일본", US: "미국" },
-    themes: { light: "밝게", dark: "어둡게", system: "시스템" },
-    labels: { trends: "국가:", language: "언어:", site: "사이트 정보" },
-    sysLinks: { search: "구글 검색", video: "관련 영상 확인" },
+    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "불러오는 중...", analyzing: "상세 분석 중...", T: "트렌드 설정", L: "언어 설정", 
+    translated: "기계 번역",
+    countries: { KR: "대한민국", JP: "일본", US: "미국" }, themes: { light: "밝게", dark: "어둡게", system: "시스템" }, labels: { trends: "국가:", language: "언어:", site: "사이트 정보" }, sysLinks: { search: "구글 검색", video: "관련 영상 확인" },
     analysisTemplate: (title, sources, snippets) => {
       if (!snippets || snippets.length === 0) return `'${title}' 주제가 현재 검색 포털을 통해 빠르게 확산되며 대중의 큰 관심을 받고 있습니다.`;
-      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 20);
-      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
-      const sourceInfo = (sources && sources.length > 0) ? `\n\n[보도 매체: ${sources.slice(0, 3).join(', ')} 등]` : "";
-      return `${mainSummary}${sourceInfo}`;
+      return snippets.slice(0, 3).join(' ');
     },
-    pages: {
-      about: { 
-        title: "TrendUp 소개", 
-        content: `
-          <h2 style="margin-bottom:1rem;">TrendUp: 글로벌 트렌드 인사이트 플랫폼</h2>
-          <p style="margin-bottom:1rem;">TrendUp은 빅데이터와 AI 기술을 활용하여 전 세계의 실시간 트렌드를 분석하고 시각화하는 차세대 정보 플랫폼입니다.</p>
-        ` 
-      },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp(v1.8.5)은 이용자의 개인정보를 소중히 다룹니다.</p>` },
-      terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스 이용에 관한 규정입니다.</p>` },
-      contact: { title: "문의하기", content: `<h2>고객 지원</h2><p>Email: help@trendup.ai</p>` }
-    }
+    pages: { about: { title: "TrendUp 소개", content: `<h2>TrendUp</h2><p>실시간 글로벌 트렌드 대시보드입니다.</p>` }, privacy: { title: "개인정보처리방침", content: `<p>v1.8.6 - 개인정보처리방침입니다.</p>` } }
   },
   ja: { 
-    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "データを読み込み中...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
-    cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "了解",
-    siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
-    countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
-    themes: { light: "ライト", dark: "ダーク", system: "システム" },
-    labels: { trends: "国:", language: "言語:", site: "サイト案内" },
-    sysLinks: { search: "Google検索", video: "関連動画を確認" },
+    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
+    translated: "機械翻訳",
+    countries: { KR: "韓国", JP: "日本", US: "アメリカ" }, themes: { light: "ライト", dark: "ダーク", system: "システム" }, labels: { trends: "国:", language: "言語:", site: "サイト案内" }, sysLinks: { search: "Google検索", video: "関連動画を確認" },
     analysisTemplate: (title, sources, snippets) => {
-      if (!snippets || snippets.length === 0) return `「${title}」が現在、検索ポータルを通じて急速に拡散され、大きな注目を集めています.`;
-      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
-      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
-      const sourceInfo = (sources && sources.length > 0) ? `\n\n[報道メディア: ${sources.slice(0, 3).join('、')} など]` : "";
-      return `${mainSummary}${sourceInfo}`;
-    },
-    pages: {
-      about: { title: "TrendUpについて", content: `<h2>TrendUpについて</h2><p>次世代のトレンド情報プラットフォームです。</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>利用者の個人情報を尊重します。(v1.8.5)</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>サービス利用に関する規約です。</p>` },
-      contact: { title: "お問い合わせ", content: `<h2>サポート</h2><p>メール: help@trendup.ai</p>` }
+      if (!snippets || snippets.length === 0) return `「${title}」が現在注目を集めています。`;
+      return snippets.slice(0, 3).join(' ');
     }
   },
   en: { 
-    title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading data...", analyzing: "Analyzing context...", T: "Trend Settings", L: "Language Setting", 
-    cookie: "This site uses cookies to improve user experience.", accept: "Accept",
-    siteGuide: "Site Information", menuAbout: "About TrendUp", menuPrivacy: "Privacy Policy", menuTerms: "Terms of Service", menuContact: "Contact Us",
-    countries: { KR: "South Korea", JP: "Japan", US: "USA" },
-    themes: { light: "Light", dark: "Dark", system: "System" },
-    labels: { trends: "Country:", language: "Language:", site: "Site Information" },
-    sysLinks: { search: "Google Search", video: "Check Related Videos" },
+    title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", analyzing: "Analyzing...", T: "Trend Settings", L: "Language Setting", 
+    translated: "Machine Translation",
+    countries: { KR: "South Korea", JP: "Japan", US: "USA" }, themes: { light: "Light", dark: "Dark", system: "System" }, labels: { trends: "Country:", language: "Language:", site: "Site Information" }, sysLinks: { search: "Google Search", video: "Check Related Videos" },
     analysisTemplate: (title, sources, snippets) => {
-      if (!snippets || snippets.length === 0) return `The topic '${title}' is currently gaining significant traction across major portals.`;
-      const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
-      const mainSummary = cleanSnippets.slice(0, 3).join(' ');
-      const sourceInfo = (sources && sources.length > 0) ? `\n\n[Sources: ${sources.slice(0, 3).join(', ')}]` : "";
-      return `${mainSummary}${sourceInfo}`;
-    },
-    pages: {
-      about: { title: "About TrendUp", content: `<h2>About TrendUp</h2><p>Next-generation trend intelligence platform.</p>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We respect your privacy. (v1.8.5)</p>` },
-      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><p>Terms and conditions for use.</p>` },
-      contact: { title: "Contact Us", content: `<h2>Customer Support</h2><p>Email: help@trendup.ai</p>` }
+      if (!snippets || snippets.length === 0) return `Topic '${title}' is currently trending.`;
+      return snippets.slice(0, 3).join(' ');
     }
   }
 };
@@ -122,11 +78,9 @@ let i18n = {
 // --- Firebase Configuration ---
 const firebaseConfig = { projectId: "test-76cdd" };
 
-// --- Trend Service (Rely 100% on DB) ---
+// --- Trend Service ---
 class TrendService {
-  constructor() {
-    this.refreshInterval = 10 * 60 * 1000;
-  }
+  constructor() { this.refreshInterval = 10 * 60 * 1000; }
   calculateRankChanges(newItems, oldItems) {
     if (!newItems) return [];
     return newItems.map((item, index) => {
@@ -155,8 +109,11 @@ class TrendList extends HTMLElement {
       if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; font-weight: 800; border: 1px solid #ffaa00; padding: 1px 4px; border-radius: 4px; letter-spacing: -0.02em;">NEW</span>';
       return '<span style="color: var(--text-muted); opacity: 0.3; font-size: 0.8rem;">-</span>';
     };
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; } .source-badge { font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.2rem; }</style>
-      <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span><span class="source-badge">${item.source}</span></div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
+    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translation { font-size: 0.75rem; color: var(--primary); opacity: 0.8; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
+      <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
+        const showTranslation = item.translatedTitle && item.translatedTitle !== item.title;
+        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span>${showTranslation ? `<span class="translation">✨ ${item.translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
+      }).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = () => {
         const trendData = trends[parseInt(el.dataset.index)];
@@ -172,7 +129,7 @@ class TrendModal extends HTMLElement {
     if (!trend) return;
     this.isVisible = true;
     const t = i18n[lang] || i18n.en;
-    const analysis = trend.translatedSnippets?.[lang]?.[0] || t.analysisTemplate(trend.title, trend.sources, trend.snippets);
+    const analysis = trend.snippets?.[0] || t.analysisTemplate(trend.title, trend.sources, trend.snippets);
     this.render(trend, lang, analysis);
   }
   hide() { this.isVisible = false; this.shadowRoot.innerHTML = ''; }
@@ -199,7 +156,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.8.5");
+    console.log("App Init: v1.8.6");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -247,7 +204,7 @@ class App {
         if (text.includes('lang')) label.textContent = t.labels.language;
       });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.5)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.6)`;
     } catch (e) {}
   }
   initThemeIcons() {
@@ -334,24 +291,23 @@ class App {
       const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();
-        const itemsWithTranslations = dbData.items.map(item => ({
+        
+        // 데이터 매핑: 메인 타이틀은 원문, 서브 타이틀은 설정된 언어의 번역문
+        const itemsMapped = dbData.items.map(item => ({
           ...item,
-          title: item.translations?.[this.currentLang] || item.originalTitle || item.title,
+          title: item.originalTitle || item.title, // 메인은 원문으로 고정
+          translatedTitle: item.translations?.[this.currentLang] || "", // 서브는 설정된 언어로 번역
           snippets: item.translatedSnippets?.[this.currentLang] || item.snippets || []
         }));
-        const trends = this.service.calculateRankChanges(itemsWithTranslations, dbData.previousItems);
+
+        const trends = this.service.calculateRankChanges(itemsMapped, dbData.previousItems);
         document.getElementById('top-trends').data = { trends, lang: this.currentLang };
         
         const date = dbData.lastUpdated.toDate();
         document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-        localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: itemsWithTranslations, previousItems: dbData.previousItems, lastUpdated: dbData.lastUpdated.toMillis() }));
-      } else {
-        document.getElementById('last-updated').textContent = "Waiting for data...";
+        localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: itemsMapped, previousItems: dbData.previousItems, lastUpdated: dbData.lastUpdated.toMillis() }));
       }
-    } catch (e) { 
-      console.warn("DB Access Error:", e.message);
-      document.getElementById('last-updated').textContent = "Database access restricted.";
-    }
+    } catch (e) { console.warn("Update failed:", e.message); }
   }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => new App());
