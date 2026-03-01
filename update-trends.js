@@ -40,7 +40,7 @@ class TrendUpdater {
     if (lang === 'ko') {
       return `현재 '${item.originalTitle}' 키워드가 글로벌 트렌드로 급부상하고 있습니다. 관련 보도에 따르면 ${newsTitles.join(', ')} 등의 소식이 주목받고 있으며, ${snippets.join(' ')} 등의 사회적 맥락이 확인됩니다. AI 분석 결과, 해당 이슈에 대한 대중의 관심도가 매우 높은 것으로 나타납니다.`;
     } else if (lang === 'ja') {
-      return `現在 '${item.originalTitle}' が世界적인 トレンドとして急上昇しています。${newsTitles.join(', ')} などのニュースが注目されており、${snippets.join(' ')} といった背景が確認されます。`;
+      return `現在 '${item.originalTitle}' が世界的 トレンドとして急上昇しています。${newsTitles.join(', ')} などのニュースが注目されており、${snippets.join(' ')} といった背景が確認されます。`;
     } else {
       return `'${item.originalTitle}' is rapidly emerging as a global trend. News highlights include ${newsTitles.join(', ')}. Contextual signals show ${snippets.join(' ')}.`;
     }

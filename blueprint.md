@@ -8,7 +8,8 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Frontend Cleanup:** Removed unstable CORS-dependent scrapers from the frontend. The app now relies 100% on the high-performance, pre-translated DB data.
 - **Deployment Parity:** Synchronized all root assets with the `public/` directory to ensure seamless Cloudflare Pages deployment.
 - **Data Integrity:** Implemented batch translation with separators to prevent data tangling between languages.
-- **Version Finalization:** Application finalized at **v1.8.5**.
+- **Persistence Optimization:** Added `localStorage` to preserve user country selection across page refreshes.
+- **Version Finalization:** Application finalized at **v2.1.4**.
 
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -28,4 +29,5 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Synchronize public directory for Cloudflare Pages (v1.8.3).
 - [x] Final stabilization and removal of unstable scrapers (v1.8.4).
 - [x] Finalize project with Security Rules documentation (v1.8.5).
+- [x] Implement persistent country selection using `localStorage` (v2.1.4).
 - [x] Push all changes to GitHub.
