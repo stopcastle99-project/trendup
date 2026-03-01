@@ -57,7 +57,7 @@ let i18n = {
     original: "原文",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
     labels: { trends: "国:", language: "言語:", site: "サイト案内" },
-    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '詳細がありません。'
+    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '詳細가 없습니다.'
   },
   en: { 
     title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Setting", 
@@ -104,7 +104,6 @@ class TrendList extends HTMLElement {
     
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .original-title { font-size: 0.7rem; color: var(--primary); opacity: 0.7; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
-        // 메인은 설정된 언어(없으면 원문), 서브는 원문
         const mainTitle = item.displayTitle || item.originalTitle || item.title;
         const subTitle = (item.originalTitle && item.displayTitle !== item.originalTitle) ? `✨ ${t.original}: ${item.originalTitle}` : "";
         return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${subTitle ? `<span class="original-title">${subTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
@@ -152,7 +151,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.8.8");
+    console.log("App Init: v1.8.9");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -199,7 +198,7 @@ class App {
         if (text.includes('lang')) label.textContent = t.labels.language;
       });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.8)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.9)`;
     } catch (e) {}
   }
   initThemeIcons() {
@@ -286,15 +285,13 @@ class App {
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();
         
-        // 데이터 매핑: 메인은 설정된 언어의 번역본, 서브는 원문
         const itemsMapped = dbData.items.map(item => {
           const originalTitle = item.originalTitle || item.title;
           const translatedTitle = item.translations?.[this.currentLang] || originalTitle;
-          
           return {
             ...item,
-            displayTitle: translatedTitle, // 메인 (설정 언어)
-            originalTitle: originalTitle, // 서브 (수집 원문)
+            displayTitle: translatedTitle,
+            originalTitle: originalTitle,
             snippets: item.translatedSnippets?.[this.currentLang] || item.snippets || []
           };
         });
@@ -303,7 +300,8 @@ class App {
         document.getElementById('top-trends').data = { trends, lang: this.currentLang };
         
         const date = dbData.lastUpdated.toDate();
-        document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        // 24시간제(hour12: false)로 변경
+        document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}`;
         localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: itemsMapped, previousItems: dbData.previousItems, lastUpdated: dbData.lastUpdated.toMillis() }));
       }
     } catch (e) { console.warn("Update failed:", e.message); }
