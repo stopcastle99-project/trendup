@@ -713,18 +713,24 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       this.refreshUIText();
       let dbData = null;
+      
       if (this.db) {
         try {
           const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
           if (trendDoc.exists()) {
             dbData = trendDoc.data();
             
-            // DB에서 가져온 데이터에 번역 정보가 있으면 적용
-            const itemsWithTranslations = dbData.items.map(item => ({
-              ...item,
-              title: item.translations?.[this.currentLang] || item.title,
-              snippets: item.translatedSnippets?.[this.currentLang] || item.snippets || []
-            }));
+            // DB에서 가져온 데이터에 번역 정보가 있으면 적용 (엄격하게 적용)
+            const itemsWithTranslations = dbData.items.map(item => {
+              const translatedTitle = item.translations?.[this.currentLang] || item.originalTitle || item.title;
+              const translatedSnippets = item.translatedSnippets?.[this.currentLang] || item.snippets || [];
+              
+              return {
+                ...item,
+                title: translatedTitle,
+                snippets: translatedSnippets
+              };
+            });
 
             const trends = this.service.calculateRankChanges(itemsWithTranslations, dbData.previousItems);
             const trendListEl = document.getElementById('top-trends');
@@ -750,31 +756,26 @@ class App {
               
               lastUpdatedEl.textContent = `${t.update}: ${timeStr}`;
               
-              // 30분 이상 경과 시 경고 표시 (모니터링 기능)
+              // 30분 이상 경과 시 경고 표시
               if (diffMin > 30) {
                 lastUpdatedEl.style.color = '#ff4d4d';
-                lastUpdatedEl.title = 'Data update might be delayed';
+                lastUpdatedEl.style.fontWeight = '800';
               } else {
                 lastUpdatedEl.style.color = 'var(--text-muted)';
-                lastUpdatedEl.title = '';
+                lastUpdatedEl.style.fontWeight = '400';
               }
             }
           }
         } catch (dbErr) { console.error("DB Load Error:", dbErr); }
       }
       
-      const now = Date.now();
-      const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
-      const needsUpdate = isCountrySwitch || isLanguageSwitch || (now - lastUpdated > this.service.refreshInterval) || !dbData;
-      
-      if (needsUpdate && !dbData) {
-        // DB 데이터가 아예 없을 때만 직접 fetch (백업용)
+      // DB 데이터가 없는 극단적인 상황에서만 백업 fetch (번역 없이 원본 노출)
+      if (!dbData && !isLanguageSwitch) {
         const freshItems = await this.service.fetchFreshTrends(this.currentCountry, this.currentLang);
         if (requestId !== this.currentRequestId) return;
         if (freshItems && freshItems.length >= 5) {
-          const trends = this.service.calculateRankChanges(freshItems, null);
           const trendListEl = document.getElementById('top-trends');
-          if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
+          if (trendListEl) trendListEl.data = { trends: freshItems, lang: this.currentLang };
         }
       }
     } catch (e) { console.error("Update failed:", e); }

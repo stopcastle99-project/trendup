@@ -31,26 +31,29 @@ try {
 const db = admin.firestore();
 
 class TrendUpdater {
+  // 번역 일괄 처리 (속도 및 정확도 향상)
   async translateBatch(texts, targetLang) {
-    if (!texts || texts.length === 0) return texts;
+    if (!texts || texts.length === 0) return [];
+    if (targetLang === 'auto') return texts;
+    
     try {
-      // 분할 처리 (너무 긴 쿼리 방지)
-      const chunks = [];
-      for (let i = 0; i < texts.length; i += 10) {
-        chunks.push(texts.slice(i, i + 10));
+      // 텍스트들을 구분자(|||)와 함께 하나의 문자열로 결합
+      const combinedText = texts.join(" ||| ");
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`);
+      
+      if (!res.ok) throw new Error(`Translation API HTTP ${res.status}`);
+      
+      const data = await res.json();
+      // 결과 조각들을 합치고 다시 구분자로 분리
+      const translatedCombined = data[0].map(x => x[0]).join("");
+      const results = translatedCombined.split("|||").map(s => s.trim());
+      
+      // 개수가 안 맞을 경우를 대비한 안전 장치
+      if (results.length !== texts.length) {
+        console.warn(`Translation count mismatch for ${targetLang}: expected ${texts.length}, got ${results.length}`);
+        return texts; 
       }
-
-      const results = [];
-      for (const chunk of chunks) {
-        const q = chunk.join("\n");
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(q)}`);
-        if (!res.ok) throw new Error("Translation failed");
-        const data = await res.json();
-        const translatedText = data[0].map(x => x[0]).join("");
-        results.push(...translatedText.split("\n"));
-        await new Promise(r => setTimeout(r, 500)); // Rate limit 방지
-      }
-      return results.map(r => r.trim());
+      return results;
     } catch (e) {
       console.error(`Translation Error (${targetLang}):`, e.message);
       return texts;
@@ -109,7 +112,7 @@ class TrendUpdater {
         return {
           title, originalTitle: title,
           growth: 'Portal', source: 'Signal', 
-          newsLinks: [{ title: `Google Search: ${title}`, source: 'Search', url: `https://www.google.com/search?q=${encodeURIComponent(title)}&tbm=nws` }], 
+          newsLinks: [{ title: `네이버 뉴스 검색: ${title}`, source: 'Naver', url: `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(title)}` }], 
           sources: [], snippets: []
         };
       });
@@ -128,7 +131,7 @@ class TrendUpdater {
         return {
           title, originalTitle: title,
           growth: 'Portal', source: 'Yahoo', 
-          newsLinks: [{ title: `Yahoo News: ${title}`, source: 'Yahoo', url: `https://news.yahoo.co.jp/search?p=${encodeURIComponent(title)}` }], 
+          newsLinks: [{ title: `Yahoo Japan News: ${title}`, source: 'Yahoo', url: `https://news.yahoo.co.jp/search?p=${encodeURIComponent(title)}` }], 
           sources: [], snippets: []
         };
       });
@@ -141,7 +144,7 @@ class TrendUpdater {
       const targetLangs = ['ko', 'ja', 'en'];
       
       for (const code of countries) {
-        console.log(`Updating ${code}...`);
+        console.log(`--- Processing ${code} ---`);
         let portalTrends = [];
         if (code === 'KR') portalTrends = await this.getSignalTrends();
         if (code === 'JP') portalTrends = await this.getYahooTrends();
@@ -155,14 +158,13 @@ class TrendUpdater {
           const norm = t.originalTitle.toLowerCase().replace(/\s/g, '');
           if (!seen.has(norm)) { 
             seen.add(norm); 
-            // 구글 트렌드에 동일 키워드가 있으면 뉴스 데이터 보강
-            if (t.source !== 'Google') {
-              const match = googleTrends.find(g => g.originalTitle.toLowerCase().includes(t.originalTitle.toLowerCase()) || t.originalTitle.toLowerCase().includes(g.originalTitle.toLowerCase()));
-              if (match) {
-                t.newsLinks = [...t.newsLinks, ...(match.newsLinks || [])];
-                t.sources = [...(t.sources || []), ...(match.sources || [])];
-                t.snippets = [...(t.snippets || []), ...(match.snippets || [])];
-              }
+            // 포털 데이터에 구글 뉴스 데이터가 있으면 합침
+            const match = googleTrends.find(g => g.originalTitle.toLowerCase().includes(t.originalTitle.toLowerCase()) || t.originalTitle.toLowerCase().includes(g.originalTitle.toLowerCase()));
+            if (match && t.source !== 'Google') {
+              t.newsLinks = [...t.newsLinks, ...(match.newsLinks || [])];
+              t.sources = [...new Set([...(t.sources || []), ...(match.sources || [])])];
+              t.snippets = [...new Set([...(t.snippets || []), ...(match.snippets || [])])];
+              if (t.growth === 'Portal') t.growth = match.growth;
             }
             unique.push(t); 
           }
@@ -170,46 +172,50 @@ class TrendUpdater {
         }
 
         if (unique.length > 0) {
-          // 번역 작업
-          console.log(`Translating ${code} trends...`);
-          for (const item of unique) {
-            item.translations = {};
-            item.translatedSnippets = {};
+          console.log(`Translating ${unique.length} items for ${code}...`);
+          
+          // 모든 언어에 대해 일괄 번역 수행
+          for (const lang of targetLangs) {
+            // 1. 제목 번역 모으기
+            const titlesToTranslate = unique.map(item => item.originalTitle);
+            const translatedTitles = await this.translateBatch(titlesToTranslate, lang);
             
-            for (const lang of targetLangs) {
-              const translatedTitle = await this.translateBatch([item.originalTitle], lang);
-              item.translations[lang] = translatedTitle[0];
+            // 2. 스니펫 번역 모으기 (각 아이템의 첫 번째 스니펫만 번역하여 속도 최적화)
+            const snippetsToTranslate = unique.map(item => (item.snippets && item.snippets.length > 0) ? item.snippets[0] : "");
+            const translatedSnippets = await this.translateBatch(snippetsToTranslate, lang);
+
+            // 결과 할당
+            unique.forEach((item, idx) => {
+              if (!item.translations) item.translations = {};
+              if (!item.translatedSnippets) item.translatedSnippets = {};
               
-              if (item.snippets && item.snippets.length > 0) {
-                item.translatedSnippets[lang] = await this.translateBatch(item.snippets.slice(0, 3), lang);
-              } else {
-                item.translatedSnippets[lang] = [];
-              }
-            }
+              item.translations[lang] = translatedTitles[idx] || item.originalTitle;
+              item.translatedSnippets[lang] = translatedSnippets[idx] ? [translatedSnippets[idx]] : [];
+            });
+            
+            await new Promise(r => setTimeout(r, 300)); // API 부하 방지
           }
 
           const docRef = db.collection('trends').doc(code);
           const oldDoc = await docRef.get();
           const oldData = oldDoc.exists ? oldDoc.data() : null;
           
-          const now = admin.firestore.Timestamp.now();
           await docRef.set({
             items: unique,
             previousItems: oldData?.items || [],
-            lastUpdated: now,
+            lastUpdated: admin.firestore.Timestamp.now(),
             status: 'healthy'
           });
-          console.log(`${code} update success: ${unique.length} items.`);
+          console.log(`${code} update success.`);
         }
       }
-      console.log("Global Background Sync Completed.");
       
-      // 상태 점검용 메타데이터 업데이트
       await db.collection('system').doc('status').set({
         lastGlobalUpdate: admin.firestore.Timestamp.now(),
         countries: countries
       });
 
+      console.log("All updates completed successfully.");
       process.exit(0);
     } catch (e) {
       console.error("FATAL ERROR during update process:", e);
