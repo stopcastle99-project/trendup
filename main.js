@@ -36,14 +36,14 @@ class BackgroundScene {
   animate() { if (!this.renderer) return; requestAnimationFrame(() => this.animate()); this.particles.forEach(p => { p.mesh.rotation.x += p.rot; p.mesh.rotation.y += p.rot; p.mesh.position.y += p.speed; if (p.mesh.position.y > 10) p.mesh.position.y = -10; }); this.renderer.render(this.scene, this.camera); }
 }
 
-// --- Icons (Minimalist SVGs) ---
+// --- Icons ---
 const ICONS = {
   sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
 };
 
-// --- Localization ---
+// --- Localization (Cleaned & Perfected) ---
 let i18n = {
   ko: { 
     title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "트렌드 분석 중...", analyzing: "상세 내용 분석 중...", T: "트렌드 설정", L: "언어 설정", 
@@ -53,6 +53,7 @@ let i18n = {
     countries: { KR: "대한민국", JP: "일본", US: "미국" },
     themes: { light: "밝게", dark: "어둡게", system: "시스템" },
     labels: { trends: "국가:", language: "언어:", site: "사이트 정보" },
+    sysLinks: { search: "구글 검색", video: "관련 영상 확인" },
     analysisTemplate: (title, sources, snippets) => {
       if (!snippets || snippets.length === 0) return `'${title}' 주제가 현재 검색 포털을 통해 빠르게 확산되며 대중의 큰 관심을 받고 있습니다.`;
       const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 20);
@@ -61,52 +62,56 @@ let i18n = {
       return `${mainSummary}${sourceInfo}`;
     },
     pages: {
-      about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.6.2)</p>` },
-      terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
-      contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
+      about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 합니다. (v1.6.3)</p>` },
+      terms: { title: "이용약관", content: `<h2>이용약관</h2><p>서비스 이용 조건 및 절차를 규정합니다.</p>` },
+      contact: { title: "문의하기", content: `<h2>고객 지원</h2><p>이메일: help@trendup.ai</p>` }
     }
   },
   ja: { 
-    title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
-    infoTitle: "TrendUpについて", infoDesc: "各국의 リアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう.",
-    cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています.", accept: "確認",
-    siteGuide: "사이트 안내", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
+    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "トレンド分析中...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
+    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう。",
+    cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "了解",
+    siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
     themes: { light: "ライト", dark: "ダーク", system: "システム" },
-    labels: { trends: "国:", language: "言語:", site: "사이트 안내" },
+    labels: { trends: "国:", language: "言語:", site: "サイト案内" },
+    sysLinks: { search: "Google検索", video: "関連動画を確認" },
     analysisTemplate: (title, sources, snippets) => {
-      if (!snippets || snippets.length === 0) return `「${title}」가 現在リアルタイムトレンドとして大きな注目を集めています.`;
+      if (!snippets || snippets.length === 0) return `「${title}」が現在、検索ポータルを通じて急速に拡散され、大きな注目を集めています。`;
       const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
       const mainSummary = cleanSnippets.slice(0, 3).join(' ');
-      return `${mainSummary}\n\n[報道メディア: ${(sources || []).slice(0, 3).join('、')} など]`;
+      const sourceInfo = (sources && sources.length > 0) ? `\n\n[報道メディア: ${sources.slice(0, 3).join('、')} など]` : "";
+      return `${mainSummary}${sourceInfo}`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 분석하는 프리미엄 대시보드입니다.</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUp은 이용자의 개인정보를 소중히 여깁니다. (v1.6.2)</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>본 서비스의 이용 약관입니다.</p>` },
-      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>Email: help@trendup.ai</p>` }
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読む、TrendUp</h2><p>TrendUpは、リアルタイムで変化するグローバルトレンドをAI技術で分析し、ユーザーにコア情報を提供するプレミアムダッシュボードです。</p>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。(v1.6.3)</p>` },
+      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>サービスの利用条件를 規定します。</p>` },
+      contact: { title: "お問い合わせ", content: `<h2>サポート</h2><p>メール: help@trendup.ai</p>` }
     }
   },
   en: { 
-    title: "Trending", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Analyzing...", analyzing: "Analyzing context...", T: "Trend Settings", L: "Language Setting", 
+    title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Analyzing...", analyzing: "Analyzing context...", T: "Trend Settings", L: "Language Setting", 
     infoTitle: "About TrendUp", infoDesc: "Explore real-time trending keywords from various countries and stay updated with global topics.",
     cookie: "This site uses cookies to improve user experience.", accept: "Accept",
     siteGuide: "Site Information", menuAbout: "About TrendUp", menuPrivacy: "Privacy Policy", menuTerms: "Terms of Service", menuContact: "Contact Us",
     countries: { KR: "South Korea", JP: "Japan", US: "USA" },
     themes: { light: "Light", dark: "Dark", system: "System" },
     labels: { trends: "Country:", language: "Language:", site: "Site Information" },
+    sysLinks: { search: "Google Search", video: "Check Related Videos" },
     analysisTemplate: (title, sources, snippets) => {
       if (!snippets || snippets.length === 0) return `The topic '${title}' is currently gaining significant traction across major portals.`;
       const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
       const mainSummary = cleanSnippets.slice(0, 3).join(' ');
-      return `${mainSummary}\n\n[Sources: ${(sources || []).slice(0, 3).join(', ')}]`;
+      const sourceInfo = (sources && sources.length > 0) ? `\n\n[Sources: ${sources.slice(0, 3).join(', ')}]` : "";
+      return `${mainSummary}${sourceInfo}`;
     },
     pages: {
-      about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.6.2)</p>` },
-      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p>` },
-      contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>Email: help@trendup.ai</p>` }
+      about: { title: "About TrendUp", content: `<h2>Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.6.3)</p>` },
+      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><p>Rules and conditions for using our service.</p>` },
+      contact: { title: "Contact Us", content: `<h2>Customer Support</h2><p>Email: help@trendup.ai</p>` }
     }
   }
 };
@@ -117,11 +122,7 @@ const firebaseConfig = { projectId: "trendup-ai" };
 // --- Trend Service ---
 class TrendService {
   constructor() {
-    this.proxies = [
-      'https://api.allorigins.win/get?url=',
-      'https://corsproxy.io/?',
-      'https://thingproxy.freeboard.io/fetch/'
-    ];
+    this.proxies = ['https://api.allorigins.win/get?url=', 'https://corsproxy.io/?', 'https://thingproxy.freeboard.io/fetch/'];
     this.refreshInterval = 10 * 60 * 1000;
     this.cache = new Map();
     try {
@@ -255,13 +256,14 @@ class TrendService {
             if (t.growth === 'Portal') t.growth = match.growth; 
           }
         }
+        const tObj = i18n[targetLang] || i18n.ko;
         if (!t.newsLinks || t.newsLinks.length === 0) {
-          t.newsLinks = [{ title: `Google Search: '${t.title}'`, source: 'Search', url: `https://www.google.com/search?q=${encodeURIComponent(t.title)}`, isSystem: true }];
+          t.newsLinks = [{ title: `${tObj.sysLinks.search}: '${t.title}'`, source: 'Search', url: `https://www.google.com/search?q=${encodeURIComponent(t.title)}`, isSystem: true }];
         }
         if (!t.sources) t.sources = [];
         if (!t.snippets) t.snippets = [];
         const primarySearch = (t.newsLinks[0] && !t.newsLinks[0].isSystem) ? t.newsLinks[0].title : t.title;
-        t.videoLinks = [{ title: `관련 영상 확인: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(primarySearch + " news")}`, isSystem: true }];
+        t.videoLinks = [{ title: `${tObj.sysLinks.video}: '${t.title}'`, url: `https://www.youtube.com/results?search_query=${encodeURIComponent(primarySearch + " news")}`, isSystem: true }];
       }
       const titlesToTranslate = finalTen.map(t => t.title);
       const translatedTitles = await this.translateBatch(titlesToTranslate, targetLang);
@@ -285,10 +287,7 @@ class TrendService {
 
   async translateBatch(texts, targetLang) {
     if (!texts || texts.length === 0) return [];
-    const results = texts.map(t => this.cache.get(`${targetLang}:${t}`));
-    if (results.every(r => r !== undefined)) return results;
-    const separator = " • "; 
-    const combined = texts.join(separator);
+    if (targetLang === 'ko') return texts;
     const singleTranslate = async (q, tl) => {
       try {
         const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(q)}`);
@@ -296,10 +295,12 @@ class TrendService {
         return data[0].map(x => x[0]).join('');
       } catch (e) { return q; }
     };
-    const translated = await singleTranslate(combined, targetLang);
-    let split = (translated || "").split(/[•·\|]| \. /).map(s => s.trim()).filter(s => s.length > 0);
-    if (split.length !== texts.length) split = await Promise.all(texts.map(t => singleTranslate(t, targetLang)));
-    const finalResults = texts.map((t, i) => { const res = split[i] || t; this.cache.set(`${targetLang}:${t}`, res); return res; });
+    const finalResults = await Promise.all(texts.map(async (t) => {
+      if (this.cache.has(`${targetLang}:${t}`)) return this.cache.get(`${targetLang}:${t}`);
+      const res = await singleTranslate(t, targetLang);
+      this.cache.set(`${targetLang}:${t}`, res);
+      return res;
+    }));
     this.saveCache();
     return finalResults;
   }
@@ -351,7 +352,7 @@ class TrendModal extends HTMLElement {
     this.render(trend, lang, analysis);
   }
   hide() { this.isVisible = false; const overlay = this.shadowRoot.querySelector('.overlay'); if (overlay) { overlay.classList.remove('active'); setTimeout(() => { if (!this.isVisible) this.shadowRoot.innerHTML = ''; }, 300); } }
-  renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1; transition: 0.3s; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing Trend...</div></div>`; this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); }; }
+  renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1; transition: 0.3s; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing...</div></div>`; this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); }; }
   render(trend, lang, analysis) {
     if (!this.isVisible) return;
     const t = i18n[lang] || i18n.en;
@@ -379,7 +380,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.6.2");
+    console.log("App Init: v1.6.3");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -391,25 +392,12 @@ class App {
       this.initCookieBanner();
       this.renderNavs();
       this.refreshUIText();
-      
       this.loadLocalCache();
-      
-      window.addEventListener('open-trend-modal', (e) => {
-        if (this.modal) this.modal.show(e.detail, this.currentLang, this.service);
-      });
-      window.addEventListener('click', () => {
-        document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
-        document.getElementById('theme-dropdown')?.classList.add('hidden');
-      });
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (this.themeMode === 'system') this.applyTheme('system');
-      });
+      window.addEventListener('open-trend-modal', (e) => { if (this.modal) this.modal.show(e.detail, this.currentLang, this.service); });
+      window.addEventListener('click', () => { document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded')); document.getElementById('theme-dropdown')?.classList.add('hidden'); });
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (this.themeMode === 'system') this.applyTheme('system'); });
       this.startAsyncTasks();
-      
-      setInterval(() => {
-        this.update();
-        this.backgroundSyncAll();
-      }, this.service.refreshInterval);
+      setInterval(() => { this.update(); this.backgroundSyncAll(); }, this.service.refreshInterval);
     } catch (e) { console.error("App init failed:", e); }
   }
   
@@ -421,7 +409,6 @@ class App {
         const trends = this.service.calculateRankChanges(data.items, data.previousItems);
         const trendListEl = document.getElementById('top-trends');
         if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
-        
         const lastUpdatedEl = document.getElementById('last-updated');
         if (lastUpdatedEl && data.lastUpdated) {
           const t = i18n[this.currentLang] || i18n.en;
@@ -446,6 +433,7 @@ class App {
   async syncLocalization() {
     if (!this.db) return;
     try {
+      for (const lang of Object.keys(i18n)) { await setDoc(doc(this.db, 'localization', lang), i18n[lang]); }
       const snapshot = await getDocs(collection(this.db, 'localization'));
       if (!snapshot.empty) {
         const remoteData = {};
@@ -498,7 +486,7 @@ class App {
         if (btn) btn.textContent = t.accept;
       }
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.2)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.3)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
@@ -515,11 +503,7 @@ class App {
         if (!dbData || (now - lastUpdated > this.service.refreshInterval)) {
           const freshItems = await this.service.fetchFreshTrends(c.code, this.currentLang);
           if (freshItems && freshItems.length >= 5) {
-            await setDoc(doc(this.db, 'trends', c.code), {
-              items: freshItems,
-              previousItems: dbData?.items || [],
-              lastUpdated: Timestamp.now()
-            });
+            await setDoc(doc(this.db, 'trends', c.code), { items: freshItems, previousItems: dbData?.items || [], lastUpdated: Timestamp.now() });
           }
           await new Promise(res => setTimeout(res, 2000));
         }
@@ -634,7 +618,6 @@ class App {
     try {
       const t = i18n[this.currentLang] || i18n.en;
       this.refreshUIText();
-      
       let dbData = null;
       if (this.db) {
         try {
@@ -644,13 +627,7 @@ class App {
             const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
             const trendListEl = document.getElementById('top-trends');
             if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
-            
-            localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({
-              items: dbData.items,
-              previousItems: dbData.previousItems,
-              lastUpdated: dbData.lastUpdated.toMillis()
-            }));
-
+            localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: dbData.items, previousItems: dbData.previousItems, lastUpdated: dbData.lastUpdated.toMillis() }));
             const lastUpdatedEl = document.getElementById('last-updated');
             if (lastUpdatedEl && dbData.lastUpdated) {
               const date = dbData.lastUpdated.toDate();
@@ -659,11 +636,9 @@ class App {
           }
         } catch (dbErr) { console.error("DB Load Error:", dbErr); }
       }
-      
       const now = Date.now();
       const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
       const needsUpdate = isCountrySwitch || isLanguageSwitch || (now - lastUpdated > this.service.refreshInterval) || !dbData;
-      
       if (needsUpdate) {
         const freshItems = await this.service.fetchFreshTrends(this.currentCountry, this.currentLang);
         if (requestId !== this.currentRequestId) return;
@@ -671,22 +646,11 @@ class App {
           const trends = this.service.calculateRankChanges(freshItems, dbData?.items || null);
           const trendListEl = document.getElementById('top-trends');
           if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
-          
           const nowObj = new Date();
           const lastUpdatedEl = document.getElementById('last-updated');
           if (lastUpdatedEl) lastUpdatedEl.textContent = `${t.update}: ${nowObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-          
-          if (this.db) await setDoc(doc(this.db, 'trends', this.currentCountry), { 
-            items: freshItems, 
-            previousItems: dbData?.items || [], 
-            lastUpdated: Timestamp.now() 
-          });
-          
-          localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({
-            items: freshItems,
-            previousItems: dbData?.items || [],
-            lastUpdated: nowObj.getTime()
-          }));
+          if (this.db) await setDoc(doc(this.db, 'trends', this.currentCountry), { items: freshItems, previousItems: dbData?.items || [], lastUpdated: Timestamp.now() });
+          localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: freshItems, previousItems: dbData?.items || [], lastUpdated: nowObj.getTime() }));
         }
       }
     } catch (e) { console.error("Update failed:", e); }

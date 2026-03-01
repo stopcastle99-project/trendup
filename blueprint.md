@@ -41,6 +41,12 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Global Background Sync:** Refactored `backgroundSyncAll` to run periodically every 10 minutes, ensuring Firestore data for all supported countries (KR, JP, US) is kept fresh regardless of the user's active country selection.
 - **Automatic Versioning & Deployment:** Version incremented to v1.6.2 and automatic push to GitHub.
 
+## **Phase 21: Translation Purity & i18n Perfection (Done)**
+- **Zero-Korean Policy for ja/en:** Identified and removed all hardcoded Korean strings from Japanese and English templates.
+- **System Link Translation:** "Google Search" and "Related Videos" links are now dynamically translated based on the active language.
+- **Forced DB Sync:** Enhanced `syncLocalization` to push the latest corrected translations to Firebase Firestore, ensuring all users get the highest quality text.
+- **Automatic Versioning & Deployment:** Version incremented to v1.6.3 and automatic push to GitHub.
+
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features.
@@ -67,4 +73,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Update version to v1.6.1 across all files.
 - [x] Enhance global background sync periodicity (v1.6.2).
 - [x] Update version to v1.6.2 across all files.
+- [x] Purge untranslated strings and perfect i18n logic (v1.6.3).
+- [x] Update version to v1.6.3 across all files.
 - [x] Push all changes to GitHub.
