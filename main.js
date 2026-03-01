@@ -48,10 +48,10 @@ let i18n = {
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" },
     pages: {
       about: { 
-        title: "About TrendUp: 글로벌 트렌드 인텔리전스", 
+        title: "TrendUp: 글로벌 트렌드 인텔리전스", 
         content: `
           <h2 style="margin-bottom:1.5rem;">세상을 읽는 가장 빠른 방법, TrendUp</h2>
-          <p style="margin-bottom:1rem; line-height:1.8;">TrendUp은 빅데이터 처리 기술과 최신 인공지능(AI) 엔진을 결합하여 대한민국, 일본, 미국 등 주요 국가의 검색 흐름을 실시간으로 분석하는 프리미엄 데이터 플랫폼입니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.8;">TrendUp은 빅데이터 처리 기술과 최신 인공지능(AI) 엔진을 결합하여 대한민국, 일본, 미국 등 주요 국가의 검색 흐름을 실시간으로 분석하고 시각화하는 데이터 분석 플랫폼입니다.</p>
           <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">핵심 기술력</h3>
           <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
             <li><strong>독자적인 데이터 파이프라인:</strong> 각국의 신뢰도 높은 데이터를 10분 단위로 정규화합니다.</li>
@@ -64,43 +64,25 @@ let i18n = {
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 소중히 다루며 관련 법령을 준수합니다. (v2.1.2)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 소중히 다루며 관련 법령을 준수합니다. (v2.1.3)</p>
           <h3>1. 수집 항목 및 방법</h3>
           <p>회원가입 없이 이용 가능하며 접속 IP, 쿠키, 브라우저 정보 등이 자동 수집될 수 있습니다.</p>
           <h3>2. 구글 애드센스 (Google AdSense)</h3>
-          <p>본 사이트는 구글 애드센스를 사용합니다. 구글은 쿠키를 사용하여 이용자의 이전 방문 기록을 바탕으로 광고를 게재합니다. 이용자는 <a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--primary);">구글 광고 설정</a>에서 해제 가능합니다.</p>
+          <p>본 사이트는 구글 애드센스를 사용하며 구글은 쿠키를 통해 광고를 최적화합니다.</p>
         ` 
       },
       terms: { 
         title: "서비스 이용약관 (Terms of Service)", 
-        content: `<h2 style="margin-bottom:1.5rem;">서비스 이용약관</h2><p>본 서비스의 모든 데이터는 참고용이며 정보의 정확성이나 완전성을 보장하지 않습니다. 데이터 활용 책임은 전적으로 이용자에게 있습니다.</p>` 
+        content: `<h2 style="margin-bottom:1.5rem;">서비스 이용약관</h2><p>모든 데이터는 참고용이며 정보의 정확성을 보장하지 않습니다.</p>` 
       },
       contact: { 
         title: "문의 및 고객 지원 (Contact)", 
-        content: `<h2 style="margin-bottom:1.5rem;">고객 지원 센터</h2><p>문의 사항이나 제안은 아래 메일로 연락 주시기 바랍니다.</p><div style="margin-top:2rem; padding:1.5rem; background:var(--surface); border-radius:16px; border:1px solid var(--border);"><p><strong>Email:</strong> help@trendup.ai</p><p><strong>운영 시간:</strong> 평일 09:00 - 18:00 (KST)</p></div>` 
+        content: `<h2 style="margin-bottom:1.5rem;">고객 지원 센터</h2><p>Email: help@trendup.ai</p>` 
       }
     }
   },
-  ja: { 
-    title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文",
-    menu: { about: "TrendUpについて", privacy: "個人정보保護方針", terms: "利用規約", contact: "お問い合わせ", siteInfo: "사이트 안내" },
-    pages: {
-      about: { title: "TrendUpについて", content: `<h2>TrendUp</h2><p>世界のトレンドをリアルタイムで分析するプラットフォームです。</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針 (v2.1.2)</h2><p>Google AdSenseを使用しています。</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2>` },
-      contact: { title: "お問い合わせ", content: `<p>Email: help@trendup.ai</p>` }
-    }
-  },
-  en: { 
-    title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original",
-    menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" },
-    pages: {
-      about: { title: "About TrendUp", content: `<h2>TrendUp</h2><p>Global trend intelligence platform.</p>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy (v2.1.2)</h2>` },
-      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2>` },
-      contact: { title: "Contact Us", content: `<p>Email: help@trendup.ai</p>` }
-    }
-  }
+  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文", menu: { about: "TrendUpについて", privacy: "個人情報保護方針", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト案内" }, pages: { about: { title: "TrendUp", content: `<p>グローバルトレンドプラットフォーム</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.3</p>` }, terms: { title: "Terms", content: `<p>利用規約</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } },
+  en: { title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original", menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, pages: { about: { title: "TrendUp", content: `<p>Global trend intelligence.</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.3</p>` }, terms: { title: "Terms", content: `<p>Terms</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } }
 };
 
 const firebaseConfig = { projectId: "test-76cdd" };
@@ -136,7 +118,7 @@ class TrendList extends HTMLElement {
     };
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translated-subtitle { font-size: 0.75rem; color: var(--primary); opacity: 0.85; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
-        const mainTitle = item.displayTitle || item.originalTitle || item.title;
+        const mainTitle = item.originalTitle || item.title;
         const subTitle = item.translatedSubTitle || "";
         return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${subTitle ? `<span class="translated-subtitle">✨ ${subTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
@@ -155,6 +137,7 @@ class TrendModal extends HTMLElement {
     if (!trend) return;
     this.isVisible = true;
     const t = i18n[lang] || i18n.en;
+    // USE PRE-GENERATED AI REPORT (STRICTLY FROM DB)
     const analysis = trend.aiReport || (trend.snippets && trend.snippets.length > 0 ? trend.snippets.join(' ') : "AI Analysis Report Loading...");
     this.render(trend, lang, analysis);
   }
@@ -183,7 +166,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.1.2");
+    console.log("App Init: v2.1.3");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -229,7 +212,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.1.2)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.1.3)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";

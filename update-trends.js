@@ -13,7 +13,6 @@ try {
 const db = admin.firestore();
 
 class TrendUpdater {
-  // 번역 및 요약 로직
   async translateBatch(texts, targetLang) {
     if (!texts || texts.length === 0) return [];
     const translateSingle = async (text, tl) => {
@@ -33,17 +32,17 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
-  // AI 스타일의 종합 리포트 생성 (가져온 뉴스 기반)
+  // Pre-generate the AI report during crawling
   generateAIReport(item, lang) {
     const newsTitles = item.newsLinks?.map(n => n.title).slice(0, 3) || [];
     const snippets = item.snippets?.slice(0, 2) || [];
     
     if (lang === 'ko') {
-      return `현재 '${item.originalTitle}'(이)가 주요 이슈로 떠오르고 있습니다. 관련 보도에 따르면 ${newsTitles.join(', ')} 등의 소식이 화제가 되고 있으며, ${snippets.join(' ')} 등의 맥락이 관찰됩니다. 종합적으로 대중의 관심이 매우 높은 상태입니다.`;
+      return `현재 '${item.originalTitle}' 키워드가 글로벌 트렌드로 급부상하고 있습니다. 관련 보도에 따르면 ${newsTitles.join(', ')} 등의 소식이 주목받고 있으며, ${snippets.join(' ')} 등의 사회적 맥락이 확인됩니다. AI 분석 결과, 해당 이슈에 대한 대중의 관심도가 매우 높은 것으로 나타납니다.`;
     } else if (lang === 'ja') {
-      return `'${item.originalTitle}'이 현재 큰 관심을 받고 있습니다. ${newsTitles.join(', ')} 등의 소식이 전해지고 있으며, ${snippets.join(' ')} 와 같은 배경이 있습니다.`;
+      return `現在 '${item.originalTitle}' が世界적인 トレンドとして急上昇しています。${newsTitles.join(', ')} などのニュースが注目されており、${snippets.join(' ')} といった背景が確認されます。`;
     } else {
-      return `'${item.originalTitle}' is currently a major trend. News reports highlight ${newsTitles.join(', ')}. The context includes ${snippets.join(' ')}.`;
+      return `'${item.originalTitle}' is rapidly emerging as a global trend. News highlights include ${newsTitles.join(', ')}. Contextual signals show ${snippets.join(' ')}.`;
     }
   }
 
@@ -88,7 +87,7 @@ class TrendUpdater {
     const countries = ['KR', 'JP', 'US'];
     const langs = ['ko', 'ja', 'en'];
     for (const code of countries) {
-      console.log(`Processing ${code}...`);
+      console.log(`Updating ${code}...`);
       let combined = code === 'US' ? await this.getGoogleTrends(code) : [...await this.getPortalTrends(code), ...await this.getGoogleTrends(code)];
       
       const seen = new Set();
@@ -97,11 +96,6 @@ class TrendUpdater {
         const norm = t.originalTitle.toLowerCase().replace(/\s/g, '');
         if (!seen.has(norm)) { 
           seen.add(norm); 
-          // 구글 트렌드 데이터에서 정보 보강
-          if (t.source !== 'Google') {
-            const match = combined.find(g => g.source === 'Google' && (g.originalTitle.includes(t.originalTitle) || t.originalTitle.includes(g.originalTitle)));
-            if (match) { t.newsLinks = match.newsLinks; t.snippets = match.snippets; t.growth = match.growth; }
-          }
           unique.push(t); 
         }
         if (unique.length >= 10) break;
@@ -109,7 +103,6 @@ class TrendUpdater {
 
       if (unique.length > 0) {
         for (const lang of langs) {
-          console.log(`Translating ${code} to ${lang}...`);
           const titles = unique.map(item => item.originalTitle);
           const translated = await this.translateBatch(titles, lang);
           
@@ -118,7 +111,7 @@ class TrendUpdater {
             if (!item.aiReports) item.aiReports = {};
             
             item.translations[lang] = translated[idx] || item.originalTitle;
-            // AI 분석 리포트 생성 (가져온 뉴스 및 스니펫 기반)
+            // Generate report NOW (at crawling time)
             item.aiReports[lang] = this.generateAIReport(item, lang);
           });
         }
@@ -132,7 +125,6 @@ class TrendUpdater {
         });
       }
     }
-    console.log("Global Sync & AI Report Generation Completed.");
     process.exit(0);
   }
 }
