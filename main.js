@@ -476,7 +476,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.6.8");
+    console.log("App Init: v1.6.9");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -505,6 +505,8 @@ class App {
         const trends = this.service.calculateRankChanges(data.items, data.previousItems);
         const trendListEl = document.getElementById('top-trends');
         if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
+        
+        // 캐시된 데이터의 실제 DB 저장 시간을 표시
         const lastUpdatedEl = document.getElementById('last-updated');
         if (lastUpdatedEl && data.lastUpdated) {
           const t = i18n[this.currentLang] || i18n.en;
@@ -578,7 +580,7 @@ class App {
         if (btn) btn.textContent = t.accept;
       }
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.8)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.9)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
