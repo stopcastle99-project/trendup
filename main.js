@@ -30,8 +30,7 @@ class BackgroundScene {
       this.scene.add(mesh);
       this.particles.push({ mesh, speed: Math.random() * 0.004 + 0.001, rot: Math.random() * 0.008 });
     }
-    this.onResize() { if (!this.renderer) return; this.renderer.setSize(window.innerWidth, window.innerHeight); this.camera.aspect = window.innerWidth / window.innerHeight; this.camera.updateProjectionMatrix(); }
-    animate() { if (!this.renderer) return; requestAnimationFrame(() => this.animate()); this.particles.forEach(p => { p.mesh.rotation.x += p.rot; p.mesh.rotation.y += p.rot; p.mesh.position.y += p.speed; if (p.mesh.position.y > 10) p.mesh.position.y = -10; }); this.renderer.render(this.scene, this.camera); }
+    this.onResize();
   }
   onResize() { if (!this.renderer) return; this.renderer.setSize(window.innerWidth, window.innerHeight); this.camera.aspect = window.innerWidth / window.innerHeight; this.camera.updateProjectionMatrix(); }
   animate() { if (!this.renderer) return; requestAnimationFrame(() => this.animate()); this.particles.forEach(p => { p.mesh.rotation.x += p.rot; p.mesh.rotation.y += p.rot; p.mesh.position.y += p.speed; if (p.mesh.position.y > 10) p.mesh.position.y = -10; }); this.renderer.render(this.scene, this.camera); }
@@ -59,7 +58,7 @@ let i18n = {
           <h2 style="margin-bottom:1rem;">TrendUp: 차세대 글로벌 트렌드 인텔리전스</h2>
           <p style="margin-bottom:1rem;">TrendUp은 빅데이터 처리 기술과 최신 인공지능(AI) 번역 엔진을 결합하여, 전 세계 주요 국가(대한민국, 일본, 미국)의 실시간 검색어와 인기 트렌드를 한눈에 파악할 수 있도록 돕는 혁신적인 정보 플랫폼입니다.</p>
           <h3 style="margin:1.5rem 0 0.5rem;">우리의 미션</h3>
-          <p>정보의 홍수 속에서 사용자에게 가장 시의성 있고 가치 있는 키워드만을 선별하여 제공함으로써, 마케터, 콘텐츠 크리에이터, 그리고 트렌드에 민감한 모든 분들이 세상의 흐름을 놓치지 않도록 지원합니다.</p>
+          <p>정보의 홍수 속에서 사용자에게 가장 시의성 있고 가치 있는 키워드를 선별하여 제공함으로써, 마케터, 콘텐츠 크리에이터, 그리고 트렌드에 민감한 모든 분들이 세상의 흐름을 놓치지 않도록 지원합니다.</p>
           <h3 style="margin:1.5rem 0 0.5rem;">핵심 기술</h3>
           <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc;">
             <li><strong>실시간 데이터 파이프라인:</strong> 구글 트렌드, 각국 주요 포털의 공개된 데이터를 밀리초 단위로 수집 및 정규화합니다.</li>
@@ -72,7 +71,7 @@ let i18n = {
         title: "개인정보처리방침", 
         content: `
           <h2 style="margin-bottom:1rem;">개인정보처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 매우 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률" 등 모든 관련 법령을 철저히 준수하고 있습니다. 본 방침은 귀하가 본 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지에 대해 투명하게 설명합니다. (v1.9.0)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 매우 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률" 등 모든 관련 법령을 철저히 준수하고 있습니다. 본 방침은 귀하가 본 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지에 대해 투명하게 설명합니다. (v1.9.1)</p>
           
           <h3 style="margin:1.5rem 0 0.5rem;">1. 수집하는 정보의 항목 및 수집 방법</h3>
           <p>본 서비스는 별도의 회원가입 절차 없이 누구나 자유롭게 이용할 수 있습니다. 다만, 서비스 이용 과정에서 다음과 같은 정보들이 자동으로 생성되어 수집될 수 있습니다.</p>
@@ -118,11 +117,11 @@ let i18n = {
     title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", 
     original: "原文",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
-    labels: { trends: "国:", language: "言語:", site: "サイト案内" },
+    labels: { trends: "国:", language: "言語:", site: "사이트 안내" },
     analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '詳細がありません。',
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>TrendUpについて</h2><p>TrendUpは、ビッグデータとAI技術を活用して世界中のリアルタイムトレンドを分析・可視化する次世代情報プラットフォームです。</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.9.0)</p><h3>Google AdSenseについて</h3><p>当サイトはGoogle AdSenseを使用しています。Googleなどの第三者配信事業者は、Cookieを使用して、ユーザーが当サイトや他のウェブサイトに過去にアクセスした際の情報に基づいて広告を配信します。</p>` },
+      about: { title: "TrendUpについて", content: `<h2>TrendUpについて</h2><p>TrendUp은 빅데이터와 AI 기술을 활용하여 전 세계의 실시간 트렌드를 분석하고 시각화하는 차세대 정보 플랫폼입니다.</p>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.9.1)</p><h3>Google AdSenseについて</h3><p>当サイト는 Google AdSenseを使用しています。Googleなどの第三者配信事業者は、Cookieを使用して、ユーザーが当サイトや他のウェブサイトに過去にアクセスした際の情報に基づいて広告を配信します。</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスの利用条件、およびユーザーと運営者の権利・義務を規定します。提供される情報は参考用であり、完全性を保証するものではありません。</p>` },
       contact: { title: "お問い合わせ", content: `<h2>サポート</h2><p>メール: help@trendup.ai</p>` }
     }
@@ -150,7 +149,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.9.0)</p>
+          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.9.1)</p>
           <h3 style="margin:1.5rem 0 0.5rem;">Google AdSense</h3>
           <p>This site uses Google AdSense. Third party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites.</p>
           <p>Users may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank">Ads Settings</a>.</p>
@@ -198,7 +197,6 @@ class TrendList extends HTMLElement {
     
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .original-title { font-size: 0.7rem; color: var(--primary); opacity: 0.7; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
-        // 메인은 설정된 언어(없으면 원문), 서브는 원문
         const mainTitle = item.displayTitle || item.originalTitle || item.title;
         const subTitle = (item.originalTitle && item.displayTitle !== item.originalTitle) ? `✨ ${t.original}: ${item.originalTitle}` : "";
         return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${subTitle ? `<span class="original-title">${subTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
@@ -246,7 +244,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.9.0");
+    console.log("App Init: v1.9.1");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -293,7 +291,7 @@ class App {
         if (text.includes('lang')) label.textContent = t.labels.language;
       });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.0)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.1)`;
     } catch (e) {}
   }
   initThemeIcons() {
@@ -379,7 +377,6 @@ class App {
       const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();
-        
         const itemsMapped = dbData.items.map(item => {
           const originalTitle = item.originalTitle || item.title;
           const translatedTitle = item.translations?.[this.currentLang] || originalTitle;
@@ -390,12 +387,9 @@ class App {
             snippets: item.translatedSnippets?.[this.currentLang] || item.snippets || []
           };
         });
-
         const trends = this.service.calculateRankChanges(itemsMapped, dbData.previousItems);
         document.getElementById('top-trends').data = { trends, lang: this.currentLang };
-        
         const date = dbData.lastUpdated.toDate();
-        // 24시간제(hour12: false)로 변경
         document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}`;
         localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: itemsMapped, previousItems: dbData.previousItems, lastUpdated: dbData.lastUpdated.toMillis() }));
       }
