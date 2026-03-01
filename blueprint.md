@@ -46,6 +46,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Build server-side autonomous update system via GitHub Actions (v1.6.6).
 - [x] Unified project infrastructure to test-76cdd for both frontend and backend (v1.6.8).
 - [x] Synchronized UI "Last Updated" timestamp strictly with DB's `lastUpdated` field for data transparency (v1.6.9).
-- [x] Update version to v1.6.9 across all files.
+- [x] Refined rank change icons (up/down/new) with minimalist, high-contrast arrows (↑, ↓) for better readability (v1.7.0).
+- [x] Update version to v1.7.0 across all files.
 - [x] Push all changes to GitHub.
 

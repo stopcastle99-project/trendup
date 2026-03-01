@@ -79,7 +79,7 @@ let i18n = {
         title: "개인정보처리방침", 
         content: `
           <h2 style="margin-bottom:1rem;">개인정보처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률"을 준수하고 있습니다. 본 방침은 귀하가 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지 설명합니다. (v1.6.6)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률"을 준수하고 있습니다. 본 방침은 귀하가 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지 설명합니다. (v1.7.0)</p>
           
           <h3 style="margin:1.5rem 0 0.5rem;">1. 수집하는 개인정보 항목</h3>
           <p>서비스는 회원가입 없이 이용 가능하며, 기본적인 서비스 제공을 위해 쿠키(Cookie) 및 이용 기록(접속 로그, 접속 IP 정보)을 자동으로 수집할 수 있습니다. 이는 서비스 품질 향상 및 통계 분석을 위해 사용됩니다.</p>
@@ -154,7 +154,7 @@ let i18n = {
         title: "個人情報保護方針", 
         content: `
           <h2 style="margin-bottom:1rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.6.6)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.7.0)</p>
           <h3 style="margin:1.5rem 0 0.5rem;">1. 収集情報とクッキー</h3>
           <p>当サービスはサービス向上のため、アクセスログやクッキー(Cookie)を使用する場合があります。</p>
           <h3 style="margin:1.5rem 0 0.5rem;">2. Google AdSenseについて</h3>
@@ -198,7 +198,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.6.6)</p>
+          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.7.0)</p>
           <h3 style="margin:1.5rem 0 0.5rem;">1. Cookies & Data</h3>
           <p>We may use cookies and access logs to improve service quality and analyze traffic.</p>
           <h3 style="margin:1.5rem 0 0.5rem;">2. Google AdSense</h3>
@@ -412,12 +412,12 @@ class TrendList extends HTMLElement {
   render(trends, lang) {
     const t = i18n[lang] || i18n.en;
     const getTrendIcon = (dir) => {
-      if (dir === 'up') return '<span style="color: #ff4d4d;">▲</span>';
-      if (dir === 'down') return '<span style="color: #4d79ff;">▼</span>';
-      if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; border: 1px solid #ffaa00; padding: 0 4px; border-radius: 4px;">NEW</span>';
-      return '<span style="color: var(--text-muted); opacity: 0.5;">-</span>';
+      if (dir === 'up') return '<span style="color: #ff4d4d; font-weight: 900; font-size: 0.9rem;">↑</span>';
+      if (dir === 'down') return '<span style="color: #4d79ff; font-weight: 900; font-size: 0.9rem;">↓</span>';
+      if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; font-weight: 800; border: 1px solid #ffaa00; padding: 1px 4px; border-radius: 4px; letter-spacing: -0.02em;">NEW</span>';
+      return '<span style="color: var(--text-muted); opacity: 0.3; font-size: 0.8rem;">-</span>';
     };
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank, .title-group, .growth { pointer-events: none; } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; } .source-badge { font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.2rem; }</style>
+    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank, .title-group, .growth { pointer-events: none; } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; } .source-badge { font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.2rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span><span class="source-badge">${item.source}</span></div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = (e) => {
@@ -476,7 +476,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.6.9");
+    console.log("App Init: v1.7.0");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -580,7 +580,7 @@ class App {
         if (btn) btn.textContent = t.accept;
       }
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.9)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.7.0)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
