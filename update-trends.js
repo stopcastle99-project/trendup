@@ -3,17 +3,25 @@ import fetch from 'node-fetch';
 import { JSDOM } from 'jsdom';
 
 // GitHub Secrets 체크 및 로깅
-if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-  console.error("ERROR: FIREBASE_SERVICE_ACCOUNT environment variable is missing.");
+const rawSecret = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+if (!rawSecret || rawSecret.trim().length === 0) {
+  console.error("ERROR: FIREBASE_SERVICE_ACCOUNT environment variable is missing or empty.");
   process.exit(1);
 }
 
+console.log(`Debug: Received secret string with length: ${rawSecret.length}`);
+
 let serviceAccount;
 try {
-  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  // 앞뒤 공백 제거 후 파싱
+  serviceAccount = JSON.parse(rawSecret.trim());
+  console.log("Firebase Service Account JSON parsed successfully.");
 } catch (e) {
   console.error("ERROR: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON. Please check the secret format.");
-  console.error(e.message);
+  console.error("Error Message:", e.message);
+  // 보안을 위해 실제 내용을 출력하지 않지만, 시작과 끝 문자만 살짝 노출하여 힌트 제공
+  console.log(`Hint: String starts with '${rawSecret.substring(0, 5)}...' and ends with '${rawSecret.substring(rawSecret.length - 5)}'`);
   process.exit(1);
 }
 
