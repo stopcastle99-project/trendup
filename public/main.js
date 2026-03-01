@@ -16,7 +16,7 @@ class BackgroundScene {
       this.init();
       this.animate();
       window.addEventListener('resize', () => this.onResize());
-    } catch (e) { console.error("Three.js init error:", e); }
+    } catch (e) { console.error("Three.js error:", e); }
   }
   init() {
     const geometry = new THREE.IcosahedronGeometry(1, 1);
@@ -31,23 +31,8 @@ class BackgroundScene {
       this.particles.push({ mesh, speed: Math.random() * 0.004 + 0.001, rot: Math.random() * 0.008 });
     }
   }
-  onResize() { 
-    if (!this.renderer) return; 
-    this.renderer.setSize(window.innerWidth, window.innerHeight); 
-    this.camera.aspect = window.innerWidth / window.innerHeight; 
-    this.camera.updateProjectionMatrix(); 
-  }
-  animate() { 
-    if (!this.renderer) return; 
-    requestAnimationFrame(() => this.animate()); 
-    this.particles.forEach(p => { 
-      p.mesh.rotation.x += p.rot; 
-      p.mesh.rotation.y += p.rot; 
-      p.mesh.position.y += p.speed; 
-      if (p.mesh.position.y > 10) p.mesh.position.y = -10; 
-    }); 
-    this.renderer.render(this.scene, this.camera); 
-  }
+  onResize() { if (!this.renderer) return; this.renderer.setSize(window.innerWidth, window.innerHeight); this.camera.aspect = window.innerWidth / window.innerHeight; this.camera.updateProjectionMatrix(); }
+  animate() { if (!this.renderer) return; requestAnimationFrame(() => this.animate()); this.particles.forEach(p => { p.mesh.rotation.x += p.rot; p.mesh.rotation.y += p.rot; p.mesh.position.y += p.speed; if (p.mesh.position.y > 10) p.mesh.position.y = -10; }); this.renderer.render(this.scene, this.camera); }
 }
 
 const ICONS = {
@@ -60,21 +45,24 @@ const ICONS = {
 let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "최근 업데이트", summary: "트렌드 분석 리포트", news: "주요 관련 뉴스", videos: "유튜브 미디어", loading: "데이터 분석 중...", T: "트렌드 설정", L: "언어 설정", original: "원문",
+    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '상세 내용이 없습니다.',
     pages: {
-      about: { 
-        title: "About TrendUp: 글로벌 트렌드 인텔리전스", 
-        content: `<h2 style="margin-bottom:1.5rem;">세상을 읽는 가장 빠른 방법, TrendUp</h2><p style="margin-bottom:1rem; line-height:1.8;">TrendUp은 빅데이터 처리 기술과 고도화된 인공지능(AI) 엔진을 결합하여 전 세계 주요 국가의 검색 흐름을 실시간으로 분석하고 시각화하는 프리미엄 데이터 플랫폼입니다.</p><h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">우리의 비전</h3><p style="margin-bottom:1rem;">정보의 홍수 속에서 사용자에게 '진짜 가치'가 있는 인사이트를 선별하여 제공하는 것입니다. 단순한 순위 나열을 넘어 문맥(Context)을 분석합니다.</p>` 
-      },
-      privacy: { 
-        title: "개인정보 처리방침 (Privacy Policy)", 
-        content: `<h2 style="margin-bottom:1.5rem;">개인정보 처리방침 (v1.9.8)</h2><p>TrendUp은 이용자의 개인정보를 소중히 다루며, 관련 법령을 철저히 준수합니다. 본 사이트는 구글 애드센스를 사용하며 쿠키를 통해 광고를 최적화합니다.</p>` 
-      },
-      terms: { title: "서비스 이용약관", content: `<h2>이용약관</h2><p>본 서비스의 데이터는 참고용이며 법적 책임을 지지 않습니다.</p>` },
-      contact: { title: "문의하기", content: `<h2 style="margin-bottom:1.5rem;">고객 지원</h2><p>Email: help@trendup.ai</p>` }
+      about: { title: "About TrendUp: 글로벌 트렌드 인텔리전스", content: `<h2>TrendUp</h2><p>실시간 글로벌 트렌드 플랫폼입니다.</p>` },
+      privacy: { title: "개인정보 처리방침", content: `<h2>개인정보 처리방침 (v1.9.9)</h2><p>이용자의 개인정보를 소중히 다룹니다.</p>` },
+      terms: { title: "이용약관", content: `<h2>이용약관</h2><p>본 서비스의 데이터는 참고용입니다.</p>` },
+      contact: { title: "문의하기", content: `<h2>고객 지원</h2><p>Email: help@trendup.ai</p>` }
     }
   },
-  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文" },
-  en: { title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original" }
+  ja: { 
+    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
+    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '詳細がありません。',
+    pages: { about: { title: "TrendUpについて", content: `<h2>TrendUp</h2>` }, privacy: { title: "個人情報保護方針", content: `<p>v1.9.9</p>` }, terms: { title: "利用規約", content: `<p>利用規약입니다.</p>` }, contact: { title: "お問い合わせ", content: `<p>Email: help@trendup.ai</p>` } }
+  },
+  en: { 
+    title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Setting", original: "Original",
+    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || 'No snippets available.',
+    pages: { about: { title: "About TrendUp", content: `<h2>TrendUp</h2>` }, privacy: { title: "Privacy Policy", content: `<p>v1.9.9</p>` }, terms: { title: "Terms of Service", content: `<p>Terms of service.</p>` }, contact: { title: "Contact Us", content: `<p>Email: help@trendup.ai</p>` } }
+  }
 };
 
 const firebaseConfig = { projectId: "test-76cdd" };
@@ -157,7 +145,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.9.8");
+    console.log("App Init: v1.9.9");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -177,7 +165,7 @@ class App {
       });
       this.startAsyncTasks();
       setInterval(() => this.update(), this.service.refreshInterval);
-    } catch (e) { console.error("App init failed:", e); }
+    } catch (e) { console.error("App init error:", e); }
   }
   loadLocalCache() {
     try {
@@ -204,11 +192,11 @@ class App {
       const titleEl = document.getElementById('current-country-title');
       if (titleEl) titleEl.textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.8)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.9)`;
       document.querySelectorAll('.nav-label').forEach(label => {
         const text = label.textContent.toLowerCase();
-        if (text.includes('trend')) label.textContent = t.labels.trends;
-        if (text.includes('lang')) label.textContent = t.labels.language;
+        if (text.includes('trend')) label.textContent = t.labels?.trends || "Trends:";
+        if (text.includes('lang')) label.textContent = t.labels?.language || "Language:";
       });
     } catch (e) {}
   }
