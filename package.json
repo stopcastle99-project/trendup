@@ -1,0 +1,12 @@
+{
+  "name": "trendup-updater",
+  "version": "1.6.6",
+  "description": "TrendUp Global Trends Background Updater",
+  "main": "update-trends.js",
+  "type": "module",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "jsdom": "^24.0.0",
+    "node-fetch": "^3.3.2"
+  }
+}

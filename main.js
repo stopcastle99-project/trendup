@@ -79,7 +79,7 @@ let i18n = {
         title: "개인정보처리방침", 
         content: `
           <h2 style="margin-bottom:1rem;">개인정보처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률"을 준수하고 있습니다. 본 방침은 귀하가 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지 설명합니다. (v1.6.5)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률"을 준수하고 있습니다. 본 방침은 귀하가 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지 설명합니다. (v1.6.6)</p>
           
           <h3 style="margin:1.5rem 0 0.5rem;">1. 수집하는 개인정보 항목</h3>
           <p>서비스는 회원가입 없이 이용 가능하며, 기본적인 서비스 제공을 위해 쿠키(Cookie) 및 이용 기록(접속 로그, 접속 IP 정보)을 자동으로 수집할 수 있습니다. 이는 서비스 품질 향상 및 통계 분석을 위해 사용됩니다.</p>
@@ -154,7 +154,7 @@ let i18n = {
         title: "個人情報保護方針", 
         content: `
           <h2 style="margin-bottom:1rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.6.5)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.6.6)</p>
           <h3 style="margin:1.5rem 0 0.5rem;">1. 収集情報とクッキー</h3>
           <p>当サービスはサービス向上のため、アクセスログやクッキー(Cookie)を使用する場合があります。</p>
           <h3 style="margin:1.5rem 0 0.5rem;">2. Google AdSenseについて</h3>
@@ -198,7 +198,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.6.5)</p>
+          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.6.6)</p>
           <h3 style="margin:1.5rem 0 0.5rem;">1. Cookies & Data</h3>
           <p>We may use cookies and access logs to improve service quality and analyze traffic.</p>
           <h3 style="margin:1.5rem 0 0.5rem;">2. Google AdSense</h3>
@@ -476,7 +476,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.6.5");
+    console.log("App Init: v1.6.6");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -578,7 +578,7 @@ class App {
         if (btn) btn.textContent = t.accept;
       }
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.5)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.6)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
