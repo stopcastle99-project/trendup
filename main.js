@@ -38,7 +38,7 @@ class BackgroundScene {
 
 // --- Icons ---
 const ICONS = {
-  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" x1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
 };
@@ -123,7 +123,7 @@ let i18n = {
     }
   },
   ja: { 
-    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "トレンド分析中...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
+    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "トレンド分析중...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
     cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています。", accept: "了解",
     siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
@@ -131,7 +131,7 @@ let i18n = {
     labels: { trends: "国:", language: "言語:", site: "サイト案内" },
     sysLinks: { search: "Google検索", video: "関連動画を確認" },
     analysisTemplate: (title, sources, snippets) => {
-      if (!snippets || snippets.length === 0) return `「${title}」が現在、検索ポータルを通じて急速に拡散され、大きな注目を集めています。`;
+      if (!snippets || snippets.length === 0) return `「${title}」が現在、検索ポータルを通じて急速に拡散され、大きな注目を集めています.`;
       const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
       const mainSummary = cleanSnippets.slice(0, 3).join(' ');
       const sourceInfo = (sources && sources.length > 0) ? `\n\n[報道メディア: ${sources.slice(0, 3).join('、')} など]` : "";
@@ -146,7 +146,7 @@ let i18n = {
           <h3 style="margin:1.5rem 0 0.5rem;">コア技術</h3>
           <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc;">
             <li><strong>リアルタイムデータ:</strong> Googleトレンドや主要ポータルの検索データをリアルタイムで収集・正規化します。</li>
-            <li><strong>AI文脈分析:</strong> なぜそのキーワードが話題なのか、関連ニュースや反応をAIが統合・要約します。</li>
+            <li><strong>AI文脈分析:</strong> なぜそのキーワードが話題なのか、関連ニュースや反応をAI가 統合・要約します。</li>
           </ul>
         ` 
       },
@@ -162,7 +162,7 @@ let i18n = {
           <p>ユーザーは<a href="https://www.google.com/settings/ads" target="_blank">広告設定</a>でパーソナライズ広告を無効にできます。</p>
         ` 
       },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスの利用条件、およびユーザーと運営者の権利・義務を規定します。提供される情報は参考用であり、完全性を保証するものではありません。</p>` },
+      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスの利用条件、およびユーザーと運営者の権利・義務を規定します. 提供される情報は参考用であり、完全性を保証するものではありません。</p>` },
       contact: { title: "お問い合わせ", content: `<h2>サポート</h2><p>メール: help@trendup.ai</p>` }
     }
   },
@@ -493,7 +493,7 @@ class App {
       window.addEventListener('click', () => { document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded')); document.getElementById('theme-dropdown')?.classList.add('hidden'); });
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (this.themeMode === 'system') this.applyTheme('system'); });
       this.startAsyncTasks();
-      setInterval(() => { this.update(); this.backgroundSyncAll(); }, this.service.refreshInterval);
+      setInterval(() => { this.update(); }, this.service.refreshInterval);
     } catch (e) { console.error("App init failed:", e); }
   }
   
@@ -525,21 +525,30 @@ class App {
       this.refreshUIText();
       this.renderNavs();
       await this.update();
-      this.backgroundSyncAll();
     } catch (e) { console.error("Async tasks failed:", e); await this.update(); }
   }
   async syncLocalization() {
     if (!this.db) return;
     try {
-      for (const lang of Object.keys(i18n)) { await setDoc(doc(this.db, 'localization', lang), i18n[lang]); }
       const snapshot = await getDocs(collection(this.db, 'localization'));
       if (!snapshot.empty) {
         const remoteData = {};
         snapshot.forEach(doc => { remoteData[doc.id] = doc.data(); });
-        i18n = remoteData;
+        
+        Object.keys(remoteData).forEach(lang => {
+          if (i18n[lang]) {
+            Object.keys(remoteData[lang]).forEach(key => {
+              if (typeof i18n[lang][key] !== 'function') {
+                i18n[lang][key] = remoteData[lang][key];
+              }
+            });
+          } else {
+            i18n[lang] = remoteData[lang];
+          }
+        });
         localStorage.setItem('i18n_cache', JSON.stringify(i18n));
       }
-    } catch (e) { console.error("Localization sync failed:", e); }
+    } catch (e) { console.warn("Localization sync (read) failed:", e.message); }
   }
   refreshUIText() {
     try {
@@ -585,25 +594,7 @@ class App {
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
   }
-  async backgroundSyncAll() {
-    if (!this.db) return;
-    try {
-      const countries = this.service.getCountries();
-      for (const c of countries) {
-        const trendDoc = await getDoc(doc(this.db, 'trends', c.code));
-        const dbData = trendDoc.exists() ? trendDoc.data() : null;
-        const now = Date.now();
-        const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
-        if (!dbData || (now - lastUpdated > this.service.refreshInterval)) {
-          const freshItems = await this.service.fetchFreshTrends(c.code, this.currentLang);
-          if (freshItems && freshItems.length >= 5) {
-            await setDoc(doc(this.db, 'trends', c.code), { items: freshItems, previousItems: dbData?.items || [], lastUpdated: Timestamp.now() });
-          }
-          await new Promise(res => setTimeout(res, 2000));
-        }
-      }
-    } catch (e) { console.error("Background sync failed:", e); }
-  }
+  
   initThemeIcons() {
     try {
       const sunIcons = document.querySelectorAll('.sun-svg');
@@ -766,7 +757,7 @@ class App {
               }
             }
           }
-        } catch (dbErr) { console.error("DB Load Error:", dbErr); }
+        } catch (dbErr) { console.error("DB Load Error (Permissions?):", dbErr.message); }
       }
       
       // DB 데이터가 없는 극단적인 상황에서만 백업 fetch (번역 없이 원본 노출)
