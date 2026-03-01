@@ -37,29 +37,92 @@ class BackgroundScene {
 }
 
 const ICONS = {
-  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" x1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" x1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" x1="18.36" x2="19.78" y2="19.78"></line><line x1="1" x1="12" x2="3" y2="12"></line><line x1="21" x1="12" x2="23" y2="12"></line><line x1="4.22" x1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" x1="5.64" x2="19.78" y2="4.22"></line></svg>`,
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" x1="1" x2="12" y2="3"></line><line x1="12" x1="21" x2="12" y2="23"></line><line x1="4.22" x1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" x1="18.36" x2="19.78" y2="19.78"></line><line x1="1" x1="12" x2="3" y2="12"></line><line x1="21" x1="12" x2="23" y2="12"></line><line x1="4.22" x1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" x1="5.64" x2="19.78" y2="4.22"></line></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
 };
 
-// --- Localization (애드센스 승인용 고품질 텍스트) ---
+// --- Localization (고품질 전문 텍스트 보강) ---
 let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "최근 업데이트", summary: "트렌드 분석 리포트", news: "주요 관련 뉴스", videos: "유튜브 미디어", loading: "데이터 분석 중...", T: "트렌드 설정", L: "언어 설정", original: "원문",
     pages: {
       about: { 
-        title: "TrendUp: 인공지능 기반 글로벌 인사이트", 
-        content: `<h2 style="margin-bottom:1rem;">TrendUp은 무엇인가요?</h2><p>TrendUp은 전 세계의 실시간 검색 데이터와 사회적 신호를 수집하여, 지금 이 순간 가장 뜨거운 감자가 무엇인지 분석하는 데이터 인텔리전스 플랫폼입니다. 인공지능 번역 및 요약 기술을 활용하여 언어의 장벽 없이 전 세계의 흐름을 파악할 수 있도록 돕습니다.</p><h3 style="margin-top:1.5rem;">주요 데이터 출처</h3><p>우리는 Google Trends, Naver Signal, Yahoo Japan Realtime Search 등 각 지역을 대표하는 공신력 있는 포털의 공개 데이터를 실시간으로 정규화하여 제공합니다.</p>` 
+        title: "About TrendUp: 글로벌 트렌드 인텔리전스", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">세상을 읽는 가장 빠른 방법, TrendUp</h2>
+          <p style="margin-bottom:1rem; line-height:1.8;">TrendUp은 빅데이터 처리 기술과 고도화된 인공지능(AI) 엔진을 결합하여 전 세계 주요 국가의 검색 흐름을 실시간으로 분석하고 시각화하는 프리미엄 데이터 플랫폼입니다.</p>
+          
+          <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">우리의 비전 (Our Vision)</h3>
+          <p style="margin-bottom:1rem;">정보의 홍수 속에서 사용자에게 '진짜 가치'가 있는 인사이트를 선별하여 제공하는 것입니다. 우리는 단순한 순위 나열을 넘어, 왜 해당 키워드가 화제가 되고 있는지에 대한 맥락(Context)을 분석하여 전달합니다.</p>
+          
+          <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">핵심 기능 (Core Features)</h3>
+          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
+            <li><strong>초정밀 실시간 수집:</strong> 구글, 네이버, 야후 등 주요 플랫폼의 공개 API와 소셜 신호를 10분 단위로 정규화합니다.</li>
+            <li><strong>AI 다국어 현지화:</strong> 각국의 로컬 트렌드를 사용자의 언어로 완벽하게 번역 및 최적화하여 정보의 격차를 해소합니다.</li>
+            <li><strong>랭킹 변화 트래킹:</strong> 트렌드의 생성, 급상승, 하락 주기를 정밀하게 추적하여 마케팅과 콘텐츠 전략 수립을 돕습니다.</li>
+          </ul>
+          
+          <p>TrendUp을 통해 대화의 주제를 선점하고 비즈니스의 미래를 먼저 예측하세요. 우리는 지속적인 알고리즘 업데이트를 통해 데이터의 정확도와 신뢰도를 높여가고 있습니다.</p>
+        ` 
       },
       privacy: { 
-        title: "개인정보처리방침", 
-        content: `<h2 style="margin-bottom:1rem;">개인정보 처리방침 (v1.9.5)</h2><p>본 방침은 TrendUp 서비스(이하 '서비스')가 이용자의 개인정보를 어떻게 처리하고 보호하는지 상세히 안내합니다.</p><h3>1. 개인정보의 수집 및 이용</h3><p>회사는 별도의 회원가입 없이 서비스를 제공하며, 서비스 이용 과정에서 쿠키, 접속 IP, 브라우저 정보가 통계 및 광고 최적화를 위해 자동으로 수집될 수 있습니다.</p><h3>2. 구글 애드센스 및 광고 쿠키</h3><p>본 사이트는 구글 애드센스를 통해 광고를 게재합니다. 구글을 포함한 제3자 제공업체는 쿠키를 사용하여 이용자의 이전 방문 기록을 바탕으로 광고를 게재합니다. 이용자는 구글 광고 설정에서 개인 맞춤 광고를 해제할 수 있습니다.</p>` 
+        title: "개인정보 처리방침 (Privacy Policy)", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 소중히 다루며, 관련 법령을 철저히 준수합니다. 본 방침은 서비스 이용 시 발생하는 정보 수집 및 이용에 관한 투명한 설명을 제공합니다.</p>
+          
+          <h3 style="margin:1.5rem 0 0.5rem;">1. 수집하는 정보 및 방법</h3>
+          <p>본 서비스는 회원가입 없이 이용 가능하며, 서비스 품질 향상을 위해 다음과 같은 정보가 자동 수집될 수 있습니다.</p>
+          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc;">
+            <li>접속 IP 주소, 브라우저 종류, 운영체제(OS), 방문 일시 및 서비스 이용 기록</li>
+            <li>쿠키(Cookie)를 통한 사용자 환경 설정 정보</li>
+          </ul>
+          
+          <h3 style="margin:1.5rem 0 0.5rem;">2. 구글 애드센스 (Google AdSense) 공개</h3>
+          <p>본 사이트는 수익 창출을 위해 구글 애드센스 광고를 게재합니다.</p>
+          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc;">
+            <li>Google을 포함한 제3자 제공업체는 사용자의 이전 방문 기록을 바탕으로 쿠키를 사용하여 맞춤형 광고를 제공합니다.</li>
+            <li>Google의 광고 쿠키 사용으로 인해 사용자에게 최적화된 광고 게재가 가능해집니다.</li>
+            <li>이용자는 <a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--primary);">광고 설정</a>에서 개인 맞춤 광고를 해제할 수 있습니다.</li>
+          </ul>
+
+          <h3 style="margin:1.5rem 0 0.5rem;">3. 데이터 보안 및 보호</h3>
+          <p>수집된 익명 데이터는 통계 분석 목적으로만 사용되며, 법적 의무가 없는 한 제3자에게 제공되지 않습니다. 우리는 사용자의 프라이버시를 보호하기 위해 최신 보안 기술을 적용하고 있습니다.</p>
+          <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">최종 업데이트 날짜: 2026년 3월 1일 (v1.9.6)</p>
+        ` 
       },
       terms: { 
-        title: "이용약관", 
-        content: `<h2>서비스 이용약관</h2><p>TrendUp은 정보 제공을 목적으로 하며, 수집된 데이터의 완전성이나 정확성을 보증하지 않습니다. 본 서비스의 데이터를 기반으로 한 의사결정의 책임은 이용자에게 있습니다.</p>` 
+        title: "서비스 이용약관 (Terms of Service)", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">서비스 이용약관</h2>
+          <h3 style="margin:1.5rem 0 0.5rem;">제1조 (목적)</h3>
+          <p>본 약관은 TrendUp이 제공하는 글로벌 트렌드 정보 서비스의 이용 조건 및 절차에 관한 기본적인 사항을 규정함을 목적으로 합니다.</p>
+          
+          <h3 style="margin:1.5rem 0 0.5rem;">제2조 (정보 제공의 한계)</h3>
+          <p>TrendUp이 제공하는 순위 및 요약 정보는 주요 포털의 공개 데이터를 기반으로 자동 수집/분석된 참고용 자료입니다.</p>
+          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc;">
+            <li>정보의 완전성, 정확성, 적시성을 보증하지 않습니다.</li>
+            <li>본 정보의 활용으로 발생하는 모든 유무형의 손해에 대해 회사는 책임을 지지 않습니다.</li>
+          </ul>
+          
+          <h3 style="margin:1.5rem 0 0.5rem;">제3조 (지적재산권)</h3>
+          <p>본 서비스의 UI 디자인, 로고, AI 분석 텍스트에 대한 지적재산권은 TrendUp에 귀속됩니다. 인용된 원문 뉴스의 링크 및 짧은 스니펫의 저작권은 해당 원저작자 및 보도 매체에 있습니다.</p>
+        ` 
       },
-      contact: { title: "문의하기", content: `<h2>고객 지원</h2><p>Email: help@trendup.ai</p><p>제휴 및 데이터 관련 문의는 메일로 주시기 바랍니다.</p>` }
+      contact: { 
+        title: "문의 및 고객 지원 (Contact)", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">고객 지원 및 제휴 문의</h2>
+          <p>TrendUp 서비스와 관련하여 문의 사항이나 제안 사항이 있으시면 아래 채널을 통해 연락 주시기 바랍니다.</p>
+          <div style="margin-top:2rem; padding:1.5rem; background:var(--surface); border-radius:16px;">
+            <p><strong>공식 이메일:</strong> help@trendup.ai</p>
+            <p style="margin-top:0.5rem;"><strong>운영 시간:</strong> 평일 09:00 - 18:00 (KST)</p>
+            <p style="margin-top:0.5rem;"><strong>비즈니스 제휴:</strong> biz@trendup.ai</p>
+          </div>
+          <p style="margin-top:1.5rem;">접수된 문의 사항은 순차적으로 검토 후 24시간 이내에 답변해 드리기 위해 최선을 다하고 있습니다.</p>
+        ` 
+      }
     }
   },
   ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文" },
@@ -146,7 +209,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.9.5");
+    console.log("App Init: v1.9.6");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -187,8 +250,13 @@ class App {
     try {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
+      document.querySelectorAll('.nav-label').forEach(label => {
+        const text = label.textContent.toLowerCase();
+        if (text.includes('trend')) label.textContent = t.labels.trends;
+        if (text.includes('lang')) label.textContent = t.labels.language;
+      });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.5)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.6)`;
     } catch (e) {}
   }
   initThemeIcons() {
