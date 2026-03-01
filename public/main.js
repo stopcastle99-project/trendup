@@ -36,7 +36,7 @@ class BackgroundScene {
 }
 
 const ICONS = {
-  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" x1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" x1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" x1="18.36" x2="19.78" y2="19.78"></line><line x1="1" x1="12" x2="3" y2="12"></line><line x1="21" x1="12" x2="23" y2="12"></line><line x1="4.22" x1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" x1="5.64" x2="19.78" y2="4.22"></line></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
 };
@@ -48,35 +48,92 @@ let i18n = {
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" },
     pages: {
       about: { 
-        title: "About TrendUp: 글로벌 트렌드 데이터 인텔리전스", 
-        content: `<h2>세상을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 빅데이터와 AI 기술을 활용하여 글로벌 트렌드를 실시간으로 분석합니다.</p>` 
+        title: "TrendUp: 글로벌 트렌드 인텔리전스", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">세상을 읽는 가장 빠른 방법, TrendUp</h2>
+          <p style="margin-bottom:1rem; line-height:1.8;">TrendUp은 빅데이터 처리 기술과 최신 인공지능(AI) 엔진을 결합하여 전 세계 주요 국가(대한민국, 일본, 미국)의 검색 흐름을 실시간으로 분석하고 시각화하는 데이터 분석 플랫폼입니다.</p>
+          <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">핵심 기술력</h3>
+          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
+            <li><strong>독자적인 데이터 파이프라인:</strong> 각국의 신뢰도 높은 데이터를 10분 단위로 정규화합니다.</li>
+            <li><strong>문맥 기반 AI 번역:</strong> 단순 번역을 넘어 해당 키워드가 왜 이슈인지 맥락을 파악하여 번역합니다.</li>
+            <li><strong>랭킹 변화 트래킹:</strong> 트렌드의 생성부터 소멸까지 전 주기를 정밀 추적합니다.</li>
+          </ul>
+          <p>TrendUp을 통해 대화의 주제를 선점하고 비즈니스의 미래를 먼저 예측하세요.</p>
+        ` 
       },
       privacy: { 
         title: "개인정보 처리방침 (Privacy Policy)", 
-        content: `<h2>개인정보 처리방침 (v2.0.1)</h2><p>TrendUp은 이용자의 개인정보를 소중히 다루며 관련 법령을 준수합니다.</p>` 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 매우 소중히 다루며, 관련 법령을 철저히 준수합니다. (v2.0.2)</p>
+          <h3>1. 수집 항목 및 방법</h3>
+          <p>회원가입 없이 이용 가능하며, 서비스 품질 개선을 위해 접속 IP, 브라우저 정보, 쿠키 등이 자동 수집될 수 있습니다.</p>
+          <h3>2. 구글 애드센스 (Google AdSense)</h3>
+          <p>본 사이트는 구글 애드센스를 통해 광고를 게재합니다. 구글을 포함한 제3자 제공업체는 쿠키를 사용하여 사용자의 이전 방문 기록을 바탕으로 맞춤형 광고를 제공합니다. 이용자는 <a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--primary);">구글 광고 설정</a>에서 이를 해제할 수 있습니다.</p>
+          <h3>3. 데이터 보호</h3>
+          <p>수집된 익명 데이터는 통계 분석 목적으로만 사용되며, 법적 의무가 없는 한 제3자에게 제공되지 않습니다.</p>
+        ` 
       },
-      terms: { title: "서비스 이용약관", content: `<h2>이용약관</h2><p>본 서비스의 데이터는 참고용입니다.</p>` },
-      contact: { title: "문의하기", content: `<h2>고객 지원</h2><p>Email: help@trendup.ai</p>` }
+      terms: { 
+        title: "서비스 이용약관 (Terms of Service)", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">서비스 이용약관</h2>
+          <h3>제1조 (목적)</h3>
+          <p>본 약관은 TrendUp 서비스의 이용 조건 및 절차를 규정함을 목적으로 합니다.</p>
+          <h3>제2조 (정보 제공 및 면책)</h3>
+          <p>TrendUp이 제공하는 모든 데이터는 주요 포털의 공개 데이터를 알고리즘이 처리한 참고용 자료입니다. 정보의 완전성이나 정확성을 보장하지 않으며, 데이터 활용에 따른 모든 결과의 책임은 이용자에게 있습니다.</p>
+          <h3>제3조 (저작권)</h3>
+          <p>서비스의 디자인 및 AI 요약 텍스트의 저작권은 TrendUp에 귀속됩니다.</p>
+        ` 
+      },
+      contact: { 
+        title: "문의 및 고객 지원 (Contact)", 
+        content: `<h2 style="margin-bottom:1.5rem;">고객 지원 센터</h2><p>서비스 제안, 오류 제보, 제휴 문의는 아래 메일로 연락 주시기 바랍니다.</p><div style="margin-top:2rem; padding:1.5rem; background:var(--surface); border-radius:16px; border:1px solid var(--border);"><p><strong>Email:</strong> help@trendup.ai</p><p style="margin-top:0.5rem;"><strong>운영 시간:</strong> 평일 09:00 - 18:00 (KST)</p></div>` 
+      }
     }
   },
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文",
     menu: { about: "TrendUpについて", privacy: "個人情報保護方針", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト案内" },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>TrendUpについて</h2><p>TrendUpは世界のトレンドをリアルタイムで分析するプラットフォームです。</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針 (v2.0.1)</h2><p>ユーザーの個人情報を尊重します。</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2>` },
-      contact: { title: "お問い合わせ", content: `<h2>サポート</h2><p>Email: help@trendup.ai</p>` }
+      about: { 
+        title: "TrendUpについて: グローバルトレンド・インテリジェンス", 
+        content: `<h2>世界の流れを瞬時に把握、TrendUp</h2><p style="line-height:1.8;">TrendUpは、ビッグデータ処理技術と最新のAI翻訳エンジンを組み合わせ、日本、韓国、米国などの主要国の検索トレンドをリアルタイムで分析・可視化するデータプラットフォームです。</p><h3 style="margin-top:1.5rem;">コア技術</h3><p>Google、Yahoo Japan、Naverなどの主要ポータルの公開データを10分ごとに正規化し、言語の壁なしに世界の潮流を理解できるようサポートします。</p>` 
+      },
+      privacy: { 
+        title: "個人情報保護方針 (Privacy Policy)", 
+        content: `<h2 style="margin-bottom:1.5rem;">個人情報保護方針</h2><p>TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。</p><h3>1. 収集情報</h3><p>アクセスログ、クッキー、ブラウザ情報などが統計分析や広告の最適化のために自動的に収集される場合があります。</p><h3>2. Google AdSense</h3><p>当サイトはGoogle AdSenseを使用しています。Googleなどの第三者配信事業者は、Cookieを使用してユーザーの過去のアクセス情報に基づいて広告を配信します。ユーザーはGoogleの広告設定でパーソナライズ広告を無効にできます。</p>` 
+      },
+      terms: { 
+        title: "利用規約 (Terms of Service)", 
+        content: `<h2>利用規約</h2><p>提供される全てのデータは参考用であり、完全性や正確性を保証するものではありません。情報の利用に関する最終的な責任はユーザーに帰속します。</p>` 
+      },
+      contact: { 
+        title: "お問い合わせ (Contact)", 
+        content: `<h2 style="margin-bottom:1.5rem;">サポートセンター</h2><p>サービスに関するお問い合わせは、以下のメールアドレスまでお願いいたします。</p><div style="margin-top:1rem; padding:1rem; background:var(--surface); border-radius:12px;"><p><strong>Email:</strong> help@trendup.ai</p></div>` 
+      }
     }
   },
   en: { 
     title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original",
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Information" },
     pages: {
-      about: { title: "About TrendUp", content: `<h2>About TrendUp</h2><p>TrendUp analyzes global trends in real-time using AI.</p>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy (v2.0.1)</h2><p>We respect your privacy.</p>` },
-      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2>` },
-      contact: { title: "Contact Us", content: `<h2>Customer Support</h2><p>Email: help@trendup.ai</p>` }
+      about: { 
+        title: "About TrendUp: Global Trend Intelligence", 
+        content: `<h2 style="margin-bottom:1.5rem;">Global Trends at a Glance, TrendUp</h2><p style="line-height:1.8;">TrendUp is a next-generation data intelligence platform that leverages advanced AI translation and data processing technologies to track real-time search trends across major nations including the US, Korea, and Japan.</p><h3 style="margin-top:1.5rem;">Our Methodology</h3><p>We normalize public indicators from Google Trends and regional portals every 10 minutes, providing contextual summaries using AI technology to bridge the information gap across borders.</p>` 
+      },
+      privacy: { 
+        title: "Privacy Policy", 
+        content: `<h2 style="margin-bottom:1.5rem;">Privacy Policy</h2><p>TrendUp respects your privacy and is committed to protecting it. (v2.0.2)</p><h3>1. Information Collection</h3><p>We automatically collect technical data such as IP addresses, browser types, and access logs for statistical analysis and site improvement.</p><h3>2. Google AdSense</h3><p>We use Google AdSense to serve ads. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites. You may opt out of personalized advertising by visiting Google Ads Settings.</p>` 
+      },
+      terms: { 
+        title: "Terms of Service", 
+        content: `<h2>Terms of Service</h2><p>All data and insights provided by TrendUp are for informational purposes only. We do not guarantee the absolute accuracy or timeliness of the information. Users assume full responsibility for any decisions made based on this data.</p>` 
+      },
+      contact: { 
+        title: "Contact Us", 
+        content: `<h2 style="margin-bottom:1.5rem;">Customer Support</h2><p>For any inquiries, feedback, or business proposals, please contact us via email.</p><div style="margin-top:1rem; padding:1rem; background:var(--surface); border-radius:12px;"><p><strong>Official Email:</strong> help@trendup.ai</p></div>` 
+      }
     }
   }
 };
@@ -133,7 +190,7 @@ class TrendModal extends HTMLElement {
     if (!trend) return;
     this.isVisible = true;
     const t = i18n[lang] || i18n.en;
-    const analysis = trend.snippets?.[0] || t.analysisTemplate(trend.originalTitle, trend.sources, trend.snippets);
+    const analysis = trend.snippets?.[0] || (typeof t.analysisTemplate === 'function' ? t.analysisTemplate(trend.originalTitle, trend.sources, trend.snippets) : "");
     this.render(trend, lang, analysis);
   }
   hide() { this.isVisible = false; this.shadowRoot.innerHTML = ''; }
@@ -161,7 +218,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.0.1");
+    console.log("App Init: v2.0.2");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -207,21 +264,18 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.0.1)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.0.2)`;
       
-      // 메뉴 다국어화 보강
-      const menuTitle = document.querySelector('.menu-section .menu-title');
-      if (menuTitle) menuTitle.textContent = t.T;
-      const siteInfoTitle = document.querySelectorAll('.menu-section .menu-title')[1];
-      if (siteInfoTitle) siteInfoTitle.textContent = t.menu.siteInfo;
+      const menuTitles = document.querySelectorAll('.menu-section .menu-title');
+      if (menuTitles[0]) menuTitles[0].textContent = t.T;
+      if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
 
       document.querySelectorAll('.nav-label').forEach(label => {
         const text = label.textContent.toLowerCase();
-        if (text.includes('trend')) label.textContent = t.labels.trends;
-        if (text.includes('lang')) label.textContent = t.labels.language;
+        if (text.includes('trend')) label.textContent = t.labels.trends || "Country:";
+        if (text.includes('lang')) label.textContent = t.labels.language || "Language:";
       });
 
-      // 사이드 메뉴 링크 텍스트 업데이트
       document.querySelectorAll('[data-page]').forEach(link => {
         const key = link.getAttribute('data-page');
         if (t.menu[key]) link.textContent = t.menu[key];
@@ -257,15 +311,12 @@ class App {
     let targetTheme = mode;
     if (mode === 'system') targetTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', targetTheme);
-    
-    // 테마 아이콘 업데이트 로직
     const triggerIcon = document.querySelector('.theme-trigger-icon');
     if (triggerIcon) {
       if (mode === 'light') triggerIcon.innerHTML = ICONS.sun;
       else if (mode === 'dark') triggerIcon.innerHTML = ICONS.moon;
       else triggerIcon.innerHTML = ICONS.system;
     }
-    
     document.querySelectorAll('.theme-opt').forEach(opt => opt.classList.toggle('active', opt.dataset.theme === mode));
   }
   initSideMenu() {
