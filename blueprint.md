@@ -37,6 +37,10 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Hierarchical Data Loading:** Optimized the sequence from Local Cache -> Firestore -> Real-time Scraper for maximum responsiveness.
 - **Automatic Versioning & Deployment:** Version incremented to v1.6.1 and automatic push to GitHub.
 
+## **Phase 20: Persistent Global Warming & Sync (Done)**
+- **Global Background Sync:** Refactored `backgroundSyncAll` to run periodically every 10 minutes, ensuring Firestore data for all supported countries (KR, JP, US) is kept fresh regardless of the user's active country selection.
+- **Automatic Versioning & Deployment:** Version incremented to v1.6.2 and automatic push to GitHub.
+
 ## **Execution Steps**
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features.
@@ -61,4 +65,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Update version to v1.6.0 across all files.
 - [x] Optimize data loading speed with local caching and smart-revalidate (v1.6.1).
 - [x] Update version to v1.6.1 across all files.
+- [x] Enhance global background sync periodicity (v1.6.2).
+- [x] Update version to v1.6.2 across all files.
 - [x] Push all changes to GitHub.

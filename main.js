@@ -62,7 +62,7 @@ let i18n = {
     },
     pages: {
       about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.6.1)</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.6.2)</p>` },
       terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
       contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
     }
@@ -83,7 +83,7 @@ let i18n = {
     },
     pages: {
       about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 분석하는 프리미엄 대시보드입니다.</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUp은 이용자의 개인정보를 소중히 여깁니다. (v1.6.1)</p>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUp은 이용자의 개인정보를 소중히 여깁니다. (v1.6.2)</p>` },
       terms: { title: "利用規約", content: `<h2>利用規約</h2><p>본 서비스의 이용 약관입니다.</p>` },
       contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>Email: help@trendup.ai</p>` }
     }
@@ -104,7 +104,7 @@ let i18n = {
     },
     pages: {
       about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.6.1)</p>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.6.2)</p>` },
       terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p>` },
       contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>Email: help@trendup.ai</p>` }
     }
@@ -379,7 +379,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.6.1");
+    console.log("App Init: v1.6.2");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -392,7 +392,6 @@ class App {
       this.renderNavs();
       this.refreshUIText();
       
-      // 즉시 로컬 캐시에서 데이터 로드 (매우 빠름)
       this.loadLocalCache();
       
       window.addEventListener('open-trend-modal', (e) => {
@@ -406,7 +405,11 @@ class App {
         if (this.themeMode === 'system') this.applyTheme('system');
       });
       this.startAsyncTasks();
-      setInterval(() => this.update(), this.service.refreshInterval);
+      
+      setInterval(() => {
+        this.update();
+        this.backgroundSyncAll();
+      }, this.service.refreshInterval);
     } catch (e) { console.error("App init failed:", e); }
   }
   
@@ -436,7 +439,7 @@ class App {
       await this.syncLocalization();
       this.refreshUIText();
       this.renderNavs();
-      await this.update(); // DB 및 실시간 데이터 업데이트
+      await this.update();
       this.backgroundSyncAll();
     } catch (e) { console.error("Async tasks failed:", e); await this.update(); }
   }
@@ -495,7 +498,7 @@ class App {
         if (btn) btn.textContent = t.accept;
       }
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.1)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.2)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
@@ -505,7 +508,6 @@ class App {
     try {
       const countries = this.service.getCountries();
       for (const c of countries) {
-        if (c.code === this.currentCountry) continue;
         const trendDoc = await getDoc(doc(this.db, 'trends', c.code));
         const dbData = trendDoc.exists() ? trendDoc.data() : null;
         const now = Date.now();
@@ -639,7 +641,6 @@ class App {
           const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
           if (trendDoc.exists()) {
             dbData = trendDoc.data();
-            // DB 데이터를 즉시 화면에 렌더링하고 로컬 캐시 저장
             const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
             const trendListEl = document.getElementById('top-trends');
             if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
@@ -661,7 +662,6 @@ class App {
       
       const now = Date.now();
       const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
-      // DB 데이터가 10분 이내면 실시간 크롤링 생략 (매우 빠름)
       const needsUpdate = isCountrySwitch || isLanguageSwitch || (now - lastUpdated > this.service.refreshInterval) || !dbData;
       
       if (needsUpdate) {
