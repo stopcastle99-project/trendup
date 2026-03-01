@@ -2,12 +2,31 @@ import admin from 'firebase-admin';
 import fetch from 'node-fetch';
 import { JSDOM } from 'jsdom';
 
-// GitHub Secrets에서 가져올 서비스 계정 정보
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+// GitHub Secrets 체크 및 로깅
+if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+  console.error("ERROR: FIREBASE_SERVICE_ACCOUNT environment variable is missing.");
+  process.exit(1);
+}
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+let serviceAccount;
+try {
+  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} catch (e) {
+  console.error("ERROR: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON. Please check the secret format.");
+  console.error(e.message);
+  process.exit(1);
+}
+
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+  console.log("Firebase initialized successfully.");
+} catch (e) {
+  console.error("ERROR: Firebase initialization failed.");
+  console.error(e.message);
+  process.exit(1);
+}
 
 const db = admin.firestore();
 
@@ -16,13 +35,13 @@ class TrendUpdater {
     const rssUrl = `https://trends.google.com/trending/rss?geo=${country}`;
     try {
       const response = await fetch(rssUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const text = await response.text();
       const { window } = new JSDOM(text, { contentType: "text/xml" });
       const items = window.document.querySelectorAll("item");
       
       return Array.from(items).map(item => {
         const title = item.querySelector("title")?.textContent || "";
-        // 네임스페이스 대응을 위해 getElementsByTagName 사용 방식 개선
         const trafficEl = item.getElementsByTagName("ht:approx_traffic")[0] || item.getElementsByTagName("approx_traffic")[0];
         const traffic = trafficEl?.textContent || "N/A";
         
@@ -32,10 +51,10 @@ class TrendUpdater {
         const newsLinks = [];
 
         for (let n of newsItems) {
-          const nt = n.getElementsByTagName("ht:news_item_title")[0]?.textContent || n.getElementsByTagName("news_item_title")[0]?.textContent;
-          const nu = n.getElementsByTagName("ht:news_item_url")[0]?.textContent || n.getElementsByTagName("news_item_url")[0]?.textContent;
-          const ns = n.getElementsByTagName("ht:news_item_source")[0]?.textContent || n.getElementsByTagName("news_item_source")[0]?.textContent;
-          const nsn = n.getElementsByTagName("ht:news_item_snippet")[0]?.textContent || n.getElementsByTagName("news_item_snippet")[0]?.textContent;
+          const nt = n.getElementsByTagName("ht:news_item_title")[0]?.textContent;
+          const nu = n.getElementsByTagName("ht:news_item_url")[0]?.textContent;
+          const ns = n.getElementsByTagName("ht:news_item_source")[0]?.textContent;
+          const nsn = n.getElementsByTagName("ht:news_item_snippet")[0]?.textContent;
           
           if (nt && nu) {
             newsLinks.push({ title: nt, source: ns || 'News', url: nu });
@@ -49,12 +68,13 @@ class TrendUpdater {
           sources: Array.from(sources), snippets, newsLinks, source: 'Google' 
         };
       });
-    } catch (e) { console.error(`Google Trends Error (${country}):`, e); return []; }
+    } catch (e) { console.error(`Google Trends Error (${country}):`, e.message); return []; }
   }
 
   async getSignalTrends() {
     try {
       const response = await fetch('https://signal.bz/');
+      if (!response.ok) return [];
       const html = await response.text();
       const dom = new JSDOM(html);
       const items = dom.window.document.querySelectorAll('.rank-item .text');
@@ -68,6 +88,7 @@ class TrendUpdater {
   async getYahooTrends() {
     try {
       const response = await fetch('https://search.yahoo.co.jp/realtime/term');
+      if (!response.ok) return [];
       const html = await response.text();
       const dom = new JSDOM(html);
       const items = dom.window.document.querySelectorAll('.Trend_Trend__item__name');
@@ -79,39 +100,47 @@ class TrendUpdater {
   }
 
   async updateAll() {
-    const countries = ['KR', 'JP', 'US'];
-    for (const code of countries) {
-      console.log(`Updating ${code}...`);
-      let portalTrends = [];
-      if (code === 'KR') portalTrends = await this.getSignalTrends();
-      if (code === 'JP') portalTrends = await this.getYahooTrends();
-      
-      const googleTrends = await this.getGoogleTrends(code);
-      const combined = [...portalTrends, ...googleTrends];
-      
-      // 중복 제거 및 상위 10개 추출
-      const seen = new Set();
-      const unique = [];
-      for (const t of combined) {
-        const norm = t.originalTitle.toLowerCase().replace(/\s/g, '');
-        if (!seen.has(norm)) { seen.add(norm); unique.push(t); }
-        if (unique.length >= 10) break;
-      }
-
-      if (unique.length >= 5) {
-        const docRef = db.collection('trends').doc(code);
-        const oldDoc = await docRef.get();
-        const oldData = oldDoc.exists ? oldDoc.data() : null;
+    try {
+      const countries = ['KR', 'JP', 'US'];
+      for (const code of countries) {
+        console.log(`Updating ${code}...`);
+        let portalTrends = [];
+        if (code === 'KR') portalTrends = await this.getSignalTrends();
+        if (code === 'JP') portalTrends = await this.getYahooTrends();
         
-        await docRef.set({
-          items: unique,
-          previousItems: oldData?.items || [],
-          lastUpdated: admin.firestore.Timestamp.now()
-        });
-        console.log(`${code} updated successfully.`);
+        const googleTrends = await this.getGoogleTrends(code);
+        const combined = [...portalTrends, ...googleTrends];
+        
+        const seen = new Set();
+        const unique = [];
+        for (const t of combined) {
+          const norm = t.originalTitle.toLowerCase().replace(/\s/g, '');
+          if (!seen.has(norm)) { seen.add(norm); unique.push(t); }
+          if (unique.length >= 10) break;
+        }
+
+        if (unique.length > 0) {
+          const docRef = db.collection('trends').doc(code);
+          const oldDoc = await docRef.get();
+          const oldData = oldDoc.exists ? oldDoc.data() : null;
+          
+          await docRef.set({
+            items: unique,
+            previousItems: oldData?.items || [],
+            lastUpdated: admin.firestore.Timestamp.now()
+          });
+          console.log(`${code} updated with ${unique.length} items.`);
+        } else {
+          console.warn(`Warning: No trends found for ${code}. Skipping DB update.`);
+        }
       }
+      console.log("All tasks completed.");
+      process.exit(0);
+    } catch (e) {
+      console.error("FATAL ERROR during update process:");
+      console.error(e);
+      process.exit(1);
     }
-    process.exit(0);
   }
 }
 
