@@ -43,39 +43,31 @@ const ICONS = {
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
 };
 
-// --- Localization (Cleaned & Perfected) ---
+// --- Localization ---
 let i18n = {
   ko: { 
-    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "불러오는 중...", analyzing: "상세 분석 중...", T: "트렌드 설정", L: "언어 설정", 
-    translated: "기계 번역",
-    countries: { KR: "대한민국", JP: "일본", US: "미국" }, themes: { light: "밝게", dark: "어둡게", system: "시스템" }, labels: { trends: "국가:", language: "언어:", site: "사이트 정보" }, sysLinks: { search: "구글 검색", video: "관련 영상 확인" },
-    analysisTemplate: (title, sources, snippets) => {
-      if (!snippets || snippets.length === 0) return `'${title}' 주제가 현재 검색 포털을 통해 빠르게 확산되며 대중의 큰 관심을 받고 있습니다.`;
-      return snippets.slice(0, 3).join(' ');
-    },
-    pages: { about: { title: "TrendUp 소개", content: `<h2>TrendUp</h2><p>실시간 글로벌 트렌드 대시보드입니다.</p>` }, privacy: { title: "개인정보처리방침", content: `<p>v1.8.6 - 개인정보처리방침입니다.</p>` } }
+    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", 
+    original: "원문",
+    countries: { KR: "대한민국", JP: "일본", US: "미국" },
+    labels: { trends: "국가:", language: "언어:", site: "사이트 정보" },
+    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '상세 내용이 없습니다.'
   },
   ja: { 
-    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
-    translated: "機械翻訳",
-    countries: { KR: "韓国", JP: "日本", US: "アメリカ" }, themes: { light: "ライト", dark: "ダーク", system: "システム" }, labels: { trends: "国:", language: "言語:", site: "サイト案内" }, sysLinks: { search: "Google検索", video: "関連動画を確認" },
-    analysisTemplate: (title, sources, snippets) => {
-      if (!snippets || snippets.length === 0) return `「${title}」が現在注目を集めています。`;
-      return snippets.slice(0, 3).join(' ');
-    }
+    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", 
+    original: "原文",
+    countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
+    labels: { trends: "国:", language: "言語:", site: "사이트 안내" },
+    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '詳細がありません。'
   },
   en: { 
-    title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", analyzing: "Analyzing...", T: "Trend Settings", L: "Language Setting", 
-    translated: "Machine Translation",
-    countries: { KR: "South Korea", JP: "Japan", US: "USA" }, themes: { light: "Light", dark: "Dark", system: "System" }, labels: { trends: "Country:", language: "Language:", site: "Site Information" }, sysLinks: { search: "Google Search", video: "Check Related Videos" },
-    analysisTemplate: (title, sources, snippets) => {
-      if (!snippets || snippets.length === 0) return `Topic '${title}' is currently trending.`;
-      return snippets.slice(0, 3).join(' ');
-    }
+    title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Setting", 
+    original: "Original",
+    countries: { KR: "South Korea", JP: "Japan", US: "USA" },
+    labels: { trends: "Country:", language: "Language:", site: "Site Info" },
+    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || 'No snippets.'
   }
 };
 
-// --- Firebase Configuration ---
 const firebaseConfig = { projectId: "test-76cdd" };
 
 // --- Trend Service ---
@@ -84,7 +76,7 @@ class TrendService {
   calculateRankChanges(newItems, oldItems) {
     if (!newItems) return [];
     return newItems.map((item, index) => {
-      const prevRank = oldItems ? oldItems.findIndex(o => o.originalTitle?.toLowerCase() === item.originalTitle?.toLowerCase()) : -1;
+      const prevRank = oldItems ? oldItems.findIndex(o => (o.originalTitle || o.title)?.toLowerCase() === (item.originalTitle || item.title)?.toLowerCase()) : -1;
       let trendDir = 'steady';
       if (prevRank === -1) trendDir = 'new';
       else if (index < prevRank) trendDir = 'up';
@@ -109,11 +101,15 @@ class TrendList extends HTMLElement {
       if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; font-weight: 800; border: 1px solid #ffaa00; padding: 1px 4px; border-radius: 4px; letter-spacing: -0.02em;">NEW</span>';
       return '<span style="color: var(--text-muted); opacity: 0.3; font-size: 0.8rem;">-</span>';
     };
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translation { font-size: 0.75rem; color: var(--primary); opacity: 0.8; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
+    
+    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .original-title { font-size: 0.7rem; color: var(--text-muted); opacity: 0.6; margin-top: 0.2rem; font-weight: 400; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
-        const showTranslation = item.translatedTitle && item.translatedTitle !== item.title;
-        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span>${showTranslation ? `<span class="translation">✨ ${item.translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
+        // 메인은 번역본(없으면 원문), 서브는 원문
+        const mainTitle = item.displayTitle || item.title;
+        const subTitle = (item.displayTitle && item.displayTitle !== item.originalTitle) ? `${t.original}: ${item.originalTitle}` : "";
+        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${subTitle ? `<span class="original-title">${subTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
+    
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = () => {
         const trendData = trends[parseInt(el.dataset.index)];
@@ -129,14 +125,14 @@ class TrendModal extends HTMLElement {
     if (!trend) return;
     this.isVisible = true;
     const t = i18n[lang] || i18n.en;
-    const analysis = trend.snippets?.[0] || t.analysisTemplate(trend.title, trend.sources, trend.snippets);
+    const analysis = trend.snippets?.[0] || t.analysisTemplate(trend.displayTitle, trend.sources, trend.snippets);
     this.render(trend, lang, analysis);
   }
   hide() { this.isVisible = false; this.shadowRoot.innerHTML = ''; }
   render(trend, lang, analysis) {
     const t = i18n[lang] || i18n.en;
     this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; flex-direction: column; } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; }</style>
-      <div class="overlay"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('')}</div></div></div>`;
+      <div class="overlay"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.displayTitle || trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('')}</div></div></div>`;
     this.shadowRoot.querySelector('.close').onclick = () => this.hide();
     this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
   }
@@ -156,7 +152,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.8.6");
+    console.log("App Init: v1.8.7");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -181,8 +177,7 @@ class App {
       if (cached) {
         const data = JSON.parse(cached);
         const trends = this.service.calculateRankChanges(data.items, data.previousItems);
-        const trendListEl = document.getElementById('top-trends');
-        if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
+        document.getElementById('top-trends').data = { trends, lang: this.currentLang };
       }
     } catch (e) {}
   }
@@ -204,7 +199,7 @@ class App {
         if (text.includes('lang')) label.textContent = t.labels.language;
       });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.6)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.7)`;
     } catch (e) {}
   }
   initThemeIcons() {
@@ -268,7 +263,6 @@ class App {
   }
   renderNavs() {
     try {
-      const t = i18n[this.currentLang] || i18n.en;
       const renderGroup = (id, items, current, onSelect) => {
         const nav = document.getElementById(id);
         if (!nav) return;
@@ -292,13 +286,18 @@ class App {
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();
         
-        // 데이터 매핑: 메인 타이틀은 원문, 서브 타이틀은 설정된 언어의 번역문
-        const itemsMapped = dbData.items.map(item => ({
-          ...item,
-          title: item.originalTitle || item.title, // 메인은 원문으로 고정
-          translatedTitle: item.translations?.[this.currentLang] || "", // 서브는 설정된 언어로 번역
-          snippets: item.translatedSnippets?.[this.currentLang] || item.snippets || []
-        }));
+        // 데이터 매핑: 메인은 설정된 언어의 번역본, 서브는 원문
+        const itemsMapped = dbData.items.map(item => {
+          const originalTitle = item.originalTitle || item.title;
+          const translatedTitle = item.translations?.[this.currentLang] || originalTitle;
+          
+          return {
+            ...item,
+            displayTitle: translatedTitle, // 메인 (설정 언어)
+            originalTitle: originalTitle, // 서브 (수집 원문)
+            snippets: item.translatedSnippets?.[this.currentLang] || item.snippets || []
+          };
+        });
 
         const trends = this.service.calculateRankChanges(itemsMapped, dbData.previousItems);
         document.getElementById('top-trends').data = { trends, lang: this.currentLang };
