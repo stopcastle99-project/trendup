@@ -3,13 +3,12 @@
 ## **Overview**
 TrendUp is a modern, high-performance web application that provides real-time Top 10 trends for various countries.
 
-## Phase 24: Server-Side Autonomous Background Sync (Done)
-- **Independent Updater:** Created `update-trends.js` using Node.js and `firebase-admin` to perform trend scraping and Firestore updates independently of user sessions.
-- **GitHub Actions Integration:** Configured a scheduled workflow (`.github/workflows/update.yml`) to run the update script every 10 minutes (24/7).
-- **Environment Parity:** Replicated complex scraping logic from browser environment to server environment without requiring CORS proxies.
-- **Project Structure:** Added `package.json` to manage server-side dependencies (`jsdom`, `node-fetch`).
-- **Version Increment:** Updated application version to v1.6.6 across all files.
-- **Automatic Deployment:** Automated the git push process for continuous integration.
+## Phase 25: Data Precision & Globalization (Done)
+- **Pre-Translation Engine:** Moved translation logic from frontend to `update-trends.js`. Trends are now pre-translated into `ko`, `ja`, and `en` and stored in Firestore for instant UI response and higher accuracy.
+- **Localized Deep-Linking:** Enhanced `Signal` (KR) and `Yahoo` (JP) scrapers to generate country-specific news and search links, ensuring relevance for each region.
+- **Precision Timestamping:** Synchronized UI "Last Updated" display with exact Firestore server-side timestamps.
+- **System Health Monitoring:** Implemented a stale data detection mechanism that visually alerts users (red indicator) if data hasn't been updated within 30 minutes, ensuring data reliability.
+- **Version Increment:** Updated application version to v1.8.0.
 
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.

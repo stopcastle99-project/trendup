@@ -79,7 +79,7 @@ let i18n = {
         title: "개인정보처리방침", 
         content: `
           <h2 style="margin-bottom:1rem;">개인정보처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률"을 준수하고 있습니다. 본 방침은 귀하가 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지 설명합니다. (v1.7.0)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 "서비스")은 이용자의 개인정보를 소중히 다루며, "정보통신망 이용촉진 및 정보보호 등에 관한 법률"을 준수하고 있습니다. 본 방침은 귀하가 서비스를 이용할 때 귀하의 정보가 어떻게 수집, 사용, 보호되는지 설명합니다. (v1.8.0)</p>
           
           <h3 style="margin:1.5rem 0 0.5rem;">1. 수집하는 개인정보 항목</h3>
           <p>서비스는 회원가입 없이 이용 가능하며, 기본적인 서비스 제공을 위해 쿠키(Cookie) 및 이용 기록(접속 로그, 접속 IP 정보)을 자동으로 수집할 수 있습니다. 이는 서비스 품질 향상 및 통계 분석을 위해 사용됩니다.</p>
@@ -154,7 +154,7 @@ let i18n = {
         title: "個人情報保護方針", 
         content: `
           <h2 style="margin-bottom:1rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.7.0)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報を尊重し、関連法規を遵守します。(v1.8.0)</p>
           <h3 style="margin:1.5rem 0 0.5rem;">1. 収集情報とクッキー</h3>
           <p>当サービスはサービス向上のため、アクセスログやクッキー(Cookie)を使用する場合があります。</p>
           <h3 style="margin:1.5rem 0 0.5rem;">2. Google AdSenseについて</h3>
@@ -198,7 +198,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.7.0)</p>
+          <p style="margin-bottom:1rem;">TrendUp respects your privacy. This policy explains how we handle your information. (v1.8.0)</p>
           <h3 style="margin:1.5rem 0 0.5rem;">1. Cookies & Data</h3>
           <p>We may use cookies and access logs to improve service quality and analyze traffic.</p>
           <h3 style="margin:1.5rem 0 0.5rem;">2. Google AdSense</h3>
@@ -476,7 +476,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.7.0");
+    console.log("App Init: v1.8.0");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -580,7 +580,7 @@ class App {
         if (btn) btn.textContent = t.accept;
       }
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.7.0)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.0)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
@@ -718,33 +718,63 @@ class App {
           const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
           if (trendDoc.exists()) {
             dbData = trendDoc.data();
-            const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
+            
+            // DB에서 가져온 데이터에 번역 정보가 있으면 적용
+            const itemsWithTranslations = dbData.items.map(item => ({
+              ...item,
+              title: item.translations?.[this.currentLang] || item.title,
+              snippets: item.translatedSnippets?.[this.currentLang] || item.snippets || []
+            }));
+
+            const trends = this.service.calculateRankChanges(itemsWithTranslations, dbData.previousItems);
             const trendListEl = document.getElementById('top-trends');
             if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
-            localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: dbData.items, previousItems: dbData.previousItems, lastUpdated: dbData.lastUpdated.toMillis() }));
+            
+            localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ 
+              items: itemsWithTranslations, 
+              previousItems: dbData.previousItems, 
+              lastUpdated: dbData.lastUpdated.toMillis() 
+            }));
+
             const lastUpdatedEl = document.getElementById('last-updated');
             if (lastUpdatedEl && dbData.lastUpdated) {
               const date = dbData.lastUpdated.toDate();
-              lastUpdatedEl.textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+              const now = new Date();
+              const diffMs = now - date;
+              const diffMin = Math.floor(diffMs / 60000);
+              
+              let timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+              if (now.toDateString() !== date.toDateString()) {
+                timeStr = `${date.getMonth()+1}/${date.getDate()} ${timeStr}`;
+              }
+              
+              lastUpdatedEl.textContent = `${t.update}: ${timeStr}`;
+              
+              // 30분 이상 경과 시 경고 표시 (모니터링 기능)
+              if (diffMin > 30) {
+                lastUpdatedEl.style.color = '#ff4d4d';
+                lastUpdatedEl.title = 'Data update might be delayed';
+              } else {
+                lastUpdatedEl.style.color = 'var(--text-muted)';
+                lastUpdatedEl.title = '';
+              }
             }
           }
         } catch (dbErr) { console.error("DB Load Error:", dbErr); }
       }
+      
       const now = Date.now();
       const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
       const needsUpdate = isCountrySwitch || isLanguageSwitch || (now - lastUpdated > this.service.refreshInterval) || !dbData;
-      if (needsUpdate) {
+      
+      if (needsUpdate && !dbData) {
+        // DB 데이터가 아예 없을 때만 직접 fetch (백업용)
         const freshItems = await this.service.fetchFreshTrends(this.currentCountry, this.currentLang);
         if (requestId !== this.currentRequestId) return;
         if (freshItems && freshItems.length >= 5) {
-          const trends = this.service.calculateRankChanges(freshItems, dbData?.items || null);
+          const trends = this.service.calculateRankChanges(freshItems, null);
           const trendListEl = document.getElementById('top-trends');
           if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
-          const nowObj = new Date();
-          const lastUpdatedEl = document.getElementById('last-updated');
-          if (lastUpdatedEl) lastUpdatedEl.textContent = `${t.update}: ${nowObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-          if (this.db) await setDoc(doc(this.db, 'trends', this.currentCountry), { items: freshItems, previousItems: dbData?.items || [], lastUpdated: Timestamp.now() });
-          localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: freshItems, previousItems: dbData?.items || [], lastUpdated: nowObj.getTime() }));
         }
       }
     } catch (e) { console.error("Update failed:", e); }
