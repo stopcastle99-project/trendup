@@ -53,7 +53,7 @@ let i18n = {
       },
       privacy: { 
         title: "개인정보처리방침", 
-        content: `<h2 style="margin-bottom:1rem;">개인정보 처리방침 (v1.9.4)</h2><p>본 방침은 TrendUp 서비스(이하 '서비스')가 이용자의 개인정보를 어떻게 처리하고 보호하는지 상세히 안내합니다.</p><h3>1. 개인정보의 수집 및 이용</h3><p>회사는 별도의 회원가입 없이 서비스를 제공하며, 서비스 이용 과정에서 쿠키, 접속 IP, 브라우저 정보가 통계 및 광고 최적화를 위해 자동으로 수집될 수 있습니다.</p><h3>2. 구글 애드센스 및 광고 쿠키</h3><p>본 사이트는 구글 애드센스를 통해 광고를 게재합니다. 구글을 포함한 제3자 제공업체는 쿠키를 사용하여 이용자의 이전 방문 기록을 바탕으로 광고를 게재합니다. 이용자는 구글 광고 설정에서 개인 맞춤 광고를 해제할 수 있습니다.</p>` 
+        content: `<h2 style="margin-bottom:1rem;">개인정보 처리방침 (v1.9.5)</h2><p>본 방침은 TrendUp 서비스(이하 '서비스')가 이용자의 개인정보를 어떻게 처리하고 보호하는지 상세히 안내합니다.</p><h3>1. 개인정보의 수집 및 이용</h3><p>회사는 별도의 회원가입 없이 서비스를 제공하며, 서비스 이용 과정에서 쿠키, 접속 IP, 브라우저 정보가 통계 및 광고 최적화를 위해 자동으로 수집될 수 있습니다.</p><h3>2. 구글 애드센스 및 광고 쿠키</h3><p>본 사이트는 구글 애드센스를 통해 광고를 게재합니다. 구글을 포함한 제3자 제공업체는 쿠키를 사용하여 이용자의 이전 방문 기록을 바탕으로 광고를 게재합니다. 이용자는 구글 광고 설정에서 개인 맞춤 광고를 해제할 수 있습니다.</p>` 
       },
       terms: { 
         title: "이용약관", 
@@ -146,7 +146,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.9.4");
+    console.log("App Init: v1.9.5");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -188,7 +188,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.4)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.5)`;
     } catch (e) {}
   }
   initThemeIcons() {
