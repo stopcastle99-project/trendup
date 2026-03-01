@@ -614,6 +614,8 @@ class App {
     const requestId = ++this.currentRequestId;
     try {
       const t = i18n[this.currentLang] || i18n.en;
+      this.refreshUIText(); // Always ensure fixed text is updated
+      
       let dbData = null;
       if (this.db) {
         try {
@@ -641,24 +643,6 @@ class App {
           if (this.db) await setDoc(doc(this.db, 'trends', this.currentCountry), { items: freshItems, previousItems: dbData?.items || [], lastUpdated: Timestamp.now() });
         }
       }
-      if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
-      if (document.querySelector('.info-card h3')) document.querySelector('.info-card h3').textContent = t.infoTitle;
-      if (document.querySelector('.info-card p')) document.querySelector('.info-card p').textContent = t.infoDesc;
-      const menuSections = document.querySelectorAll('.menu-section');
-      if (menuSections[0]) menuSections[0].querySelector('.menu-title').textContent = t.T;
-      if (menuSections[1]) menuSections[1].querySelector('.menu-title').textContent = t.labels.site;
-      document.querySelectorAll('.theme-opt').forEach(opt => {
-        const key = opt.dataset.theme;
-        const label = opt.querySelector('.opt-label');
-        if (label && t.themes[key]) label.textContent = t.themes[key];
-      });
-      document.querySelectorAll('[data-page]').forEach(el => {
-        const key = el.getAttribute('data-page');
-        if (key === 'about') el.textContent = t.menuAbout;
-        if (key === 'privacy') el.textContent = t.menuPrivacy;
-        if (key === 'terms') el.textContent = t.menuTerms;
-        if (key === 'contact') el.textContent = t.menuContact;
-      });
     } catch (e) { console.error("Update failed:", e); }
   }
 }
