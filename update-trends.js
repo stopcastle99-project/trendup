@@ -32,19 +32,23 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
-  // Pre-generate the AI report during crawling
-  generateAIReport(item, lang) {
-    const newsTitles = item.newsLinks?.map(n => n.title).slice(0, 3) || [];
-    const snippets = item.snippets?.slice(0, 2) || [];
-    
+  // Pre-generate the AI report during crawling with translated components
+  generateAIReport(item, lang, translatedNewsTitles, translatedSnippets) {
+    const newsTitles = translatedNewsTitles || [];
+    const snippets = translatedSnippets || [];
+    const title = item.translations?.[lang] || item.originalTitle;
+
     if (lang === 'ko') {
-      return `현재 '${item.originalTitle}' 키워드가 글로벌 트렌드로 급부상하고 있습니다. 관련 보도에 따르면 ${newsTitles.join(', ')} 등의 소식이 주목받고 있으며, ${snippets.join(' ')} 등의 사회적 맥락이 확인됩니다. AI 분석 결과, 해당 이슈에 대한 대중의 관심도가 매우 높은 것으로 나타납니다.`;
+      return `현재 '${title}' 키워드가 글로벌 트렌드로 급부상하고 있습니다. 관련 보도에 따르면 ${newsTitles.length > 0 ? newsTitles.join(', ') : '다양한 매체'} 등의 소식이 주목받고 있으며, ${snippets.length > 0 ? snippets.join(' ') : '관련 분야'} 등의 사회적 맥락이 확인됩니다. AI 분석 결과, 해당 이슈에 대한 대중의 관심도가 매우 높은 것으로 나타납니다.`;
     } else if (lang === 'ja') {
-      return `現在 '${item.originalTitle}' が世界的 トレンドとして急上昇しています。${newsTitles.join(', ')} などのニュースが注目されており、${snippets.join(' ')} といった背景が確認されます。`;
+      const jaNews = newsTitles.length > 0 ? newsTitles.join('、') : '様々なメディア';
+      return `現在 '${title}' が世界的トレンドとして急上昇しています。${jaNews} などのニュースが注目されており、${snippets.length > 0 ? snippets.join(' ') : '関連分野'} といった背景が確認されます。AI分析の結果、この問題に対する国民の関心は非常に高いことがわかります。`;
     } else {
-      return `'${item.originalTitle}' is rapidly emerging as a global trend. News highlights include ${newsTitles.join(', ')}. Contextual signals show ${snippets.join(' ')}.`;
+      const enNews = newsTitles.length > 0 ? newsTitles.join(', ') : 'various media outlets';
+      return `'${title}' is rapidly emerging as a global trend. News highlights include ${enNews}. Contextual signals show ${snippets.length > 0 ? snippets.join(' ') : 'relevant discussions'}. AI analysis indicates very high public interest in this issue.`;
     }
   }
+
 
   async getGoogleTrends(country) {
     try {
@@ -103,16 +107,47 @@ class TrendUpdater {
 
       if (unique.length > 0) {
         for (const lang of langs) {
-          const titles = unique.map(item => item.originalTitle);
-          const translated = await this.translateBatch(titles, lang);
+          // Flatten all strings to translate for this language batch
+          let allTexts = [];
+          const mapping = []; // Store where each text belongs
+
+          unique.forEach((item, itemIdx) => {
+            // 1. Title
+            allTexts.push(item.originalTitle);
+            mapping.push({ type: 'title', itemIdx });
+
+            // 2. News Titles
+            const nts = item.newsLinks?.map(n => n.title).slice(0, 3) || [];
+            nts.forEach(nt => {
+              allTexts.push(nt);
+              mapping.push({ type: 'news', itemIdx });
+            });
+
+            // 3. Snippets
+            const snips = item.snippets?.slice(0, 2) || [];
+            snips.forEach(snip => {
+              allTexts.push(snip);
+              mapping.push({ type: 'snippet', itemIdx });
+            });
+          });
+
+          const translatedAll = await this.translateBatch(allTexts, lang);
           
+          const tempTranslations = unique.map(() => ({ title: '', news: [], snippets: [] }));
+          translatedAll.forEach((txt, idx) => {
+            const m = mapping[idx];
+            if (m.type === 'title') tempTranslations[m.itemIdx].title = txt;
+            else if (m.type === 'news') tempTranslations[m.itemIdx].news.push(txt);
+            else if (m.type === 'snippet') tempTranslations[m.itemIdx].snippets.push(txt);
+          });
+
           unique.forEach((item, idx) => {
             if (!item.translations) item.translations = {};
             if (!item.aiReports) item.aiReports = {};
             
-            item.translations[lang] = translated[idx] || item.originalTitle;
-            // Generate report NOW (at crawling time)
-            item.aiReports[lang] = this.generateAIReport(item, lang);
+            const trans = tempTranslations[idx];
+            item.translations[lang] = trans.title || item.originalTitle;
+            item.aiReports[lang] = this.generateAIReport(item, lang, trans.news, trans.snippets);
           });
         }
         
