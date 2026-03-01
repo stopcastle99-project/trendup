@@ -36,39 +36,38 @@ class BackgroundScene {
   animate() { if (!this.renderer) return; requestAnimationFrame(() => this.animate()); this.particles.forEach(p => { p.mesh.rotation.x += p.rot; p.mesh.rotation.y += p.rot; p.mesh.position.y += p.speed; if (p.mesh.position.y > 10) p.mesh.position.y = -10; }); this.renderer.render(this.scene, this.camera); }
 }
 
-// --- Icons ---
 const ICONS = {
   sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" x1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" x1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" x1="18.36" x2="19.78" y2="19.78"></line><line x1="1" x1="12" x2="3" y2="12"></line><line x1="21" x1="12" x2="23" y2="12"></line><line x1="4.22" x1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" x1="5.64" x2="19.78" y2="4.22"></line></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
 };
 
-// --- Localization ---
+// --- Localization (애드센스 승인용 고품질 텍스트) ---
 let i18n = {
   ko: { 
-    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "데이터를 불러오는 중...", T: "트렌드 설정", L: "언어 설정", 
-    countries: { KR: "대한민국", JP: "일본", US: "미국" },
-    labels: { trends: "국가:", language: "언어:", site: "사이트 정보" },
-    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '상세 내용이 없습니다.',
-    pages: { about: { title: "TrendUp 소개", content: `<h2>TrendUp</h2>` }, privacy: { title: "개인정보처리방침", content: `<p>(v1.9.3)</p>` }, terms: { title: "이용약관", content: `<p>이용약관입니다.</p>` }, contact: { title: "문의하기", content: `<p>Email: help@trendup.ai</p>` } }
+    title: "실시간 글로벌 트렌드", update: "최근 업데이트", summary: "트렌드 분석 리포트", news: "주요 관련 뉴스", videos: "유튜브 미디어", loading: "데이터 분석 중...", T: "트렌드 설정", L: "언어 설정", original: "원문",
+    pages: {
+      about: { 
+        title: "TrendUp: 인공지능 기반 글로벌 인사이트", 
+        content: `<h2 style="margin-bottom:1rem;">TrendUp은 무엇인가요?</h2><p>TrendUp은 전 세계의 실시간 검색 데이터와 사회적 신호를 수집하여, 지금 이 순간 가장 뜨거운 감자가 무엇인지 분석하는 데이터 인텔리전스 플랫폼입니다. 인공지능 번역 및 요약 기술을 활용하여 언어의 장벽 없이 전 세계의 흐름을 파악할 수 있도록 돕습니다.</p><h3 style="margin-top:1.5rem;">주요 데이터 출처</h3><p>우리는 Google Trends, Naver Signal, Yahoo Japan Realtime Search 등 각 지역을 대표하는 공신력 있는 포털의 공개 데이터를 실시간으로 정규화하여 제공합니다.</p>` 
+      },
+      privacy: { 
+        title: "개인정보처리방침", 
+        content: `<h2 style="margin-bottom:1rem;">개인정보 처리방침 (v1.9.4)</h2><p>본 방침은 TrendUp 서비스(이하 '서비스')가 이용자의 개인정보를 어떻게 처리하고 보호하는지 상세히 안내합니다.</p><h3>1. 개인정보의 수집 및 이용</h3><p>회사는 별도의 회원가입 없이 서비스를 제공하며, 서비스 이용 과정에서 쿠키, 접속 IP, 브라우저 정보가 통계 및 광고 최적화를 위해 자동으로 수집될 수 있습니다.</p><h3>2. 구글 애드센스 및 광고 쿠키</h3><p>본 사이트는 구글 애드센스를 통해 광고를 게재합니다. 구글을 포함한 제3자 제공업체는 쿠키를 사용하여 이용자의 이전 방문 기록을 바탕으로 광고를 게재합니다. 이용자는 구글 광고 설정에서 개인 맞춤 광고를 해제할 수 있습니다.</p>` 
+      },
+      terms: { 
+        title: "이용약관", 
+        content: `<h2>서비스 이용약관</h2><p>TrendUp은 정보 제공을 목적으로 하며, 수집된 데이터의 완전성이나 정확성을 보증하지 않습니다. 본 서비스의 데이터를 기반으로 한 의사결정의 책임은 이용자에게 있습니다.</p>` 
+      },
+      contact: { title: "문의하기", content: `<h2>고객 지원</h2><p>Email: help@trendup.ai</p><p>제휴 및 데이터 관련 문의는 메일로 주시기 바랍니다.</p>` }
+    }
   },
-  ja: { 
-    title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", 
-    countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
-    labels: { trends: "国:", language: "言語:", site: "사이트 안내" },
-    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '詳細がありません。'
-  },
-  en: { 
-    title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Setting", 
-    countries: { KR: "South Korea", JP: "Japan", US: "USA" },
-    labels: { trends: "Country:", language: "Language:", site: "Site Info" },
-    analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || 'No snippets.'
-  }
+  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文" },
+  en: { title: "Global Trends", update: "Updated", summary: "Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original" }
 };
 
 const firebaseConfig = { projectId: "test-76cdd" };
 
-// --- Trend Service ---
 class TrendService {
   constructor() { this.refreshInterval = 10 * 60 * 1000; }
   calculateRankChanges(newItems, oldItems) {
@@ -87,7 +86,6 @@ class TrendService {
   autoDetectCountry() { try { const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; if (timezone.includes('Seoul')) return 'KR'; if (timezone.includes('Tokyo')) return 'JP'; return 'US'; } catch (e) { return 'KR'; } }
 }
 
-// --- Web Components ---
 class TrendList extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
   set data({ trends, lang }) { this.render(trends, lang); }
@@ -99,15 +97,12 @@ class TrendList extends HTMLElement {
       if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; font-weight: 800; border: 1px solid #ffaa00; padding: 1px 4px; border-radius: 4px; letter-spacing: -0.02em;">NEW</span>';
       return '<span style="color: var(--text-muted); opacity: 0.3; font-size: 0.8rem;">-</span>';
     };
-    
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translated-subtitle { font-size: 0.75rem; color: var(--primary); opacity: 0.85; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
-        // 메인은 실제 원문(Original), 서브는 사용자가 선택한 언어 번역본
         const mainTitle = item.originalTitle || item.title;
         const subTitle = item.translatedSubTitle || "";
         return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${subTitle ? `<span class="translated-subtitle">✨ ${subTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
-    
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = () => {
         const trendData = trends[parseInt(el.dataset.index)];
@@ -151,7 +146,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.9.3");
+    console.log("App Init: v1.9.4");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -192,13 +187,8 @@ class App {
     try {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
-      document.querySelectorAll('.nav-label').forEach(label => {
-        const text = label.textContent.toLowerCase();
-        if (text.includes('trend')) label.textContent = t.labels.trends;
-        if (text.includes('lang')) label.textContent = t.labels.language;
-      });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.3)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.9.4)`;
     } catch (e) {}
   }
   initThemeIcons() {
@@ -284,22 +274,18 @@ class App {
       const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();
-        
         const itemsMapped = dbData.items.map(item => {
           const originalTitle = item.originalTitle || item.title;
           const translatedTitle = item.translations?.[this.currentLang] || originalTitle;
-          
           return {
             ...item,
-            displayTitle: originalTitle, // 메인은 실제 원문
-            translatedSubTitle: (translatedTitle !== originalTitle) ? translatedTitle : "", // 서브는 번역본
+            displayTitle: originalTitle,
+            translatedSubTitle: (translatedTitle !== originalTitle) ? translatedTitle : "",
             snippets: item.translatedSnippets?.[this.currentLang] || item.snippets || []
           };
         });
-
         const trends = this.service.calculateRankChanges(itemsMapped, dbData.previousItems);
         document.getElementById('top-trends').data = { trends, lang: this.currentLang };
-        
         const date = dbData.lastUpdated.toDate();
         document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}`;
         localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({ items: itemsMapped, previousItems: dbData.previousItems, lastUpdated: dbData.lastUpdated.toMillis() }));
