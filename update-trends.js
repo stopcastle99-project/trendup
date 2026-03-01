@@ -2,11 +2,9 @@ import admin from 'firebase-admin';
 import fetch from 'node-fetch';
 import { JSDOM } from 'jsdom';
 
-// GitHub Secrets 체크
 const rawSecret = process.env.FIREBASE_SERVICE_ACCOUNT;
-
 if (!rawSecret || rawSecret.trim().length === 0) {
-  console.error("ERROR: FIREBASE_SERVICE_ACCOUNT environment variable is missing or empty.");
+  console.error("ERROR: FIREBASE_SERVICE_ACCOUNT is missing.");
   process.exit(1);
 }
 
@@ -14,48 +12,53 @@ let serviceAccount;
 try {
   serviceAccount = JSON.parse(rawSecret.trim());
 } catch (e) {
-  console.error("ERROR: Failed to parse FIREBASE_SERVICE_ACCOUNT JSON.");
+  console.error("ERROR: Failed to parse Secret.");
   process.exit(1);
 }
 
 try {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 } catch (e) {
-  console.error("ERROR: Firebase initialization failed.");
+  console.error("ERROR: Firebase Init Failed.");
   process.exit(1);
 }
 
 const db = admin.firestore();
 
 class TrendUpdater {
-  // 번역 일괄 처리 개선
+  // 번역 로직 강화: 배치 번역 실패 시 개별 번역으로 전환
   async translateBatch(texts, targetLang) {
     if (!texts || texts.length === 0) return [];
     
+    const translateSingle = async (text, tl) => {
+      try {
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`);
+        const data = await res.json();
+        return data[0].map(x => x[0]).join("").trim();
+      } catch (e) { return text; }
+    };
+
     try {
-      // 더 안전한 구분자 사용
-      const separator = " [SEP] ";
+      const separator = " ||| ";
       const combinedText = texts.join(separator);
       const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`);
       
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error("Batch API Error");
       
       const data = await res.json();
       const translatedCombined = data[0].map(x => x[0]).join("");
       
-      // 구분자로 분리 후 공백 정리
-      const results = translatedCombined.split("[SEP]").map(s => s.trim());
+      // 다양한 변형 구분자 대응 (공백 유무 등)
+      const results = translatedCombined.split(/\|\|\||\| \| \|/).map(s => s.trim());
       
-      if (results.length !== texts.length) {
-        console.warn(`Mismatch for ${targetLang}: expected ${texts.length}, got ${results.length}. Falling back.`);
-        return texts; 
+      if (results.length === texts.length) {
+        return results;
+      } else {
+        console.warn(`Batch failed for ${targetLang}, falling back to individual translation.`);
+        return await Promise.all(texts.map(t => translateSingle(t, targetLang)));
       }
-      return results;
     } catch (e) {
-      console.error(`Translation Error (${targetLang}):`, e.message);
-      return texts;
+      return await Promise.all(texts.map(t => translateSingle(t, targetLang)));
     }
   }
 
@@ -66,17 +69,12 @@ class TrendUpdater {
       const text = await response.text();
       const { window } = new JSDOM(text, { contentType: "text/xml" });
       const items = window.document.querySelectorAll("item");
-      
       return Array.from(items).map(item => {
         const title = item.querySelector("title")?.textContent || "";
-        const trafficEl = item.getElementsByTagName("ht:approx_traffic")[0] || item.getElementsByTagName("approx_traffic")[0];
-        const traffic = trafficEl?.textContent || "N/A";
-        
+        const traffic = (item.getElementsByTagName("ht:approx_traffic")[0] || item.getElementsByTagName("approx_traffic")[0])?.textContent || "N/A";
         const newsItems = item.getElementsByTagName("ht:news_item") || item.getElementsByTagName("news_item");
         const snippets = [];
-        const sources = new Set();
         const newsLinks = [];
-
         for (let n of newsItems) {
           const nt = n.getElementsByTagName("ht:news_item_title")[0]?.textContent;
           const nu = n.getElementsByTagName("ht:news_item_url")[0]?.textContent;
@@ -84,15 +82,10 @@ class TrendUpdater {
           const nsn = n.getElementsByTagName("ht:news_item_snippet")[0]?.textContent;
           if (nt && nu) {
             newsLinks.push({ title: nt, source: ns || 'News', url: nu });
-            if (ns) sources.add(ns);
-            const cleanSnippet = nsn ? nsn.replace(/<[^>]*>?/gm, '').trim() : "";
-            if (cleanSnippet) snippets.push(cleanSnippet);
+            if (nsn) snippets.push(nsn.replace(/<[^>]*>?/gm, '').trim());
           }
         }
-        return { 
-          title, originalTitle: title, growth: traffic, 
-          sources: Array.from(sources), snippets, newsLinks, source: 'Google' 
-        };
+        return { title, originalTitle: title, growth: traffic, sources: [], snippets, newsLinks, source: 'Google' };
       });
     } catch (e) { return []; }
   }
@@ -107,7 +100,7 @@ class TrendUpdater {
         const title = el.textContent.trim();
         return {
           title, originalTitle: title, growth: 'Portal', source: 'Signal', 
-          newsLinks: [{ title: `Naver News: ${title}`, source: 'Naver', url: `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(title)}` }], 
+          newsLinks: [{ title: `Naver: ${title}`, source: 'Naver', url: `https://search.naver.com/search.naver?query=${encodeURIComponent(title)}` }], 
           sources: [], snippets: []
         };
       });
@@ -124,7 +117,7 @@ class TrendUpdater {
         const title = el.textContent.trim();
         return {
           title, originalTitle: title, growth: 'Portal', source: 'Yahoo', 
-          newsLinks: [{ title: `Yahoo JP: ${title}`, source: 'Yahoo', url: `https://news.yahoo.co.jp/search?p=${encodeURIComponent(title)}` }], 
+          newsLinks: [{ title: `Yahoo JP: ${title}`, source: 'Yahoo', url: `https://search.yahoo.co.jp/search?p=${encodeURIComponent(title)}` }], 
           sources: [], snippets: []
         };
       });
@@ -153,12 +146,12 @@ class TrendUpdater {
 
         if (unique.length > 0) {
           for (const lang of targetLangs) {
-            console.log(`Translating ${code} to ${lang}...`);
+            console.log(`Translating ${code} items to ${lang}...`);
             const titles = unique.map(item => item.originalTitle);
             const translatedTitles = await this.translateBatch(titles, lang);
             
-            const firstSnippets = unique.map(item => (item.snippets && item.snippets.length > 0) ? item.snippets[0] : "");
-            const translatedSnippets = await this.translateBatch(firstSnippets, lang);
+            const snippets = unique.map(item => (item.snippets && item.snippets.length > 0) ? item.snippets[0] : "");
+            const translatedSnippets = await this.translateBatch(snippets, lang);
 
             unique.forEach((item, idx) => {
               if (!item.translations) item.translations = {};
@@ -166,6 +159,7 @@ class TrendUpdater {
               item.translations[lang] = translatedTitles[idx] || item.originalTitle;
               item.translatedSnippets[lang] = translatedSnippets[idx] ? [translatedSnippets[idx]] : [];
             });
+            await new Promise(r => setTimeout(r, 500));
           }
 
           const docRef = db.collection('trends').doc(code);
@@ -175,9 +169,9 @@ class TrendUpdater {
             previousItems: oldDoc.exists ? oldDoc.data().items || [] : [],
             lastUpdated: admin.firestore.Timestamp.now()
           });
+          console.log(`Saved ${code} to Firestore.`);
         }
       }
-      console.log("Sync Completed.");
       process.exit(0);
     } catch (e) { process.exit(1); }
   }

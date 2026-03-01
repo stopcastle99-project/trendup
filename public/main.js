@@ -46,7 +46,7 @@ const ICONS = {
 // --- Localization ---
 let i18n = {
   ko: { 
-    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", 
+    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "분석 리포트", news: "관련 뉴스", videos: "유튜브 소식", loading: "데이터를 불러오는 중...", T: "트렌드 설정", L: "언어 설정", 
     original: "원문",
     countries: { KR: "대한민국", JP: "일본", US: "미국" },
     labels: { trends: "국가:", language: "언어:", site: "사이트 정보" },
@@ -56,7 +56,7 @@ let i18n = {
     title: "リアルタイムトレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", 
     original: "原文",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
-    labels: { trends: "国:", language: "言語:", site: "사이트 안내" },
+    labels: { trends: "国:", language: "言語:", site: "サイト案内" },
     analysisTemplate: (title, sources, snippets) => snippets?.slice(0, 3).join(' ') || '詳細がありません。'
   },
   en: { 
@@ -102,11 +102,11 @@ class TrendList extends HTMLElement {
       return '<span style="color: var(--text-muted); opacity: 0.3; font-size: 0.8rem;">-</span>';
     };
     
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .original-title { font-size: 0.7rem; color: var(--text-muted); opacity: 0.6; margin-top: 0.2rem; font-weight: 400; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
+    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .original-title { font-size: 0.7rem; color: var(--primary); opacity: 0.7; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
-        // 메인은 번역본(없으면 원문), 서브는 원문
-        const mainTitle = item.displayTitle || item.title;
-        const subTitle = (item.displayTitle && item.displayTitle !== item.originalTitle) ? `${t.original}: ${item.originalTitle}` : "";
+        // 메인은 설정된 언어(없으면 원문), 서브는 원문
+        const mainTitle = item.displayTitle || item.originalTitle || item.title;
+        const subTitle = (item.originalTitle && item.displayTitle !== item.originalTitle) ? `✨ ${t.original}: ${item.originalTitle}` : "";
         return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${subTitle ? `<span class="original-title">${subTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
     
@@ -152,7 +152,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.8.7");
+    console.log("App Init: v1.8.8");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -199,7 +199,7 @@ class App {
         if (text.includes('lang')) label.textContent = t.labels.language;
       });
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.7)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.8.8)`;
     } catch (e) {}
   }
   initThemeIcons() {
