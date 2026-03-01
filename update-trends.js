@@ -22,17 +22,21 @@ class TrendUpdater {
       
       return Array.from(items).map(item => {
         const title = item.querySelector("title")?.textContent || "";
-        const traffic = item.getElementsByTagName("ht:approx_traffic")[0]?.textContent || "N/A";
-        const newsItems = item.getElementsByTagName("ht:news_item");
+        // 네임스페이스 대응을 위해 getElementsByTagName 사용 방식 개선
+        const trafficEl = item.getElementsByTagName("ht:approx_traffic")[0] || item.getElementsByTagName("approx_traffic")[0];
+        const traffic = trafficEl?.textContent || "N/A";
+        
+        const newsItems = item.getElementsByTagName("ht:news_item") || item.getElementsByTagName("news_item");
         const snippets = [];
         const sources = new Set();
         const newsLinks = [];
 
         for (let n of newsItems) {
-          const nt = n.getElementsByTagName("ht:news_item_title")[0]?.textContent;
-          const nu = n.getElementsByTagName("ht:news_item_url")[0]?.textContent;
-          const ns = n.getElementsByTagName("ht:news_item_source")[0]?.textContent;
-          const nsn = n.getElementsByTagName("ht:news_item_snippet")[0]?.textContent;
+          const nt = n.getElementsByTagName("ht:news_item_title")[0]?.textContent || n.getElementsByTagName("news_item_title")[0]?.textContent;
+          const nu = n.getElementsByTagName("ht:news_item_url")[0]?.textContent || n.getElementsByTagName("news_item_url")[0]?.textContent;
+          const ns = n.getElementsByTagName("ht:news_item_source")[0]?.textContent || n.getElementsByTagName("news_item_source")[0]?.textContent;
+          const nsn = n.getElementsByTagName("ht:news_item_snippet")[0]?.textContent || n.getElementsByTagName("news_item_snippet")[0]?.textContent;
+          
           if (nt && nu) {
             newsLinks.push({ title: nt, source: ns || 'News', url: nu });
             if (ns) sources.add(ns);
