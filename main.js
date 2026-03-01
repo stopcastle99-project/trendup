@@ -213,7 +213,7 @@ let i18n = {
 };
 
 // --- Firebase Configuration ---
-const firebaseConfig = { projectId: "trendup-ai" };
+const firebaseConfig = { projectId: "test-76cdd" };
 
 // --- Trend Service ---
 class TrendService {
@@ -476,7 +476,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.6.6");
+    console.log("App Init: v1.6.8");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -578,7 +578,7 @@ class App {
         if (btn) btn.textContent = t.accept;
       }
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.6)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.8)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
