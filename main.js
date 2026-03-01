@@ -62,7 +62,7 @@ let i18n = {
     },
     pages: {
       about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.6.0)</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.6.1)</p>` },
       terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
       contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
     }
@@ -71,21 +71,21 @@ let i18n = {
     title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
     infoTitle: "TrendUpについて", infoDesc: "各국의 リアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう.",
     cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています.", accept: "確認",
-    siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
+    siteGuide: "사이트 안내", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
     themes: { light: "ライト", dark: "ダーク", system: "システム" },
-    labels: { trends: "国:", language: "言語:", site: "サイト案内" },
+    labels: { trends: "国:", language: "言語:", site: "사이트 안내" },
     analysisTemplate: (title, sources, snippets) => {
-      if (!snippets || snippets.length === 0) return `「${title}」が 現在リアルタイムトレンドとして大きな注目を集めています.`;
+      if (!snippets || snippets.length === 0) return `「${title}」가 現在リアルタイムトレンドとして大きな注目を集めています.`;
       const cleanSnippets = Array.from(new Set(snippets.map(s => s.trim()))).filter(s => s.length > 10);
       const mainSummary = cleanSnippets.slice(0, 3).join(' ');
       return `${mainSummary}\n\n[報道メディア: ${(sources || []).slice(0, 3).join('、')} など]`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUp은, リアルタイムで変化하는 글로벌 트렌드를 AI 기술로 분석하고, 사용자에게 최적의 요약 정보를 제공하는 프리미엄 대시보드입니다.</p>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています. (v1.6.0)</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは, 公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします.</p>` },
-      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p><strong>メール</strong>: help@trendup.ai</p>` }
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 분석하는 프리미엄 대시보드입니다.</p>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUp은 이용자의 개인정보를 소중히 여깁니다. (v1.6.1)</p>` },
+      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>본 서비스의 이용 약관입니다.</p>` },
+      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>Email: help@trendup.ai</p>` }
     }
   },
   en: { 
@@ -104,7 +104,7 @@ let i18n = {
     },
     pages: {
       about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.6.0)</p>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.6.1)</p>` },
       terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p>` },
       contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>Email: help@trendup.ai</p>` }
     }
@@ -379,7 +379,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.6.0");
+    console.log("App Init: v1.6.1");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -391,6 +391,9 @@ class App {
       this.initCookieBanner();
       this.renderNavs();
       this.refreshUIText();
+      
+      // 즉시 로컬 캐시에서 데이터 로드 (매우 빠름)
+      this.loadLocalCache();
       
       window.addEventListener('open-trend-modal', (e) => {
         if (this.modal) this.modal.show(e.detail, this.currentLang, this.service);
@@ -406,6 +409,26 @@ class App {
       setInterval(() => this.update(), this.service.refreshInterval);
     } catch (e) { console.error("App init failed:", e); }
   }
+  
+  loadLocalCache() {
+    try {
+      const cached = localStorage.getItem(`trends_${this.currentCountry}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        const trends = this.service.calculateRankChanges(data.items, data.previousItems);
+        const trendListEl = document.getElementById('top-trends');
+        if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
+        
+        const lastUpdatedEl = document.getElementById('last-updated');
+        if (lastUpdatedEl && data.lastUpdated) {
+          const t = i18n[this.currentLang] || i18n.en;
+          const date = new Date(data.lastUpdated);
+          lastUpdatedEl.textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        }
+      }
+    } catch (e) {}
+  }
+
   async startAsyncTasks() {
     try {
       const app = initializeApp(firebaseConfig);
@@ -413,7 +436,7 @@ class App {
       await this.syncLocalization();
       this.refreshUIText();
       this.renderNavs();
-      await this.update();
+      await this.update(); // DB 및 실시간 데이터 업데이트
       this.backgroundSyncAll();
     } catch (e) { console.error("Async tasks failed:", e); await this.update(); }
   }
@@ -432,16 +455,12 @@ class App {
   refreshUIText() {
     try {
       const t = i18n[this.currentLang] || i18n.en;
-      
-      // Safety updates with Optional Chaining
       const titleEl = document.getElementById('current-country-title');
       if (titleEl) titleEl.textContent = t.title;
-      
       const infoCardH3 = document.querySelector('.info-card h3');
       const infoCardP = document.querySelector('.info-card p');
       if (infoCardH3) infoCardH3.textContent = t.infoTitle;
       if (infoCardP) infoCardP.textContent = t.infoDesc;
-
       const menuSections = document.querySelectorAll('.menu-section');
       if (menuSections[0]) {
         const menuTitle = menuSections[0].querySelector('.menu-title');
@@ -451,13 +470,11 @@ class App {
         const menuTitle = menuSections[1].querySelector('.menu-title');
         if (menuTitle) menuTitle.textContent = t.labels?.site || "Site Info";
       }
-
       document.querySelectorAll('.nav-label').forEach(label => {
         const text = label.textContent.toLowerCase();
         if (text.includes('trend') || text.includes('국가') || text.includes('国')) label.textContent = t.labels?.trends || "Country:";
         if (text.includes('lang') || text.includes('언어') || text.includes('言語')) label.textContent = t.labels?.language || "Language:";
       });
-
       document.querySelectorAll('[data-page]').forEach(el => {
         const key = el.getAttribute('data-page');
         if (key === 'about') el.textContent = t.menuAbout;
@@ -465,13 +482,11 @@ class App {
         else if (key === 'terms') el.textContent = t.menuTerms;
         else if (key === 'contact') el.textContent = t.menuContact;
       });
-
       document.querySelectorAll('.theme-opt').forEach(opt => {
         const key = opt.dataset.theme;
         const label = opt.querySelector('.opt-label');
         if (label && t.themes && t.themes[key]) label.textContent = t.themes[key];
       });
-
       const cookieBanner = document.getElementById('cookie-banner');
       if (cookieBanner) {
         const p = cookieBanner.querySelector('p');
@@ -479,9 +494,8 @@ class App {
         if (p) p.textContent = t.cookie;
         if (btn) btn.textContent = t.accept;
       }
-
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.0)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.1)`;
       const sideMenuFooter = document.querySelector('.side-menu-footer p');
       if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
     } catch (e) { console.error("UI Refresh failed:", e); }
@@ -610,8 +624,9 @@ class App {
       renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, 'L', (code) => this.switchLang(code));
     } catch (e) { console.error("Render navs failed:", e); }
   }
-  async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(false, true); }
+  async switchCountry(code) { this.currentCountry = code; this.loadLocalCache(); this.renderNavs(); await this.update(false, true); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.refreshUIText(); await this.update(true); }
+  
   async update(isLanguageSwitch = false, isCountrySwitch = false) {
     const requestId = ++this.currentRequestId;
     try {
@@ -624,9 +639,17 @@ class App {
           const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
           if (trendDoc.exists()) {
             dbData = trendDoc.data();
+            // DB 데이터를 즉시 화면에 렌더링하고 로컬 캐시 저장
             const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
             const trendListEl = document.getElementById('top-trends');
             if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
+            
+            localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({
+              items: dbData.items,
+              previousItems: dbData.previousItems,
+              lastUpdated: dbData.lastUpdated.toMillis()
+            }));
+
             const lastUpdatedEl = document.getElementById('last-updated');
             if (lastUpdatedEl && dbData.lastUpdated) {
               const date = dbData.lastUpdated.toDate();
@@ -635,9 +658,12 @@ class App {
           }
         } catch (dbErr) { console.error("DB Load Error:", dbErr); }
       }
+      
       const now = Date.now();
       const lastUpdated = dbData?.lastUpdated?.toMillis() || 0;
+      // DB 데이터가 10분 이내면 실시간 크롤링 생략 (매우 빠름)
       const needsUpdate = isCountrySwitch || isLanguageSwitch || (now - lastUpdated > this.service.refreshInterval) || !dbData;
+      
       if (needsUpdate) {
         const freshItems = await this.service.fetchFreshTrends(this.currentCountry, this.currentLang);
         if (requestId !== this.currentRequestId) return;
@@ -645,12 +671,22 @@ class App {
           const trends = this.service.calculateRankChanges(freshItems, dbData?.items || null);
           const trendListEl = document.getElementById('top-trends');
           if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
+          
+          const nowObj = new Date();
           const lastUpdatedEl = document.getElementById('last-updated');
-          if (lastUpdatedEl) {
-            const nowObj = new Date();
-            lastUpdatedEl.textContent = `${t.update}: ${nowObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-          }
-          if (this.db) await setDoc(doc(this.db, 'trends', this.currentCountry), { items: freshItems, previousItems: dbData?.items || [], lastUpdated: Timestamp.now() });
+          if (lastUpdatedEl) lastUpdatedEl.textContent = `${t.update}: ${nowObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+          
+          if (this.db) await setDoc(doc(this.db, 'trends', this.currentCountry), { 
+            items: freshItems, 
+            previousItems: dbData?.items || [], 
+            lastUpdated: Timestamp.now() 
+          });
+          
+          localStorage.setItem(`trends_${this.currentCountry}`, JSON.stringify({
+            items: freshItems,
+            previousItems: dbData?.items || [],
+            lastUpdated: nowObj.getTime()
+          }));
         }
       }
     } catch (e) { console.error("Update failed:", e); }
