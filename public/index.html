@@ -1,89 +1,196 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Primary Meta Tags -->
+  <title>TrendUp | 실시간 글로벌 트렌드 TOP 10 & AI 분석 대시보드</title>
+  <meta name="title" content="TrendUp | 실시간 글로벌 트렌드 TOP 10 & AI 분석 대시보드">
+  <meta name="description" content="전 세계 주요 국가(한국, 일본, 미국)의 실시간 인기 검색어와 트렌드를 AI 기술로 분석하여 심층 요약을 제공합니다. 지금 세상의 흐름을 가장 빠르게 확인하세요.">
+  <meta name="keywords" content="실시간 트렌드, 급상승 검색어, AI 트렌드 요약, 글로벌 이슈, 한국 인기 검색어, 일본 트렌드, 야후 재팬 실시간, 구글 트렌드 분석">
+  <meta name="author" content="TrendUp Team">
+  <meta name="robots" content="index, follow">
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.10.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.10.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.10.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.10.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.10.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.10.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.10.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.10.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.10.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.10.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://trendup.ai/">
+  <meta property="og:title" content="TrendUp | 실시간 글로벌 트렌드 AI 대시보드">
+  <meta property="og:description" content="전 세계의 지금 이 순간 가장 핫한 이슈를 AI 요약과 함께 한눈에 확인하세요.">
+  <meta property="og:image" content="https://trendup.ai/og-image.png">
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://trendup.ai/">
+  <meta property="twitter:title" content="TrendUp | 실시간 글로벌 트렌드 AI 대시보드">
+  <meta property="twitter:description" content="전 세계의 지금 이 순간 가장 핫한 이슈를 AI 요약과 함께 한눈에 확인하세요.">
+  <meta property="twitter:image" content="https://trendup.ai/og-image.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TrendUp",
+    "description": "Real-time global trending keywords and AI-powered context summaries.",
+    "url": "https://trendup.ai",
+    "applicationCategory": "NewsApplication",
+    "operatingSystem": "Web",
+    "author": {
+      "@type": "Organization",
+      "name": "TrendUp"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1388346009777764"
+     crossorigin="anonymous"></script>
+
+  <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
       }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <canvas id="bg-canvas"></canvas>
+    
+    <header>
+      <div class="container">
+        <div class="header-left">
+          <button id="menu-toggle" class="menu-toggle" aria-label="Open Menu">
+            <span class="menu-icon">≡</span>
+          </button>
+          <div class="logo">
+            <span class="logo-icon">🔥</span>
+            <h1>TrendUp</h1>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <div class="theme-menu">
+            <button id="theme-menu-toggle" class="theme-menu-btn" aria-label="Select Theme">
+              <span class="theme-trigger-icon"></span>
+            </button>
+            <div id="theme-dropdown" class="theme-dropdown hidden">
+              <button class="theme-opt" data-theme="light">
+                <span class="opt-icon sun-svg"></span>
+                <span class="opt-label">Light</span>
+              </button>
+              <button class="theme-opt" data-theme="dark">
+                <span class="opt-icon moon-svg"></span>
+                <span class="opt-label">Dark</span>
+              </button>
+              <button class="theme-opt" data-theme="system">
+                <span class="opt-icon system-svg"></span>
+                <span class="opt-label">System</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div id="side-menu-overlay" class="side-menu-overlay hidden"></div>
+    <div id="side-menu" class="side-menu">
+      <div class="side-menu-header">
+        <div class="logo">
+          <span class="logo-icon">🔥</span>
+          <h1>TrendUp</h1>
+        </div>
+        <button id="menu-close" class="menu-close">&times;</button>
+      </div>
+      <div class="side-menu-content">
+        <section class="menu-section">
+          <h3 class="menu-title">Trend Settings</h3>
+          <div class="nav-group">
+            <span class="nav-label">Trends:</span>
+            <nav id="country-nav" class="pill-nav"></nav>
+          </div>
+          <div class="nav-group">
+            <span class="nav-label">Language:</span>
+            <nav id="lang-nav" class="pill-nav"></nav>
+          </div>
+        </section>
+        <section class="menu-section">
+          <h3 class="menu-title">Site Information</h3>
+          <ul class="menu-links">
+            <li><a href="#" class="info-link" data-page="about">TrendUp 소개</a></li>
+            <li><a href="#" class="info-link" data-page="privacy">개인정보처리방침</a></li>
+            <li><a href="#" class="info-link" data-page="terms">이용약관</a></li>
+            <li><a href="#" class="info-link" data-page="contact">문의하기</a></li>
+          </ul>
+        </section>
+      </div>
+      <div class="side-menu-footer">
+        <p>&copy; 2026 TrendUp. All rights reserved.</p>
+      </div>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+    <main class="container">
+      <section id="hero">
+        <h2 id="current-country-title">실시간 인기 트렌드</h2>
+        <div class="update-status">
+          <p id="last-updated">최근 업데이트: --:--</p>
+        </div>
+      </section>
+      <section id="content-grid">
+        <div id="main-content">
+          <div class="ad-slot top-ad"><p>Advertisement</p></div>
+          <trend-list id="top-trends"></trend-list>
+        </div>
+        <aside id="sidebar">
+          <div class="ad-slot sidebar-ad"><p>Advertisement</p></div>
+        </aside>
+      </section>
+      <section id="bottom-ads">
+        <div class="ad-slot banner-ad"><p>Advertisement</p></div>
+      </section>
+    </main>
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
-  </body>
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <p>&copy; 2026 TrendUp. All rights reserved. (v1.8.3)</p>
+
+          <ul class="footer-links">
+            <li><a href="#" class="info-link" data-page="about">About Us</a></li>
+            <li><a href="#" class="info-link" data-page="privacy">Privacy Policy</a></li>
+            <li><a href="#" class="info-link" data-page="terms">Terms of Service</a></li>
+            <li><a href="#" class="info-link" data-page="contact">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <div id="cookie-banner" class="cookie-banner hidden">
+      <p>본 사이트는 사용자 경험 개선을 위해 쿠키를 사용합니다.</p>
+      <button id="accept-cookies" class="btn-sm">확인</button>
+    </div>
+
+    <div id="info-modal" class="info-modal-overlay hidden">
+      <div class="info-modal-content">
+        <button class="info-modal-close">&times;</button>
+        <div id="info-modal-body"></div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="main.js"></script>
+</body>
 </html>
