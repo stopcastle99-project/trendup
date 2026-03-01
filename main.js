@@ -62,14 +62,14 @@ let i18n = {
     },
     pages: {
       about: { title: "TrendUp 소개", content: `<h2>세상의 흐름을 읽는 가장 빠른 방법, TrendUp</h2><p>TrendUp은 실시간으로 변화하는 글로벌 트렌드를 빅데이터와 AI 기술을 결합하여 분석하고, 사용자에게 핵심 정보를 요약하여 제공하는 프리미엄 트렌드 대시보드입니다.</p><h3>차별화된 가치</h3><ul><li><strong>다양한 소스 통합</strong>: 구글, 네이버(Signal), 야후 재팬 등 국가별 주요 포털의 데이터를 실시간으로 교차 검증합니다.</li><li><strong>AI 심층 요약</strong>: 단순한 키워드 나열을 넘어, 해당 트렌드가 발생한 배경과 맥락을 AI가 분석하여 스토리 형태로 제공합니다.</li><li><strong>신뢰할 수 있는 뉴스</strong>: 검증된 주요 언론사의 기사와 영상 소식을 연결하여 정보의 신뢰도를 높였습니다.</li></ul>` },
-      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.5.7)</p>` },
+      privacy: { title: "개인정보처리방침", content: `<h2>개인정보처리방침</h2><p>TrendUp은 이용자의 개인정보 보호를 최우선으로 하며, 관련 법령을 준수합니다.</p><h3>1. 수집하는 정보</h3><p>본 서비스는 이름, 이메일 등 개인을 식별할 수 있는 정보를 수집하지 않습니다. 다만, 서비스 개선 및 통계 분석을 위해 쿠키와 접속 로그(IP 주소, 브라우저 정보 등)가 자동으로 생성되어 수집될 수 있습니다. (v1.6.0)</p>` },
       terms: { title: "이용약관", content: `<h2>이용약관</h2><p>TrendUp 서비스를 이용해 주셔서 감사합니다. 본 약관은 서비스 이용 조건 및 절차를 규정합니다.</p><h3>1. 서비스의 목적</h3><p>본 서비스는 공개된 트렌드 데이터를 수집하여 사용자에게 요약된 정보를 제공하는 것을 목적으로 합니다.</p><h3>2. 책임의 한계</h3><p>TrendUp은 수집된 정보의 정확성과 완전성을 보장하기 위해 노력하나, 외부 데이터 소스의 오류로 인한 결과에 대해서는 법적 책임을 지지 않습니다. 모든 투자나 의사결정의 책임은 이용자 본인에게 있습니다.</p><h3>3. 저작권</h3><p>제공되는 요약 문구의 저작권은 TrendUp에 있으며, 관련 뉴스 및 영상의 저작권은 각 원저작권자에게 있습니다.</p>` },
       contact: { title: "문의하기", content: `<h2>고객 지원 및 문의</h2><p>서비스 이용 중 불편한 점이나 제안하고 싶은 아이디어가 있으시면 언제든지 아래 채널을 통해 연락해 주세요.</p><div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border); margin-top:1rem;"><p><strong>이메일</strong>: help@trendup.ai</p><p><strong>운영 시간</strong>: 평일 09:00 ~ 18:00 (KST)</p><p>보내주신 소중한 의견은 서비스 개선에 적극적으로 반영하겠습니다.</p></div>` }
     }
   },
   ja: { 
     title: "トレンド", update: "最終更新", summary: "分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "分析中...", analyzing: "詳細分析中...", T: "トレンド設定", L: "言語設定", 
-    infoTitle: "TrendUpについて", infoDesc: "各国のリアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう.",
+    infoTitle: "TrendUpについて", infoDesc: "各국의 リアルタイム急上昇キーワードをひと目で確認し、世界の潮流を把握しましょう.",
     cookie: "本サイトはユーザー体験向上のためにクッキーを使用しています.", accept: "確認",
     siteGuide: "サイト案内", menuAbout: "TrendUpについて", menuPrivacy: "個人情報保護方針", menuTerms: "利用規約", menuContact: "お問い合わせ",
     countries: { KR: "韓国", JP: "日本", US: "アメリカ" },
@@ -82,10 +82,10 @@ let i18n = {
       return `${mainSummary}\n\n[報道メディア: ${(sources || []).slice(0, 3).join('、')} など]`;
     },
     pages: {
-      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUpは, リアルタイムで変化するグロー바ルトレンドをAI技術で分析し、ユーザーに最適な要約情報を提供するプレミアム・ダッシュボードです。</p><h3>TrendUpの価値</h3><ul><li><strong>複数ソースの統合</strong>: Google、Yahoo! JAPANなどの主要ポータルデータをリアルタイムでクロス検証します.</li><li><strong>AI深層分析</strong>: 単なるキーワードの羅列ではなく、そのトレンドが発生した背景や文脈をAIが分析して提供します。</li><li><strong>信頼性の高いニュース</strong>: 検証された主要メディアのニュースや動画を連携し、情報の正確性を高めています.</li></ul>` },
-      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています。</p><h3>1. 収集する情報</h3><p>当サービスは氏名やメールアドレスなどの個人を特定できる情報を収集しません。ただし、サービス改善や統計分析のために, クッキーやアクセスログが自動的に生成・収集される場合があります。 (v1.5.7)</p>` },
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは, 公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします。</p><h3>2. 免責事項</h3><p>情報の正確性には万全を期していますが, 外部データソースに起因する誤りについて、当社は一切の責任を負いません。最終的な判断は利用者ご自身の責任で行ってください。</p>` },
-      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>ご意見やご提案があれば お気軽にメールにてご連絡ください.</p><p><strong>メール</strong>: help@trendup.ai</p>` }
+      about: { title: "TrendUpについて", content: `<h2>世界の潮流を読み解く、TrendUp</h2><p>TrendUp은, リアルタイムで変化하는 글로벌 트렌드를 AI 기술로 분석하고, 사용자에게 최적의 요약 정보를 제공하는 프리미엄 대시보드입니다.</p>` },
+      privacy: { title: "個人情報保護方針", content: `<h2>個人情報保護方針</h2><p>TrendUpは利用者の個人情報の保護を最優先事項としています. (v1.6.0)</p>` },
+      terms: { title: "利用規約", content: `<h2>利用規約</h2><h3>1. サービスの目的</h3><p>本サービスは, 公開されているトレンドデータを収集し、ユーザーに要約された情報を提供することを目的とします.</p>` },
+      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p><strong>メール</strong>: help@trendup.ai</p>` }
     }
   },
   en: { 
@@ -103,10 +103,10 @@ let i18n = {
       return `${mainSummary}\n\n[Sources: ${(sources || []).slice(0, 3).join(', ')}]`;
     },
     pages: {
-      about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p><h3>Our Value</h3><ul><li><strong>Source Integration</strong>: Real-time validation across Google, Yahoo Japan, and other local portals.</li><li><strong>AI Summary</strong>: Deep context analysis using AI to provide storytelling beyond simple keywords.</li><li><strong>Verified News</strong>: Direct links to reputable news outlets and video content.</li></ul>` },
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.5.7)</p>` },
-      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p><h3>2. Limitation of Liability</h3><p>While we strive for accuracy, we are not responsible for any issues arising from inaccuracies in external data sources.</p>` },
-      contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>If you have any questions or suggestions, please contact us at help@trendup.ai.</p>` }
+      about: { title: "About TrendUp", content: `<h2>The Fastest Way to Read the World, TrendUp</h2><p>TrendUp is a premium trend dashboard that analyzes global real-time trends using AI and big data.</p>` },
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>We prioritize your privacy and comply with global data protection standards. (v1.6.0)</p>` },
+      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><h3>1. Purpose</h3><p>TrendUp provides summarized real-time trend information collected from public sources.</p>` },
+      contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>Email: help@trendup.ai</p>` }
     }
   }
 };
@@ -297,7 +297,7 @@ class TrendService {
       } catch (e) { return q; }
     };
     const translated = await singleTranslate(combined, targetLang);
-    let split = translated.split(/[•·\|]| \. /).map(s => s.trim()).filter(s => s.length > 0);
+    let split = (translated || "").split(/[•·\|]| \. /).map(s => s.trim()).filter(s => s.length > 0);
     if (split.length !== texts.length) split = await Promise.all(texts.map(t => singleTranslate(t, targetLang)));
     const finalResults = texts.map((t, i) => { const res = split[i] || t; this.cache.set(`${targetLang}:${t}`, res); return res; });
     this.saveCache();
@@ -321,7 +321,7 @@ class TrendList extends HTMLElement {
       return '<span style="color: var(--text-muted); opacity: 0.5;">-</span>';
     };
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank, .title-group, .growth { pointer-events: none; } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; } .title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; } .growth { font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; } .source-badge { font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; display: block; margin-top: 0.2rem; }</style>
-      <div class="list">${trends.length === 0 ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span><span class="source-badge">${item.source}</span></div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
+      <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="title">${item.title}</span><span class="source-badge">${item.source}</span></div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -338,8 +338,6 @@ class TrendModal extends HTMLElement {
     if (!trend) return;
     this.isVisible = true;
     this.renderLoading();
-    const overlay = this.shadowRoot.querySelector('.overlay');
-    if (overlay) overlay.classList.add('active');
     const t = i18n[lang] || i18n.en;
     this.render(trend, lang, t.analyzing);
     const snippets = trend.snippets || [];
@@ -347,17 +345,17 @@ class TrendModal extends HTMLElement {
     const itemsToTranslate = [...snippets, ...sources];
     const translatedItems = await service.translateBatch(itemsToTranslate, lang);
     if (!this.isVisible) return;
-    const translatedSnippets = translatedItems.slice(0, snippets.length);
-    const translatedSources = translatedItems.slice(snippets.length);
+    const translatedSnippets = (translatedItems || []).slice(0, snippets.length);
+    const translatedSources = (translatedItems || []).slice(snippets.length);
     const analysis = t.analysisTemplate(trend.title, translatedSources, translatedSnippets);
     this.render(trend, lang, analysis);
   }
   hide() { this.isVisible = false; const overlay = this.shadowRoot.querySelector('.overlay'); if (overlay) { overlay.classList.remove('active'); setTimeout(() => { if (!this.isVisible) this.shadowRoot.innerHTML = ''; }, 300); } }
-  renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0); backdrop-filter: blur(0px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: 0.3s; } .overlay.active { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing Trend...</div></div>`; requestAnimationFrame(() => { const activeOverlay = this.shadowRoot.querySelector('.overlay'); if (activeOverlay) activeOverlay.classList.add('active'); }); this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); }; }
+  renderLoading() { this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1; transition: 0.3s; } .modal { background: var(--bg); width: 90%; max-width: 450px; border-radius: 24px; padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; color: var(--text-muted); }</style><div class="overlay"><div class="modal">Analyzing Trend...</div></div>`; this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); }; }
   render(trend, lang, analysis) {
     if (!this.isVisible) return;
     const t = i18n[lang] || i18n.en;
-    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0); backdrop-filter: blur(0px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: 0.3s; } .overlay.active { background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; z-index: 10000; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); display: flex; align-items: center; justify-content: center; line-height: 1; } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; } .link:hover { border-color: var(--primary); background: var(--border); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; margin-bottom: -0.2rem; }</style>
+    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1; transition: 0.3s; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 80vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; z-index: 10000; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); display: flex; align-items: center; justify-content: center; line-height: 1; } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); padding-right: 1.5rem; } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: 0.2s; } .link:hover { border-color: var(--primary); background: var(--border); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; margin-bottom: -0.2rem; }</style>
       <div class="overlay active"><div class="modal"><button class="close" aria-label="Close">&times;</button><h2 class="title">${trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><div><div class="link-meta">${l.source}</div><div>📄 ${l.title}</div></div></a>`).join('')}</div><span class="section-title">🎬 ${t.videos}</span><div class="link-group">${(trend.videoLinks || []).map(l => `<a href="${l.url}" target="_blank" class="link">▶️ ${l.title}</a>`).join('')}</div></div></div>`;
     const closeBtn = this.shadowRoot.querySelector('.close');
     const overlay = this.shadowRoot.querySelector('.overlay');
@@ -381,29 +379,32 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v1.5.8");
-    this.initThemeIcons();
-    this.applyTheme(this.themeMode);
-    this.modal = document.createElement('trend-modal');
-    document.body.appendChild(this.modal);
-    this.initInfoModals();
-    this.initCookieBanner();
-    this.initSideMenu();
-    this.initThemeMenu();
-    this.renderNavs();
-    this.refreshUIText();
-    window.addEventListener('open-trend-modal', (e) => {
-      if (this.modal) this.modal.show(e.detail, this.currentLang, this.service);
-    });
-    window.addEventListener('click', () => {
-      document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
-      document.getElementById('theme-dropdown')?.classList.add('hidden');
-    });
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-      if (this.themeMode === 'system') this.applyTheme('system');
-    });
-    this.startAsyncTasks();
-    setInterval(() => this.update(), this.service.refreshInterval);
+    console.log("App Init: v1.6.0");
+    try {
+      this.initThemeIcons();
+      this.applyTheme(this.themeMode);
+      this.modal = document.createElement('trend-modal');
+      document.body.appendChild(this.modal);
+      this.initSideMenu();
+      this.initThemeMenu();
+      this.initInfoModals();
+      this.initCookieBanner();
+      this.renderNavs();
+      this.refreshUIText();
+      
+      window.addEventListener('open-trend-modal', (e) => {
+        if (this.modal) this.modal.show(e.detail, this.currentLang, this.service);
+      });
+      window.addEventListener('click', () => {
+        document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded'));
+        document.getElementById('theme-dropdown')?.classList.add('hidden');
+      });
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (this.themeMode === 'system') this.applyTheme('system');
+      });
+      this.startAsyncTasks();
+      setInterval(() => this.update(), this.service.refreshInterval);
+    } catch (e) { console.error("App init failed:", e); }
   }
   async startAsyncTasks() {
     try {
@@ -419,84 +420,78 @@ class App {
   async syncLocalization() {
     if (!this.db) return;
     try {
-      const colRef = collection(this.db, 'localization');
-      for (const lang of Object.keys(i18n)) {
-        await setDoc(doc(this.db, 'localization', lang), i18n[lang]); // Force update DB with current code's translation
+      const snapshot = await getDocs(collection(this.db, 'localization'));
+      if (!snapshot.empty) {
+        const remoteData = {};
+        snapshot.forEach(doc => { remoteData[doc.id] = doc.data(); });
+        i18n = remoteData;
+        localStorage.setItem('i18n_cache', JSON.stringify(i18n));
       }
-      const snapshot = await getDocs(colRef);
-      const remoteData = {};
-      snapshot.forEach(doc => { remoteData[doc.id] = doc.data(); });
-      i18n = remoteData;
-      localStorage.setItem('i18n_cache', JSON.stringify(i18n));
     } catch (e) { console.error("Localization sync failed:", e); }
   }
   refreshUIText() {
-    const t = i18n[this.currentLang] || i18n.en;
-    
-    // Header/Hero
-    if (document.getElementById('current-country-title')) document.getElementById('current-country-title').textContent = t.title;
-    
-    // Sidebar/Info Card
-    const infoCardH3 = document.querySelector('.info-card h3');
-    const infoCardP = document.querySelector('.info-card p');
-    if (infoCardH3) infoCardH3.textContent = t.infoTitle;
-    if (infoCardP) infoCardP.textContent = t.infoDesc;
+    try {
+      const t = i18n[this.currentLang] || i18n.en;
+      
+      // Safety updates with Optional Chaining
+      const titleEl = document.getElementById('current-country-title');
+      if (titleEl) titleEl.textContent = t.title;
+      
+      const infoCardH3 = document.querySelector('.info-card h3');
+      const infoCardP = document.querySelector('.info-card p');
+      if (infoCardH3) infoCardH3.textContent = t.infoTitle;
+      if (infoCardP) infoCardP.textContent = t.infoDesc;
 
-    // Menu Labels
-    const menuSections = document.querySelectorAll('.menu-section');
-    if (menuSections[0]) {
-      const menuTitle = menuSections[0].querySelector('.menu-title');
-      if (menuTitle) menuTitle.textContent = t.T;
-    }
-    if (menuSections[1]) {
-      const menuTitle = menuSections[1].querySelector('.menu-title');
-      if (menuTitle) menuTitle.textContent = t.labels.site;
-    }
+      const menuSections = document.querySelectorAll('.menu-section');
+      if (menuSections[0]) {
+        const menuTitle = menuSections[0].querySelector('.menu-title');
+        if (menuTitle) menuTitle.textContent = t.T;
+      }
+      if (menuSections[1]) {
+        const menuTitle = menuSections[1].querySelector('.menu-title');
+        if (menuTitle) menuTitle.textContent = t.labels?.site || "Site Info";
+      }
 
-    // Pill Nav Labels (Trends:, Language:)
-    document.querySelectorAll('.nav-label').forEach(label => {
-      const text = label.textContent.toLowerCase();
-      if (text.includes('trend') || text.includes('국가') || text.includes('国')) label.textContent = t.labels.trends;
-      if (text.includes('lang') || text.includes('언어') || text.includes('言語')) label.textContent = t.labels.language;
-    });
+      document.querySelectorAll('.nav-label').forEach(label => {
+        const text = label.textContent.toLowerCase();
+        if (text.includes('trend') || text.includes('국가') || text.includes('国')) label.textContent = t.labels?.trends || "Country:";
+        if (text.includes('lang') || text.includes('언어') || text.includes('言語')) label.textContent = t.labels?.language || "Language:";
+      });
 
-    // Menu & Footer Links
-    document.querySelectorAll('[data-page]').forEach(el => {
-      const key = el.getAttribute('data-page');
-      if (key === 'about') el.textContent = t.menuAbout;
-      else if (key === 'privacy') el.textContent = t.menuPrivacy;
-      else if (key === 'terms') el.textContent = t.menuTerms;
-      else if (key === 'contact') el.textContent = t.menuContact;
-    });
+      document.querySelectorAll('[data-page]').forEach(el => {
+        const key = el.getAttribute('data-page');
+        if (key === 'about') el.textContent = t.menuAbout;
+        else if (key === 'privacy') el.textContent = t.menuPrivacy;
+        else if (key === 'terms') el.textContent = t.menuTerms;
+        else if (key === 'contact') el.textContent = t.menuContact;
+      });
 
-    // Theme Labels
-    document.querySelectorAll('.theme-opt').forEach(opt => {
-      const key = opt.dataset.theme;
-      const label = opt.querySelector('.opt-label');
-      if (label && t.themes[key]) label.textContent = t.themes[key];
-    });
+      document.querySelectorAll('.theme-opt').forEach(opt => {
+        const key = opt.dataset.theme;
+        const label = opt.querySelector('.opt-label');
+        if (label && t.themes && t.themes[key]) label.textContent = t.themes[key];
+      });
 
-    // Cookie Banner
-    const cookieBanner = document.getElementById('cookie-banner');
-    if (cookieBanner) {
-      const p = cookieBanner.querySelector('p');
-      const btn = cookieBanner.querySelector('button');
-      if (p) p.textContent = t.cookie;
-      if (btn) btn.textContent = t.accept;
-    }
+      const cookieBanner = document.getElementById('cookie-banner');
+      if (cookieBanner) {
+        const p = cookieBanner.querySelector('p');
+        const btn = cookieBanner.querySelector('button');
+        if (p) p.textContent = t.cookie;
+        if (btn) btn.textContent = t.accept;
+      }
 
-    // Footer Copyright
-    const footerText = document.querySelector('.footer-content p');
-    if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.5.8)`;
-    const sideMenuFooter = document.querySelector('.side-menu-footer p');
-    if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
+      const footerText = document.querySelector('.footer-content p');
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v1.6.0)`;
+      const sideMenuFooter = document.querySelector('.side-menu-footer p');
+      if (sideMenuFooter) sideMenuFooter.textContent = `© 2026 TrendUp. All rights reserved.`;
+    } catch (e) { console.error("UI Refresh failed:", e); }
   }
-  backgroundSyncAll() {
+  async backgroundSyncAll() {
     if (!this.db) return;
-    const countries = this.service.getCountries();
-    for (const c of countries) {
-      if (c.code === this.currentCountry) continue;
-      try {
+    try {
+      const countries = this.service.getCountries();
+      for (const c of countries) {
+        if (c.code === this.currentCountry) continue;
         const trendDoc = await getDoc(doc(this.db, 'trends', c.code));
         const dbData = trendDoc.exists() ? trendDoc.data() : null;
         const now = Date.now();
@@ -512,16 +507,18 @@ class App {
           }
           await new Promise(res => setTimeout(res, 2000));
         }
-      } catch (e) { console.error(`Background sync for ${c.code} failed:`, e); }
-    }
+      }
+    } catch (e) { console.error("Background sync failed:", e); }
   }
   initThemeIcons() {
-    const sunIcons = document.querySelectorAll('.sun-svg');
-    const moonIcons = document.querySelectorAll('.moon-svg');
-    const systemIcons = document.querySelectorAll('.system-svg');
-    sunIcons.forEach(el => el.innerHTML = ICONS.sun);
-    moonIcons.forEach(el => el.innerHTML = ICONS.moon);
-    systemIcons.forEach(el => el.innerHTML = ICONS.system);
+    try {
+      const sunIcons = document.querySelectorAll('.sun-svg');
+      const moonIcons = document.querySelectorAll('.moon-svg');
+      const systemIcons = document.querySelectorAll('.system-svg');
+      sunIcons.forEach(el => el.innerHTML = ICONS.sun);
+      moonIcons.forEach(el => el.innerHTML = ICONS.moon);
+      systemIcons.forEach(el => el.innerHTML = ICONS.system);
+    } catch (e) {}
   }
   initThemeMenu() {
     const toggle = document.getElementById('theme-menu-toggle');
@@ -538,18 +535,20 @@ class App {
     });
   }
   applyTheme(mode) {
-    this.themeMode = mode;
-    localStorage.setItem('theme-mode', mode);
-    let targetTheme = mode;
-    if (mode === 'system') targetTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', targetTheme);
-    const triggerIcon = document.querySelector('.theme-trigger-icon');
-    if (triggerIcon) {
-      if (mode === 'light') triggerIcon.innerHTML = ICONS.sun;
-      else if (mode === 'dark') triggerIcon.innerHTML = ICONS.moon;
-      else triggerIcon.innerHTML = ICONS.system;
-    }
-    document.querySelectorAll('.theme-opt').forEach(opt => opt.classList.toggle('active', opt.dataset.theme === mode));
+    try {
+      this.themeMode = mode;
+      localStorage.setItem('theme-mode', mode);
+      let targetTheme = mode;
+      if (mode === 'system') targetTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', targetTheme);
+      const triggerIcon = document.querySelector('.theme-trigger-icon');
+      if (triggerIcon) {
+        if (mode === 'light') triggerIcon.innerHTML = ICONS.sun;
+        else if (mode === 'dark') triggerIcon.innerHTML = ICONS.moon;
+        else triggerIcon.innerHTML = ICONS.system;
+      }
+      document.querySelectorAll('.theme-opt').forEach(opt => opt.classList.toggle('active', opt.dataset.theme === mode));
+    } catch (e) {}
   }
   initSideMenu() {
     const toggle = document.getElementById('menu-toggle');
@@ -560,32 +559,35 @@ class App {
     const openMenu = () => { menu.classList.add('active'); overlay.classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
     const closeMenu = () => { menu.classList.remove('active'); overlay.classList.add('hidden'); document.body.style.overflow = ''; };
     toggle.onclick = (e) => { e.stopPropagation(); openMenu(); };
-    close.onclick = closeMenu; overlay.onclick = closeMenu;
-    menu.querySelectorAll('.info-link').forEach(link => { const originalClick = link.onclick; link.onclick = (e) => { if (originalClick) originalClick(e); closeMenu(); }; });
+    if (close) close.onclick = closeMenu;
+    if (overlay) overlay.onclick = closeMenu;
+    menu.querySelectorAll('.info-link').forEach(link => { link.onclick = (e) => { closeMenu(); }; });
   }
   initCookieBanner() {
     const banner = document.getElementById('cookie-banner');
     if (!banner) return;
     const t = i18n[this.currentLang] || i18n.en;
-    banner.querySelector('p').textContent = t.cookie;
-    banner.querySelector('button').textContent = t.accept;
+    const p = banner.querySelector('p');
+    const btn = banner.querySelector('button');
+    if (p) p.textContent = t.cookie;
+    if (btn) btn.textContent = t.accept;
     if (!localStorage.getItem('cookies-accepted')) banner.classList.remove('hidden');
-    banner.querySelector('button').onclick = () => { localStorage.setItem('cookies-accepted', 'true'); banner.classList.add('hidden'); };
+    if (btn) btn.onclick = () => { localStorage.setItem('cookies-accepted', 'true'); banner.classList.add('hidden'); };
   }
   initInfoModals() {
     const overlay = document.getElementById('info-modal');
     const body = document.getElementById('info-modal-body');
     const closeBtn = document.querySelector('.info-modal-close');
     document.querySelectorAll('.info-link').forEach(link => {
-      link.onclick = (e) => {
+      link.addEventListener('click', (e) => {
         e.preventDefault();
         const pageKey = link.getAttribute('data-page');
         const t = i18n[this.currentLang] || i18n.en;
-        if (t.pages[pageKey]) { body.innerHTML = t.pages[pageKey].content; overlay.classList.remove('hidden'); }
-      };
+        if (t.pages && t.pages[pageKey] && body && overlay) { body.innerHTML = t.pages[pageKey].content; overlay.classList.remove('hidden'); }
+      });
     });
-    closeBtn.onclick = () => overlay.classList.add('hidden');
-    overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.add('hidden'); };
+    if (closeBtn) closeBtn.onclick = () => overlay?.classList.add('hidden');
+    if (overlay) overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.add('hidden'); };
   }
   renderNavs() {
     try {
@@ -593,8 +595,8 @@ class App {
       const renderGroup = (id, items, current, labelKey, onSelect) => {
         const nav = document.getElementById(id);
         if (!nav) return;
-        const label = nav.parentElement.querySelector('.nav-label');
-        if (label) {
+        const label = nav.parentElement?.querySelector('.nav-label');
+        if (label && t.labels) {
           if (labelKey === 'T') label.textContent = t.labels.trends;
           else if (labelKey === 'L') label.textContent = t.labels.language;
         }
@@ -606,15 +608,15 @@ class App {
       };
       renderGroup('country-nav', this.service.getCountries(), this.currentCountry, 'T', (code) => this.switchCountry(code));
       renderGroup('lang-nav', this.service.getLanguages(), this.currentLang, 'L', (code) => this.switchLang(code));
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Render navs failed:", e); }
   }
   async switchCountry(code) { this.currentCountry = code; this.renderNavs(); await this.update(false, true); }
-  async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.initCookieBanner(); await this.update(true); }
+  async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.refreshUIText(); await this.update(true); }
   async update(isLanguageSwitch = false, isCountrySwitch = false) {
     const requestId = ++this.currentRequestId;
     try {
       const t = i18n[this.currentLang] || i18n.en;
-      this.refreshUIText(); // Always ensure fixed text is updated
+      this.refreshUIText();
       
       let dbData = null;
       if (this.db) {
@@ -623,9 +625,13 @@ class App {
           if (trendDoc.exists()) {
             dbData = trendDoc.data();
             const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
-            if (document.getElementById('top-trends')) document.getElementById('top-trends').data = { trends, lang: this.currentLang };
-            const date = dbData.lastUpdated.toDate();
-            if (document.getElementById('last-updated')) document.getElementById('last-updated').textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            const trendListEl = document.getElementById('top-trends');
+            if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
+            const lastUpdatedEl = document.getElementById('last-updated');
+            if (lastUpdatedEl && dbData.lastUpdated) {
+              const date = dbData.lastUpdated.toDate();
+              lastUpdatedEl.textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            }
           }
         } catch (dbErr) { console.error("DB Load Error:", dbErr); }
       }
@@ -637,9 +643,13 @@ class App {
         if (requestId !== this.currentRequestId) return;
         if (freshItems && freshItems.length >= 5) {
           const trends = this.service.calculateRankChanges(freshItems, dbData?.items || null);
-          if (document.getElementById('top-trends')) document.getElementById('top-trends').data = { trends, lang: this.currentLang };
-          const nowObj = new Date();
-          if (document.getElementById('last-updated')) document.getElementById('last-updated').textContent = `${t.update}: ${nowObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+          const trendListEl = document.getElementById('top-trends');
+          if (trendListEl) trendListEl.data = { trends, lang: this.currentLang };
+          const lastUpdatedEl = document.getElementById('last-updated');
+          if (lastUpdatedEl) {
+            const nowObj = new Date();
+            lastUpdatedEl.textContent = `${t.update}: ${nowObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+          }
           if (this.db) await setDoc(doc(this.db, 'trends', this.currentCountry), { items: freshItems, previousItems: dbData?.items || [], lastUpdated: Timestamp.now() });
         }
       }
