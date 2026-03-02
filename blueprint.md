@@ -51,13 +51,15 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Refine YouTube search queries to target news videos by appending local news keywords (v2.2.4).
 - [x] Increment version to v2.2.4.
 - [x] Apply strict country/language filters (gl & hl) to YouTube and Google News searches (v2.2.4).
-- [x] Force local relevance for English keywords by appending country names to search queries (v2.3.5).
-- [x] Integrate Google Gemini 1.5 Flash API for real AI trend analysis (v2.3.5).
+- [x] Force local relevance for English keywords by appending country names to search queries (v2.3.6).
+- [x] Integrate Google Gemini 1.5 Flash API for real AI trend analysis (v2.3.6).
 - [x] Implement sequential processing with delays to respect Gemini Free Tier RPM limits.
-- [x] Force Firestore Long Polling to resolve connectivity issues (v2.3.5).
-- [x] Increment version to v2.3.5.
-- [x] Fix ReferenceError: initializeFirestore is not defined by updating imports (v2.3.5).
-- [x] Fix Gemini API 404 error by refining model identifier and call logic (v2.3.5).
-- [x] Improve Gemini API robustness with fallback logic for 404 errors (v2.3.5).
-- [x] Add localized fallback summaries for Korean, Japanese, and English (v2.3.5).
+- [x] Force Firestore Long Polling to resolve connectivity issues (v2.3.6).
+- [x] Increment version to v2.3.6.
+- [x] Fix ReferenceError: initializeFirestore is not defined by updating imports (v2.3.6).
+- [x] Fix Gemini API 404 error by refining model identifier and call logic (v2.3.6).
+- [x] Improve Gemini API robustness with fallback logic for 404 errors (v2.3.6).
+- [x] Add localized fallback summaries for Korean, Japanese, and English (v2.3.6).
 - [x] Optimize Gemini prompts to strictly use the target language and avoid English mixing.
+- [x] Completely remove hardcoded English fallback in AI analysis (v2.3.6).
+- [x] Fix localized fallback logic for AI reports.
