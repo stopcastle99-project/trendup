@@ -64,15 +64,15 @@ class TrendUpdater {
   }
 
   getFallbackReport(title, lang, country) {
-    const countryNames = {
+    const mapping = {
       'ko': { 'KR': '대한민국', 'JP': '일본', 'US': '미국' },
       'ja': { 'KR': '韓国', 'JP': '日本', 'US': 'アメリカ' },
       'en': { 'KR': 'South Korea', 'JP': 'Japan', 'US': 'USA' }
     };
-    const countryName = countryNames[lang]?.[country] || country;
+    const countryName = mapping[lang]?.[country] || mapping['en'][country] || country;
 
     if (lang === 'ko') return `${countryName}에서 '${title}' 키워드가 관련 보도를 통해 주목받고 있습니다.`;
-    if (lang === 'ja') return `${countryName}国内で'${title}'이(가) 注目を集めています。`; // '가' 제거 및 자연스러운 일본어 문구로 수정
+    if (lang === 'ja') return `${countryName}国内で'${title}'が注目を集めています。`; 
     return `'${title}' is drawing attention in ${countryName} through various news reports.`;
   }
 
