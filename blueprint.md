@@ -10,7 +10,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Data Integrity:** Implemented batch translation with separators to prevent data tangling between languages.
 - **Persistence Optimization:** Added `localStorage` to preserve user country selection across page refreshes.
 - **Translation Quality:** Optimized AI report generation by translating news titles and snippets into the target language, ensuring a fully localized experience.
-- **Version Finalization:** Application finalized at **v2.1.6**.
+- **Version Finalization:** Application finalized at **v2.1.7**.
 
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -31,7 +31,9 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Final stabilization and removal of unstable scrapers (v1.8.4).
 - [x] Finalize project with Security Rules documentation (v1.8.5).
 - [x] Implement persistent country selection using `localStorage` (v2.1.4).
-- [x] Fix AI report translation issues for news titles and snippets (v2.1.6).
+- [x] Fix AI report translation issues for news titles and snippets (v2.1.7).
 - [x] Push all changes to GitHub.
-- [x] Update localization for Google AdSense compliance in English and Japanese (v2.1.6).
-- [x] Increment version to v2.1.6.
+- [x] Update localization for Google AdSense compliance in English and Japanese (v2.1.7).
+- [x] Increment version to v2.1.7.
+- [x] Enrich Korean localization for Google AdSense compliance (v2.1.7).
+- [x] Increment version to v2.1.7.
