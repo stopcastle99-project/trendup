@@ -1,11 +1,23 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import admin from "firebase-admin";
 import { JSDOM } from "jsdom";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 admin.initializeApp();
 const db = admin.firestore();
 
+// Helper for delay to respect Gemini Free Tier RPM (15 RPM)
+const delay = (ms) => new Promise(res => setTimeout(ms, res));
+
 class TrendUpdater {
+  constructor() {
+    this.genAI = null;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+    }
+  }
+
   async translateBatch(texts, targetLang) {
     if (!texts || texts.length === 0) return [];
     const translateSingle = async (text, tl) => {
@@ -25,18 +37,24 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
-  generateAIReport(item, lang, translatedNewsTitles, translatedSnippets) {
-    const newsTitles = translatedNewsTitles || [];
-    const snippets = translatedSnippets || [];
-    const title = item.translations?.[lang] || item.originalTitle;
-    if (lang === "ko") {
-      return `현재 "${title}" 키워드가 글로벌 트렌드로 급부상하고 있습니다. 관련 보도에 따르면 ${newsTitles.length > 0 ? newsTitles.join(", ") : "다양한 매체"} 등의 소식이 주목받고 있으며, ${snippets.length > 0 ? snippets.join(" ") : "관련 분야"} 등의 사회적 맥락이 확인됩니다. AI 분석 결과, 해당 이슈에 대한 대중의 관심도가 매우 높은 것으로 나타납니다.`;
-    } else if (lang === "ja") {
-      const jaNews = newsTitles.length > 0 ? newsTitles.join("、") : "様々なメディア";
-      return `現在 "${title}" が世界的トレンドとして急上昇しています。${jaNews} などのニュースが注目されており, ${snippets.length > 0 ? snippets.join(" ") : "関連分野"} といった背景이 확인됩니다. AI分析の結果, この問題に対する国民の関心は非常に高いことがわかります.`;
-    } else {
-      const enNews = newsTitles.length > 0 ? newsTitles.join(", ") : "various media outlets";
-      return `"${title}" is rapidly emerging as a global trend. News highlights include ${enNews}. Contextual signals show ${snippets.length > 0 ? snippets.join(" ") : "relevant discussions"}. AI analysis indicates very high public interest in this issue.`;
+  async generateRealAIReport(keyword, lang, newsTitles, snippets) {
+    if (!this.genAI) return "AI Analysis is currently unavailable (API Key missing).";
+    
+    try {
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const prompt = `Analyze why the keyword "${keyword}" is currently trending based on the following news titles and snippets. 
+      Write a concise, insightful report in 3-4 sentences in the language: ${lang === "ko" ? "Korean" : lang === "ja" ? "Japanese" : "English"}.
+      Focus on the context and public interest.
+      Context Data:
+      ${newsTitles.join("\n")}
+      ${snippets.join("\n")}`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text().trim();
+    } catch (e) {
+      console.error("Gemini Error:", e.message);
+      return "AI Analysis is processing...";
     }
   }
 
@@ -134,10 +152,8 @@ class TrendUpdater {
       }
       if (unique.length > 0) {
         for (let item of unique) {
-          // Force fetch supplementary news from local sources even if newsLinks exist, to ensure local context for English keywords
           const localNews = await this.getSupplementaryNews(item.originalTitle, code);
           if (localNews && localNews.length > 0) item.newsLinks = localNews;
-          
           item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
         }
         for (const lang of langs) {
@@ -159,13 +175,19 @@ class TrendUpdater {
             else if (m.type === "news") tempTranslations[m.itemIdx].news.push(txt);
             else if (m.type === "snippet") tempTranslations[m.itemIdx].snippets.push(txt);
           });
-          unique.forEach((item, idx) => {
+
+          // GENREATE REAL AI REPORT WITH GEMINI
+          for (let i = 0; i < unique.length; i++) {
+            const item = unique[i];
+            const trans = tempTranslations[i];
             if (!item.translations) item.translations = {};
             if (!item.aiReports) item.aiReports = {};
-            const trans = tempTranslations[idx];
             item.translations[lang] = trans.title || item.originalTitle;
-            item.aiReports[lang] = this.generateAIReport(item, lang, trans.news, trans.snippets);
-          });
+            
+            // Call Gemini (with 4s delay to respect 15 RPM free tier)
+            item.aiReports[lang] = await this.generateRealAIReport(item.originalTitle, lang, trans.news, trans.snippets);
+            await new Promise(res => setTimeout(res, 4000));
+          }
         }
         const docRef = db.collection("trends").doc(code);
         const oldDoc = await docRef.get();
@@ -175,8 +197,12 @@ class TrendUpdater {
   }
 }
 
-export const scheduledTrendUpdate = onSchedule("every 10 minutes", async (event) => {
+export const scheduledTrendUpdate = onSchedule({
+  schedule: "every 10 minutes",
+  secrets: ["GEMINI_API_KEY"],
+  timeoutSeconds: 540 // Increased timeout for sequential Gemini calls
+}, async (event) => {
   const updater = new TrendUpdater();
   await updater.updateAll();
-  console.log("Trend update cycle completed successfully.");
+  console.log("Trend update cycle completed successfully with Gemini AI.");
 });
