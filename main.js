@@ -36,9 +36,9 @@ class BackgroundScene {
 }
 
 const ICONS = {
-  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12.2.31 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`,
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12.2.41 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
-  system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12.2.30"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12.2.30 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
+  system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12.2.40"></path><path d="M12 7V17"></path><path d="M12 12h5"></path><path d="M12.2.40 10 0 0 0 0 20z" fill="currentColor" fill-opacity="0.3"></path></svg>`
 };
 
 // --- Localization ---
@@ -64,7 +64,7 @@ let i18n = {
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보 보호를 최우선으로 생각하며, 관련 법령을 준수합니다. (v2.2.3)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보 보호를 최우선으로 생각하며, 관련 법령을 준수합니다. (v2.2.4)</p>
           <h3>1. 개인정보 수집 및 이용</h3>
           <p>본 서비스는 회원가입 없이 모든 기능을 이용할 수 있습니다. 다만, 서비스 이용 과정에서 접속 IP, 쿠키, 브라우저 정보, 방문 기록 등이 서비스 최적화 및 광고 게재를 위해 자동 생성되어 수집될 수 있습니다.</p>
           <h3>2. 구글 애드센스 및 쿠키 사용 고지</h3>
@@ -125,7 +125,7 @@ let i18n = {
         title: "個人情報保護方針 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めます。(v2.2.3)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めます。(v2.2.4)</p>
           <h3>1. 情報の収集について</h3>
           <p>当サービスでは、ユーザー登録なしで利用可能ですが、アクセス解析や広告配信のために、IPアドレス、クッキー（Cookie）、ブラウザ情報などが自動的に収集される場合があります。</p>
           <h3>2. 広告の配信について（Googleアドセンス）</h3>
@@ -186,7 +186,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.2.3)</p>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.2.4)</p>
           <h3>1. Information Collection</h3>
           <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
           <h3>2. Advertising and Cookies (Google AdSense)</h3>
@@ -303,7 +303,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.2.3");
+    console.log("App Init: v2.2.4");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -349,7 +349,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.2.3)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.2.4)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";

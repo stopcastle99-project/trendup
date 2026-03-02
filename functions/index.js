@@ -44,7 +44,7 @@ class TrendUpdater {
     const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
     const gl = countryCode;
     try {
-      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(keyword)}&hl=${hl}&gl=${gl}`);
+      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(keyword)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
       const dom = new JSDOM(text, { contentType: "text/xml" });
       const items = dom.window.document.querySelectorAll("item");
@@ -57,13 +57,15 @@ class TrendUpdater {
   }
 
   async getYouTubeVideos(keyword, countryCode) {
+    const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
+    const gl = countryCode;
     let query = keyword;
     if (countryCode === "KR") query += " 뉴스";
     else if (countryCode === "JP") query += " ニュース";
     else query += " News";
 
     try {
-      const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`);
+      const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&gl=${gl}&hl=${hl}`);
       const html = await res.text();
       const regex = /"videoRenderer":\{"videoId":"([^"]+)","thumbnail":\{.*?"title":\{"runs":\[\{"text":"([^"]+)"\}\]/g;
       const videos = [];
