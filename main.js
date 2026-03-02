@@ -142,7 +142,67 @@ let i18n = {
       } 
     } 
   },
-  en: { title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original", menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, pages: { about: { title: "TrendUp", content: `<p>Global trend intelligence.</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.5</p>` }, terms: { title: "Terms", content: `<p>Terms</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } }
+  en: { 
+    title: "Global Trends", 
+    update: "Updated", 
+    summary: "AI Analysis Report", 
+    news: "Top Stories", 
+    videos: "YouTube News", 
+    loading: "Loading...", 
+    original: "Original", 
+    menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
+    pages: { 
+      about: { 
+        title: "About TrendUp", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">TrendUp: Global Trend Intelligence</h2>
+          <p style="margin-bottom:1rem; line-height:1.8;">TrendUp is a data analysis platform that combines big data processing technology with the latest artificial intelligence (AI) engines to analyze and visualize search trends in real-time from major countries including the United States, Japan, and Korea.</p>
+          <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">Core Features</h3>
+          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
+            <li><strong>Real-time Data Pipeline:</strong> We normalize high-reliability data from each country every 10 minutes.</li>
+            <li><strong>Context-based AI Translation:</strong> Our AI understands the context of keywords and provides optimized translations.</li>
+            <li><strong>Global Insight:</strong> Track the lifecycle of trends through precise ranking change monitoring across the globe.</li>
+          </ul>
+        ` 
+      }, 
+      privacy: { 
+        title: "Privacy Policy", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.1.5)</p>
+          <h3>1. Information Collection</h3>
+          <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
+          <h3>2. Advertising and Cookies (Google AdSense)</h3>
+          <p>This site uses Google AdSense, a web advertising service provided by Google. Google uses cookies to serve ads based on a user's prior visits to this website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to users based on their visit to your sites and/or other sites on the Internet.</p>
+          <p>Users may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--primary);">Ads Settings</a>. For more information, please review Google's <a href="https://policies.google.com/technologies/ads" target="_blank" style="color:var(--primary);">Privacy & Terms</a>.</p>
+          <h3>3. Data Security</h3>
+          <p>We implement various security measures to maintain the safety of your personal information when you access our site.</p>
+        ` 
+      }, 
+      terms: { 
+        title: "Terms of Service", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">Terms of Service</h2>
+          <p style="margin-bottom:1rem;">By using TrendUp, you agree to comply with and be bound by the following terms.</p>
+          <h3>1. Accuracy of Information</h3>
+          <p>All trending data and AI-generated summaries are based on publicly available information and are provided for reference only. We do not guarantee the accuracy, completeness, or usefulness of the information. Do not use this as a basis for investment or critical decision-making.</p>
+          <h3>2. Prohibited Uses</h3>
+          <p>You are prohibited from using the service for any illegal purpose or to violate any laws. Unauthorized data acquisition via scraping or excessive server load is strictly prohibited.</p>
+          <h3>3. Modifications</h3>
+          <p>We reserve the right to change these terms at any time. Your continued use of the service after changes constitutes acceptance of the new terms.</p>
+        ` 
+      }, 
+      contact: { 
+        title: "Contact Us", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">Contact Us</h2>
+          <p style="margin-bottom:1rem;">If you have any questions, feedback, or business inquiries regarding our service, please contact us via email.</p>
+          <p><strong>Email:</strong> help@trendup.ai</p>
+          <p style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted);">※ Depending on the content of your inquiry, it may take some time to respond, or we may not be able to answer certain requests.</p>
+        ` 
+      } 
+    } 
+  }
 };
 
 const firebaseConfig = { projectId: "test-76cdd" };
