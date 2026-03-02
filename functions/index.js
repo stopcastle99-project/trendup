@@ -72,15 +72,16 @@ class TrendUpdater {
     const countryName = mapping[lang]?.[country] || mapping['en'][country] || country;
 
     if (lang === 'ko') return `${countryName}에서 '${title}' 키워드가 관련 보도를 통해 주목받고 있습니다.`;
-    if (lang === 'ja') return `${countryName}国内で'${title}'가注目を集めています。`; 
+    if (lang === 'ja') return `${countryName}国内で'${title}'が注目を集めています。`; // '가' 제거 및 'が'로 교체
     return `'${title}' is drawing attention in ${countryName} through various news reports.`;
   }
 
-  // Check if the current report is just a fallback template
-  isFallback(report) {
+  // Check if the current report is just a fallback template or contains errors
+  isFallback(report, lang) {
     if (!report) return true;
     const fallbacks = ["주목받고 있습니다", "注目を集めています", "drawing attention", "지연되고 있으나", "生成中です"];
-    return fallbacks.some(f => report.includes(f)) || report.length < 30;
+    const hasKoreanInJapanese = lang === 'ja' && (report.includes("일본") || report.includes("대한민국") || report.includes("미국") || report.includes("가 주목"));
+    return fallbacks.some(f => report.includes(f)) || report.length < 30 || hasKoreanInJapanese;
   }
 
   async getSupplementaryNews(keyword, countryCode) {
