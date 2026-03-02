@@ -95,6 +95,10 @@ let i18n = {
           <p><strong>Email:</strong> <a href="mailto:help@trendup.ai" style="color:var(--primary);">help@trendup.ai</a></p>
           <p style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted);">※ 문의 주신 내용은 검토 후 순차적으로 답변해 드리고 있으나, 사안에 따라 답변이 지연되거나 제한될 수 있습니다.</p>
         ` 
+      },
+      cookie: {
+        text: "TrendUp은 서비스 품질 향상 및 맞춤형 콘텐츠 제공을 위해 쿠키를 사용합니다. 계속 이용하시면 서비스 약관 및 개인정보 처리방침에 동의하는 것으로 간주됩니다.",
+        btn: "확인 및 동의"
       }
     }
   },
@@ -275,7 +279,18 @@ class TrendModal extends HTMLElement {
     this.isVisible = true;
     const t = i18n[lang] || i18n.en;
     // USE PRE-GENERATED AI REPORT (STRICTLY FROM DB)
-    const analysis = trend.aiReport || (trend.snippets && trend.snippets.length > 0 ? trend.snippets.join(' ') : "AI Analysis Report Loading...");
+    let analysis = trend.aiReport || (trend.snippets && trend.snippets.length > 0 ? trend.snippets.join(' ') : "AI Analysis Report Loading...");
+    
+    // Final Polish: Clean up any remaining Korean traces if language is Japanese
+    if (this.currentLang === 'ja') {
+      analysis = analysis
+        .replace(/일본/g, '日本')
+        .replace(/대한민국/g, '韓国')
+        .replace(/미국/g, 'アメリカ')
+        .replace(/이\(가\)/g, '')
+        .replace(/내에서/g, '国内で')
+        .replace(/가 /g, 'が ');
+    }
     this.render(trend, lang, analysis);
   }
   hide() { this.isVisible = false; this.shadowRoot.innerHTML = ''; }
@@ -365,6 +380,11 @@ class App {
         const key = link.getAttribute('data-page');
         if (t.menu && t.menu[key]) link.textContent = t.menu[key];
       });
+
+      const cookieText = document.getElementById('cookie-text');
+      if (cookieText && t.cookie) cookieText.textContent = t.cookie.text;
+      const cookieBtn = document.getElementById('accept-cookies');
+      if (cookieBtn && t.cookie) cookieBtn.textContent = t.cookie.btn;
     } catch (e) {}
   }
   initThemeIcons() {
