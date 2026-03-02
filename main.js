@@ -81,7 +81,67 @@ let i18n = {
       }
     }
   },
-  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文", menu: { about: "TrendUpについて", privacy: "個人情報保護方針", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト案内" }, pages: { about: { title: "TrendUp", content: `<p>グローバルトレンドプラットフォーム</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.5</p>` }, terms: { title: "Terms", content: `<p>利用規約</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } },
+  ja: { 
+    title: "リアルタイムトレンド", 
+    update: "最終更新", 
+    summary: "AI分析レポート", 
+    news: "関連ニュース", 
+    videos: "YouTubeニュース", 
+    loading: "読み込み中...", 
+    original: "原文", 
+    menu: { about: "TrendUpについて", privacy: "個人情報保護方針", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト案内" }, 
+    pages: { 
+      about: { 
+        title: "TrendUpについて", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">TrendUp：世界を読む、最速のインテリジェンス</h2>
+          <p style="margin-bottom:1rem; line-height:1.8;">TrendUpは、ビッグデータ処理技術と最新のAIエンジンを駆使し、日本、韓国、アメリカなどの主要国における検索トレンドをリアルタイムで分析・可視化する次世代のデータ分析プラットフォームです。</p>
+          <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">主な特徴</h3>
+          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
+            <li><strong>リアルタイム・データパイプライン：</strong>各国のトレンドデータを最短10分間隔で取得し、最新の情報を提供します。</li>
+            <li><strong>AIによる多言語要約：</strong>検索キーワードの背景をAIが分析し、ユーザーの言語で分かりやすく要約します。</li>
+            <li><strong>グローバル視点：</strong>国別のトレンド比較を通じて、世界規模での関心事の変化を捉えることができます。</li>
+          </ul>
+        ` 
+      }, 
+      privacy: { 
+        title: "個人情報保護方針 (Privacy Policy)", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">個人情報保護方針</h2>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めます。(v2.1.5)</p>
+          <h3>1. 情報の収集について</h3>
+          <p>当サービスでは、ユーザー登録なしで利用可能ですが、アクセス解析や広告配信のために、IPアドレス、クッキー（Cookie）、ブラウザ情報などが自動的に収集される場合があります。</p>
+          <h3>2. 広告の配信について（Googleアドセンス）</h3>
+          <p>当サービスは、第三者配信の広告サービス「Googleアドセンス」を利用しています。広告配信事業者は、ユーザーの興味に応じた広告を表示するためにクッキー（Cookie）を使用することがあります。これにより、当サイトや他のサイトへの過去のアクセス情報に基づいた広告が配信されます。</p>
+          <p>ユーザーは、Googleの広告設定でパーソナライズ広告を無効にできます。詳細はGoogleの <a href="https://policies.google.com/technologies/ads" target="_blank" style="color:var(--primary);">広告に関する規約</a> をご確認ください。</p>
+          <h3>3. 免責事項</h3>
+          <p>当サイトからリンクやバナーなどによって他のサイトに移動された場合、移動先サイトで提供される情報、サービス等について一切の責任を負いません。</p>
+        ` 
+      }, 
+      terms: { 
+        title: "サービス利用規約 (Terms of Service)", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">サービス利用規約</h2>
+          <p style="margin-bottom:1rem;">当サービスを利用することにより、本規約に同意したものとみなされます。</p>
+          <h3>1. データの正確性について</h3>
+          <p>当サービスが提供するトレンドデータおよびAIによる要約は、外部の公開情報を基に自動生成されています。情報の正確性、完全性、有用性について保証するものではありません。投資や重要な意思決定の判断材料として利用しないでください。</p>
+          <h3>2. 禁止事項</h3>
+          <p>当サービスのサーバーに過度な負荷をかける行為や、スクレイピング等によるデータの無断取得を禁止します。</p>
+          <h3>3. 規約の変更</h3>
+          <p>当サービスは、必要に応じて本規約をいつでも変更できるものとします。</p>
+        ` 
+      }, 
+      contact: { 
+        title: "お問い合わせ (Contact)", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">お問い合わせ</h2>
+          <p style="margin-bottom:1rem;">当サービスに関するご質問、フィードバック、ビジネスに関するお問い合わせは、以下のメールアドレスまでご連絡ください。</p>
+          <p><strong>Email:</strong> help@trendup.ai</p>
+          <p style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted);">※お問い合わせ内容によっては、回答にお時間をいただく場合や、お答えできない場合がございます。</p>
+        ` 
+      } 
+    } 
+  },
   en: { title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original", menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, pages: { about: { title: "TrendUp", content: `<p>Global trend intelligence.</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.5</p>` }, terms: { title: "Terms", content: `<p>Terms</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } }
 };
 
