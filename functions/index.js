@@ -35,19 +35,33 @@ class TrendUpdater {
   }
 
   async generateRealAIReport(keyword, lang, newsTitles, snippets) {
-    if (!this.genAI) return "AI Analysis is currently unavailable.";
+    if (!this.genAI) return this.getFallbackReport(keyword, lang, newsTitles);
     try {
-      // Use the alternative stable model name
       const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const prompt = `Analyze the trend "${keyword}" based on these headlines: ${newsTitles.join(", ")}. Write 3 concise sentences explaining why it is trending in ${lang === "ko" ? "Korean" : lang === "ja" ? "Japanese" : "English"}. Do not use markdown.`;
+      const prompt = `Analyze the trend "${keyword}" based on these headlines: ${newsTitles.join(", ")}. 
+      Write a concise, natural 3-sentence summary in ${lang === "ko" ? "pure Korean (no English mixed)" : lang === "ja" ? "Japanese" : "English"}. 
+      Explain why it is trending and the current context. Do not use markdown bolding or asterisks.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      return response.text().trim();
+      let analysis = response.text().trim();
+      
+      if (!analysis || analysis.length < 10) throw new Error("Empty analysis");
+      return analysis;
     } catch (e) {
       console.error("Gemini Error:", e.message);
-      // Fallback to simple summary if Gemini fails
-      return `Currently, "${keyword}" is a major trend. Related news include: ${newsTitles.slice(0,2).join(", ")}. Public interest is very high.`;
+      return this.getFallbackReport(keyword, lang, newsTitles);
+    }
+  }
+
+  getFallbackReport(keyword, lang, newsTitles) {
+    const titles = newsTitles.slice(0, 2).join(", ");
+    if (lang === "ko") {
+      return `현재 "${keyword}" 키워드가 한국에서 큰 관심을 받고 있습니다. 주요 소식으로는 ${titles || "다양한 사회적 이슈"} 등이 있으며, 대중의 이목이 집중되는 상황입니다.`;
+    } else if (lang === "ja") {
+      return `現在、「${keyword}」が日本で大きな注目を集めています。主なニュースには${titles || "様々な社会情勢"}などがあり、関心が高まっています。`;
+    } else {
+      return `"${keyword}" is currently a major trend. Key highlights include ${titles || "various updates"}, drawing significant public interest.`;
     }
   }
 

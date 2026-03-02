@@ -59,3 +59,5 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Fix ReferenceError: initializeFirestore is not defined by updating imports (v2.3.4).
 - [x] Fix Gemini API 404 error by refining model identifier and call logic (v2.3.4).
 - [x] Improve Gemini API robustness with fallback logic for 404 errors (v2.3.4).
+- [x] Add localized fallback summaries for Korean, Japanese, and English (v2.3.5).
+- [x] Optimize Gemini prompts to strictly use the target language and avoid English mixing.
