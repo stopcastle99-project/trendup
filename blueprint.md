@@ -10,7 +10,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Data Integrity:** Implemented batch translation with separators to prevent data tangling between languages.
 - **Persistence Optimization:** Added `localStorage` to preserve user country selection across page refreshes.
 - **Translation Quality:** Optimized AI report generation by translating news titles and snippets into the target language, ensuring a fully localized experience.
-- **Version Finalization:** Application finalized at **v2.2.1**.
+- **Version Finalization:** Application finalized at **v2.2.2**.
 
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -31,18 +31,20 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Final stabilization and removal of unstable scrapers (v1.8.4).
 - [x] Finalize project with Security Rules documentation (v1.8.5).
 - [x] Implement persistent country selection using `localStorage` (v2.1.4).
-- [x] Fix AI report translation issues for news titles and snippets (v2.2.1).
+- [x] Fix AI report translation issues for news titles and snippets (v2.2.2).
 - [x] Push all changes to GitHub.
-- [x] Update localization for Google AdSense compliance in English and Japanese (v2.2.1).
-- [x] Increment version to v2.2.1.
-- [x] Enrich Korean localization for Google AdSense compliance (v2.2.1).
-- [x] Increment version to v2.2.1.
-- [x] Simplify 'sun' icon SVG in theme menu (v2.2.1).
-- [x] Increment version to v2.2.1.
-- [x] Migrate trend update logic from GitHub Actions to Firebase Cloud Functions (Scheduled Functions) (v2.2.1).
+- [x] Update localization for Google AdSense compliance in English and Japanese (v2.2.2).
+- [x] Increment version to v2.2.2.
+- [x] Enrich Korean localization for Google AdSense compliance (v2.2.2).
+- [x] Increment version to v2.2.2.
+- [x] Simplify 'sun' icon SVG in theme menu (v2.2.2).
+- [x] Increment version to v2.2.2.
+- [x] Migrate trend update logic from GitHub Actions to Firebase Cloud Functions (Scheduled Functions) (v2.2.2).
 - [x] Disable GitHub Actions cron schedule.
-- [x] Increment version to v2.2.1.
-- [x] Fix package.json corruption and upgrade functions runtime to Node.js 22 (v2.2.1).
-- [x] Add supplementary news fetching for Japan via Google News RSS (v2.2.1).
+- [x] Increment version to v2.2.2.
+- [x] Fix package.json corruption and upgrade functions runtime to Node.js 22 (v2.2.2).
+- [x] Add supplementary news fetching for Japan via Google News RSS (v2.2.2).
 - [x] Add related YouTube video links collection for all trends.
 - [x] Display YouTube video links in detail modal.
+- [x] Switch es-module-shims CDN to jsdelivr to fix tracking prevention issues (v2.2.2).
+- [x] Increment version to v2.2.2.
