@@ -2,6 +2,7 @@ import 'dotenv/config';
 import admin from 'firebase-admin';
 import fetch from 'node-fetch';
 import { JSDOM } from 'jsdom';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const rawSecret = process.env.FIREBASE_SERVICE_ACCOUNT;
 if (!rawSecret) process.exit(1);
@@ -14,6 +15,10 @@ try {
 const db = admin.firestore();
 
 class TrendUpdater {
+  constructor() {
+    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  }
+
   async translateBatch(texts, targetLang) {
     if (!texts || texts.length === 0) return [];
     const translateSingle = async (text, tl) => {
@@ -48,9 +53,8 @@ class TrendUpdater {
     };
 
     try {
-      const { GoogleGenerativeAI } = require('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      // Use explicit model name
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       const prompt = `
         You are a professional trend analyst. Analyze the trending keyword '${context.keyword}' in ${context.targetCountry}.
@@ -72,19 +76,17 @@ class TrendUpdater {
       const response = await result.response;
       return response.text().trim().replace(/\*\*/g, '');
     } catch (e) {
-      console.error(`Gemini summary failed for ${title} (${country}):`, e.message);
+      console.error(`[Gemini Error] ${title} (${country}):`, e.message);
       // Fallback
       if (lang === 'ko') {
         return `${countryName} 내에서 '${title}' 키워드가 관련 보도를 통해 큰 주목을 받고 있습니다. 상세 분석이 지연되고 있으나, 실시간 검색 및 소셜 미디어를 통해 대중의 높은 관심이 확인됩니다.`;
       } else if (lang === 'ja') {
-        return `${countryName}内で'${title}'がニュースやSNSを通じて大きな注目を集めています。現在、詳細なAI分析を生成中です。`;
+        return `${countryName}内で'${title}'がニュースやSNSを通じて大きな注目を集めています. 現在、詳細なAI分析を生成中です.`;
       } else {
         return `'${title}' is drawing significant attention in ${countryName} through various news reports. Detailed AI analysis is being processed.`;
       }
     }
   }
-
-
 
   async getGoogleTrends(country) {
     try {
@@ -143,23 +145,18 @@ class TrendUpdater {
 
       if (unique.length > 0) {
         for (const lang of langs) {
-          // Flatten all strings to translate for this language batch
+          console.log(`  Processing language: ${lang}`);
           let allTexts = [];
-          const mapping = []; // Store where each text belongs
+          const mapping = [];
 
           unique.forEach((item, itemIdx) => {
-            // 1. Title
             allTexts.push(item.originalTitle);
             mapping.push({ type: 'title', itemIdx });
-
-            // 2. News Titles
             const nts = item.newsLinks?.map(n => n.title).slice(0, 3) || [];
             nts.forEach(nt => {
               allTexts.push(nt);
               mapping.push({ type: 'news', itemIdx });
             });
-
-            // 3. Snippets
             const snips = item.snippets?.slice(0, 2) || [];
             snips.forEach(snip => {
               allTexts.push(snip);
@@ -168,7 +165,6 @@ class TrendUpdater {
           });
 
           const translatedAll = await this.translateBatch(allTexts, lang);
-          
           const tempTranslations = unique.map(() => ({ title: '', news: [], snippets: [] }));
           translatedAll.forEach((txt, idx) => {
             const m = mapping[idx];
@@ -177,14 +173,17 @@ class TrendUpdater {
             else if (m.type === 'snippet') tempTranslations[m.itemIdx].snippets.push(txt);
           });
 
-          unique.forEach((item, idx) => {
+          // CRITICAL FIX: Use for...of to await generateAIReport
+          for (let i = 0; i < unique.length; i++) {
+            const item = unique[i];
+            const trans = tempTranslations[i];
             if (!item.translations) item.translations = {};
             if (!item.aiReports) item.aiReports = {};
             
-            const trans = tempTranslations[idx];
             item.translations[lang] = trans.title || item.originalTitle;
-            item.aiReports[lang] = this.generateAIReport(item, lang, trans.news, trans.snippets);
-          });
+            // Await the AI report generation
+            item.aiReports[lang] = await this.generateAIReport(item, lang, trans.news, trans.snippets, code);
+          }
         }
         
         const docRef = db.collection('trends').doc(code);
@@ -196,6 +195,7 @@ class TrendUpdater {
         });
       }
     }
+    console.log("Update completed successfully.");
     process.exit(0);
   }
 }
