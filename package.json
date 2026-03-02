@@ -1,6 +1,6 @@
 {
   "name": "trendup-updater",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "TrendUp Global Trends Background Updater",
   "main": "update-trends.js",
   "type": "module",
