@@ -6,9 +6,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 admin.initializeApp();
 const db = admin.firestore();
 
-// Helper for delay to respect Gemini Free Tier RPM (15 RPM)
-const delay = (ms) => new Promise(res => setTimeout(ms, res));
-
 class TrendUpdater {
   constructor() {
     this.genAI = null;
@@ -39,22 +36,22 @@ class TrendUpdater {
 
   async generateRealAIReport(keyword, lang, newsTitles, snippets) {
     if (!this.genAI) return "AI Analysis is currently unavailable (API Key missing).";
-    
     try {
+      // Use the stable model identifier
       const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const prompt = `Analyze why the keyword "${keyword}" is currently trending based on the following news titles and snippets. 
       Write a concise, insightful report in 3-4 sentences in the language: ${lang === "ko" ? "Korean" : lang === "ja" ? "Japanese" : "English"}.
-      Focus on the context and public interest.
+      Focus on the context and public interest. Do not use markdown bolding.
       Context Data:
       ${newsTitles.join("\n")}
       ${snippets.join("\n")}`;
 
       const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
+      const text = result.response.text();
+      return text.trim();
     } catch (e) {
       console.error("Gemini Error:", e.message);
-      return "AI Analysis is processing...";
+      return "AI Analysis is currently being updated...";
     }
   }
 
@@ -65,7 +62,6 @@ class TrendUpdater {
     if (countryCode === "KR") query += " 한국 뉴스";
     else if (countryCode === "JP") query += " 日本 ニュース";
     else query += " Latest News";
-
     try {
       const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
@@ -86,7 +82,6 @@ class TrendUpdater {
     if (countryCode === "KR") query += " 한국 뉴스";
     else if (countryCode === "JP") query += " 日本 ニュース";
     else query += " News";
-
     try {
       const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&gl=${gl}&hl=${hl}`);
       const html = await res.text();
@@ -175,16 +170,12 @@ class TrendUpdater {
             else if (m.type === "news") tempTranslations[m.itemIdx].news.push(txt);
             else if (m.type === "snippet") tempTranslations[m.itemIdx].snippets.push(txt);
           });
-
-          // GENREATE REAL AI REPORT WITH GEMINI
           for (let i = 0; i < unique.length; i++) {
             const item = unique[i];
             const trans = tempTranslations[i];
             if (!item.translations) item.translations = {};
             if (!item.aiReports) item.aiReports = {};
             item.translations[lang] = trans.title || item.originalTitle;
-            
-            // Call Gemini (with 4s delay to respect 15 RPM free tier)
             item.aiReports[lang] = await this.generateRealAIReport(item.originalTitle, lang, trans.news, trans.snippets);
             await new Promise(res => setTimeout(res, 4000));
           }
@@ -200,7 +191,7 @@ class TrendUpdater {
 export const scheduledTrendUpdate = onSchedule({
   schedule: "every 10 minutes",
   secrets: ["GEMINI_API_KEY"],
-  timeoutSeconds: 540 // Increased timeout for sequential Gemini calls
+  timeoutSeconds: 540
 }, async (event) => {
   const updater = new TrendUpdater();
   await updater.updateAll();
