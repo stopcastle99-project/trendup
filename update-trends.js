@@ -50,14 +50,14 @@ class TrendUpdater {
       Synthesize information, explain the cause and public reaction. No bolding.
     `;
 
-    const modelsToTry = ["gemini-flash-latest", "gemini-pro-latest"];
+    const modelsToTry = ["gemini-flash-latest", "gemini-pro-latest", "gemini-2.0-flash-exp"];
     for (const modelName of modelsToTry) {
       try {
         const model = this.genAI.getGenerativeModel({ model: modelName });
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text().trim().replace(/\*\*/g, '');
-        if (text && text.length > 10) return text;
+        if (text && text.length > 20) return text; // Ensure it's a real analysis, not a short failure response
       } catch (e) { console.warn(`AI Attempt ${modelName} failed:`, e.message); }
     }
     return "";
@@ -72,8 +72,15 @@ class TrendUpdater {
     const countryName = mapping[lang]?.[country] || mapping['en'][country] || country;
 
     if (lang === 'ko') return `${countryName}에서 '${title}' 키워드가 관련 보도를 통해 주목받고 있습니다.`;
-    if (lang === 'ja') return `${countryName}国内で'${title}'が注目を集めています。`; 
+    if (lang === 'ja') return `${countryName}国内で'${title}'가注目を集めています。`; 
     return `'${title}' is drawing attention in ${countryName} through various news reports.`;
+  }
+
+  // Check if the current report is just a fallback template
+  isFallback(report) {
+    if (!report) return true;
+    const fallbacks = ["주목받고 있습니다", "注目を集めています", "drawing attention", "지연되고 있으나", "生成中です"];
+    return fallbacks.some(f => report.includes(f)) || report.length < 30;
   }
 
   async getSupplementaryNews(keyword, countryCode) {
@@ -154,32 +161,39 @@ class TrendUpdater {
         if (unique.length >= 10) break;
       }
 
-      // 2. Reuse or Generate Base AI Report
+      // 2. Reuse or Generate/Refine AI Report
       for (let item of unique) {
-        if (prevReportMap.has(item.originalTitle) && prevReportMap.get(item.originalTitle).ko) {
-          item.aiReports = prevReportMap.get(item.originalTitle);
+        const existingReports = prevReportMap.get(item.originalTitle);
+        // SMART CHECK: Only reuse if it's NOT a fallback message
+        if (existingReports && existingReports.ko && !this.isFallback(existingReports.ko)) {
+          item.aiReports = existingReports;
         } else {
-          // Generate new report in KO
+          // Generate NEW or Replace Fallback
+          console.log(`  - Generating/Refining report for: ${item.originalTitle}`);
           const baseReport = await this.generateBaseAIReport(item, item.newsTitles, item.snippets, code);
-          item.aiReports.ko = baseReport;
-          await new Promise(r => setTimeout(r, 2000)); // Rate limit safety
+          if (baseReport) {
+            item.aiReports.ko = baseReport;
+            await new Promise(r => setTimeout(r, 3000)); // Safer delay for RPM
+          }
         }
       }
 
-      // 3. Batch Translate Titles and AI Reports
+      // 3. Batch Translate missing items
       for (let lang of langs) {
         const toTranslateTitles = unique.filter(i => !i.translations[lang]).map(i => i.originalTitle);
-        const translatedTitles = await this.translateBatch(toTranslateTitles, lang);
-        unique.filter(i => !i.translations[lang]).forEach((item, idx) => { item.translations[lang] = translatedTitles[idx] || item.originalTitle; });
+        if (toTranslateTitles.length > 0) {
+          const translatedTitles = await this.translateBatch(toTranslateTitles, lang);
+          unique.filter(i => !i.translations[lang]).forEach((item, idx) => { item.translations[lang] = translatedTitles[idx] || item.originalTitle; });
+        }
 
-        const toTranslateReports = unique.filter(i => item.aiReports.ko && !i.aiReports[lang]).map(i => i.aiReports.ko);
+        const toTranslateReports = unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang]))).map(i => i.aiReports.ko);
         if (toTranslateReports.length > 0) {
           const translatedReports = await this.translateBatch(toTranslateReports, lang);
-          unique.filter(i => item.aiReports.ko && !i.aiReports[lang]).forEach((item, idx) => { 
+          unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang]))).forEach((item, idx) => { 
             item.aiReports[lang] = translatedReports[idx] || this.getFallbackReport(item.originalTitle, lang, code); 
           });
         } else {
-          // Fill missing ones with fallback if KO was empty
+          // Final sanity fill
           unique.forEach(item => { if(!item.aiReports[lang]) item.aiReports[lang] = this.getFallbackReport(item.originalTitle, lang, code); });
         }
       }
