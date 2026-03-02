@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import admin from 'firebase-admin';
 import fetch from 'node-fetch';
 import { JSDOM } from 'jsdom';
@@ -32,22 +33,49 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
-  // Pre-generate the AI report during crawling with translated components
-  generateAIReport(item, lang, translatedNewsTitles, translatedSnippets) {
-    const newsTitles = translatedNewsTitles || [];
-    const snippets = translatedSnippets || [];
+  // Use Gemini 1.5 Flash to generate actual AI summaries
+  async generateAIReport(item, lang, newsTitles, snippets) {
     const title = item.translations?.[lang] || item.originalTitle;
+    const context = {
+      keyword: title,
+      news: newsTitles || [],
+      snippets: snippets || [],
+      lang: lang === 'ko' ? '한국어' : (lang === 'ja' ? '일본어' : '영어')
+    };
 
-    if (lang === 'ko') {
-      return `현재 '${title}' 키워드가 글로벌 트렌드로 급부상하고 있습니다. 관련 보도에 따르면 ${newsTitles.length > 0 ? newsTitles.join(', ') : '다양한 매체'} 등의 소식이 주목받고 있으며, ${snippets.length > 0 ? snippets.join(' ') : '관련 분야'} 등의 사회적 맥락이 확인됩니다. AI 분석 결과, 해당 이슈에 대한 대중의 관심도가 매우 높은 것으로 나타납니다.`;
-    } else if (lang === 'ja') {
-      const jaNews = newsTitles.length > 0 ? newsTitles.join('、') : '様々なメディア';
-      return `現在 '${title}' が世界的トレンドとして急上昇しています。${jaNews} などのニュースが注目されており、${snippets.length > 0 ? snippets.join(' ') : '関連分野'} といった背景が確認されます。AI分析の結果、この問題に対する国民の関心は非常に高いことがわかります。`;
-    } else {
-      const enNews = newsTitles.length > 0 ? newsTitles.join(', ') : 'various media outlets';
-      return `'${title}' is rapidly emerging as a global trend. News highlights include ${enNews}. Contextual signals show ${snippets.length > 0 ? snippets.join(' ') : 'relevant discussions'}. AI analysis indicates very high public interest in this issue.`;
+    try {
+      const { GoogleGenerativeAI } = require('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const prompt = `
+        You are a trend analysis expert. Analyze why the keyword '${context.keyword}' is currently trending globally.
+        Reference News: ${context.news.join(', ')}
+        Contextual Info: ${context.snippets.join(' ')}
+
+        Task: Write a concise (2-3 sentences) report explaining:
+        1. Why it's trending (event/news).
+        2. Public sentiment or significance.
+
+        Write the final report ONLY in ${context.lang}. Do not include any intros or outros.
+      `;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text().trim();
+    } catch (e) {
+      console.error(`Gemini summary failed for ${title}:`, e.message);
+      // Fallback to static template if AI fails
+      if (lang === 'ko') {
+        return `현재 '${title}' 키워드가 글로벌 트렌드로 급부상하고 있습니다. 관련 보도에 따르면 ${newsTitles.length > 0 ? newsTitles.join(', ') : '다양한 매체'} 등의 소식이 주목받고 있으며, AI 분석 결과 관심도가 매우 높습니다.`;
+      } else if (lang === 'ja') {
+        return `現在 '${title}' が世界的トレンドとして急上昇しています。${newsTitles.length > 0 ? newsTitles.join('、') : '様々なメディア'} などのニュース가注目されており、AI分析の結果関心が非常に高いことがわかります。`;
+      } else {
+        return `'${title}' is rapidly emerging as a global trend. News highlights include ${newsTitles.length > 0 ? newsTitles.join(', ') : 'various outlets'}. AI analysis indicates very high public interest.`;
+      }
     }
   }
+
 
 
   async getGoogleTrends(country) {
