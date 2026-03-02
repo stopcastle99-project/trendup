@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore } from 'firebase/firestore';
 
 // --- Background Animation (Three.js) ---
 class BackgroundScene {
