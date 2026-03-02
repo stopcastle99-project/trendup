@@ -1,22 +1,18 @@
-import 'dotenv/config';
-import admin from 'firebase-admin';
-import fetch from 'node-fetch';
-import { JSDOM } from 'jsdom';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const rawSecret = process.env.FIREBASE_SERVICE_ACCOUNT;
-if (!rawSecret) process.exit(1);
-const serviceAccount = JSON.parse(rawSecret.trim());
+import admin from "firebase-admin";
+import { JSDOM } from "jsdom";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-try {
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-} catch (e) { process.exit(1); }
-
+admin.initializeApp();
 const db = admin.firestore();
 
 class TrendUpdater {
   constructor() {
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    this.genAI = null;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+    }
   }
 
   async translateBatch(texts, targetLang) {
@@ -38,165 +34,160 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
-  // Use Gemini 1.5 Flash to generate actual AI summaries
-  async generateAIReport(item, lang, newsTitles, snippets, country) {
-    const title = item.translations?.[lang] || item.originalTitle;
+  // Generate a single report in Korean (Base Language)
+  async generateBaseAIReport(item, newsTitles, snippets, country) {
+    if (!this.genAI) return "";
+    
     const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
     const countryName = countryNames[country] || country;
+    const title = item.originalTitle;
 
-    const context = {
-      keyword: title,
-      news: newsTitles || [],
-      snippets: snippets || [],
-      lang: lang === 'ko' ? '한국어' : (lang === 'ja' ? '일본어' : '영어'),
-      targetCountry: countryName
-    };
+    const prompt = `
+      You are a professional trend analyst. Analyze why '${title}' is trending in ${countryName}.
+      Ref News: ${newsTitles.join(' / ')}
+      Context: ${snippets.join(' ')}
+      Task: Write a insightful 2-sentence summary in Korean (한국어). 
+      Synthesize information, explain the cause and public reaction. No bolding.
+    `;
 
-    try {
-      // Use explicit model name
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-      const prompt = `
-        You are a professional trend analyst. Analyze the trending keyword '${context.keyword}' in ${context.targetCountry}.
-        
-        Reference Materials:
-        - Related News: ${context.news.join(' / ')}
-        - Context Snippets: ${context.snippets.join(' ')}
-
-        Task: Write a insightful 2-3 sentence report in ${context.lang}.
-        1. Explain the specific event or reason causing this trend in ${context.targetCountry}.
-        2. Do NOT just list the news titles. Synthesize the information to provide insight.
-        3. Describe the public's reaction or the social significance.
-        4. Maintain a professional yet accessible tone.
-
-        Write ONLY the final analysis in ${context.lang}. No headers, no intro.
-      `;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim().replace(/\*\*/g, '');
-    } catch (e) {
-      console.error(`[Gemini Error] ${title} (${country}):`, e.message);
-      // Fallback
-      if (lang === 'ko') {
-        return `${countryName} 내에서 '${title}' 키워드가 관련 보도를 통해 큰 주목을 받고 있습니다. 상세 분석이 지연되고 있으나, 실시간 검색 및 소셜 미디어를 통해 대중의 높은 관심이 확인됩니다.`;
-      } else if (lang === 'ja') {
-        return `${countryName}内で'${title}'がニュースやSNSを通じて大きな注目を集めています. 現在、詳細なAI分析を生成中です.`;
-      } else {
-        return `'${title}' is drawing significant attention in ${countryName} through various news reports. Detailed AI analysis is being processed.`;
-      }
+    const modelsToTry = ["gemini-flash-latest", "gemini-pro-latest"];
+    for (const modelName of modelsToTry) {
+      try {
+        const model = this.genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim().replace(/\*\*/g, '');
+        if (text && text.length > 10) return text;
+      } catch (e) { console.warn(`AI Attempt ${modelName} failed:`, e.message); }
     }
+    return "";
   }
 
-  async getGoogleTrends(country) {
+  getFallbackReport(title, lang, country) {
+    const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
+    const countryName = countryNames[country] || country;
+    if (lang === 'ko') return `${countryName}에서 '${title}' 키워드가 관련 보도를 통해 주목받고 있습니다.`;
+    if (lang === 'ja') return `${countryName}内で'${title}'가注目を集めています.`;
+    return `'${title}' is drawing attention in ${countryName} through various news reports.`;
+  }
+
+  async getSupplementaryNews(keyword, countryCode) {
+    const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
+    const gl = countryCode;
+    let query = keyword;
+    if (countryCode === "KR") query += " 한국 뉴스";
+    else if (countryCode === "JP") query += " 日本 ニュース";
+    else query += " News";
     try {
-      const res = await fetch(`https://trends.google.com/trending/rss?geo=${country}`);
+      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
-      const { window } = new JSDOM(text, { contentType: "text/xml" });
-      const items = window.document.querySelectorAll("item");
-      return Array.from(items).map(item => {
-        const title = item.querySelector("title")?.textContent || "";
-        const traffic = (item.getElementsByTagName("ht:approx_traffic")[0] || item.getElementsByTagName("approx_traffic")[0])?.textContent || "N/A";
-        const newsItems = item.getElementsByTagName("ht:news_item") || item.getElementsByTagName("news_item");
-        const snippets = [];
-        const newsLinks = [];
-        for (let n of newsItems) {
-          const nt = n.getElementsByTagName("ht:news_item_title")[0]?.textContent;
-          const nu = n.getElementsByTagName("ht:news_item_url")[0]?.textContent;
-          const nsn = n.getElementsByTagName("ht:news_item_snippet")[0]?.textContent;
-          if (nt && nu) {
-            newsLinks.push({ title: nt, source: 'News', url: nu });
-            if (nsn) snippets.push(nsn.replace(/<[^>]*>?/gm, '').trim());
-          }
-        }
-        return { title, originalTitle: title, growth: traffic, snippets, newsLinks, source: 'Google' };
-      });
+      const dom = new JSDOM(text, { contentType: "text/xml" });
+      const items = dom.window.document.querySelectorAll("item");
+      return Array.from(items).slice(0, 3).map(item => ({
+        title: item.querySelector("title")?.textContent || "",
+        url: item.querySelector("link")?.textContent || "",
+        source: "Local News"
+      }));
     } catch (e) { return []; }
   }
 
-  async getPortalTrends(code) {
-    const url = code === 'KR' ? 'https://signal.bz/' : 'https://search.yahoo.co.jp/realtime/term';
+  async getYouTubeVideos(keyword, countryCode) {
+    const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
+    const gl = countryCode;
+    let query = keyword;
+    if (countryCode === "KR") query += " 한국 뉴스";
+    else if (countryCode === "JP") query += " 日本 ニュース";
+    else query += " News";
     try {
-      const res = await fetch(url);
+      const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&gl=${gl}&hl=${hl}`);
       const html = await res.text();
-      const dom = new JSDOM(html);
-      const items = code === 'KR' ? dom.window.document.querySelectorAll('.rank-item .text') : dom.window.document.querySelectorAll('.Trend_Trend__item__name');
-      return Array.from(items).slice(0, 10).map(el => ({ title: el.textContent.trim(), originalTitle: el.textContent.trim(), growth: 'Portal', source: code === 'KR' ? 'Signal' : 'Yahoo', newsLinks: [], snippets: [] }));
+      const regex = /"videoRenderer":\{"videoId":"([^"]+)","thumbnail":\{.*?"title":\{"runs":\[\{"text":"([^"]+)"\}\]/g;
+      const videos = [];
+      let match;
+      while ((match = regex.exec(html)) !== null && videos.length < 2) {
+        videos.push({ title: match[2], url: `https://www.youtube.com/watch?v=${match[1]}`, source: "Local YouTube" });
+      }
+      return videos;
     } catch (e) { return []; }
   }
 
   async updateAll() {
-    const countries = ['KR', 'JP', 'US'];
-    const langs = ['ko', 'ja', 'en'];
+    const countries = ["KR", "JP", "US"];
+    const langs = ["ko", "ja", "en"];
+    
     for (const code of countries) {
       console.log(`Updating ${code}...`);
-      let combined = code === 'US' ? await this.getGoogleTrends(code) : [...await this.getPortalTrends(code), ...await this.getGoogleTrends(code)];
+      const docRef = db.collection("trends").doc(code);
+      const oldDoc = await docRef.get();
+      const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
+      const prevReportMap = new Map(previousItems.map(i => [i.originalTitle, i.aiReports || {}]));
+
+      // 1. Fetch Trends
+      let url = code === "KR" ? "https://signal.bz/" : "https://search.yahoo.co.jp/realtime/term";
+      const resPortal = await fetch(url).then(r => r.text()).catch(() => "");
+      const domPortal = new JSDOM(resPortal);
+      const itemsPortal = code === "KR" ? Array.from(domPortal.window.document.querySelectorAll(".rank-item .text")).slice(0,10).map(el => el.textContent.trim()) : Array.from(domPortal.window.document.querySelectorAll(".Trend_Trend__item__name")).slice(0,10).map(el => el.textContent.trim());
       
-      const seen = new Set();
+      const rssGT = await fetch(`https://trends.google.com/trending/rss?geo=${code}`).then(r => r.text()).catch(() => "");
+      const domGT = new JSDOM(rssGT, { contentType: "text/xml" });
+      const itemsGT = Array.from(domGT.window.document.querySelectorAll("item")).map(item => {
+        const title = item.querySelector("title")?.textContent || "";
+        const snippets = Array.from(item.getElementsByTagName("ht:news_item_snippet")).map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim());
+        const news = Array.from(item.getElementsByTagName("ht:news_item_title")).map(t => t.textContent);
+        return { title, snippets, news };
+      });
+
       const unique = [];
-      for (const t of combined) {
-        const norm = t.originalTitle.toLowerCase().replace(/\s/g, '');
-        if (!seen.has(norm)) { 
-          seen.add(norm); 
-          unique.push(t); 
+      const seen = new Set();
+      const rawTitles = [...itemsPortal, ...itemsGT.map(i => i.title)];
+      for (let title of rawTitles) {
+        if (!seen.has(title.toLowerCase())) {
+          seen.add(title.toLowerCase());
+          const gtData = itemsGT.find(i => i.title === title) || { snippets: [], news: [] };
+          unique.push({ originalTitle: title, snippets: gtData.snippets, newsTitles: gtData.news, translations: {}, aiReports: {} });
         }
         if (unique.length >= 10) break;
       }
 
-      if (unique.length > 0) {
-        for (const lang of langs) {
-          console.log(`  Processing language: ${lang}`);
-          let allTexts = [];
-          const mapping = [];
-
-          unique.forEach((item, itemIdx) => {
-            allTexts.push(item.originalTitle);
-            mapping.push({ type: 'title', itemIdx });
-            const nts = item.newsLinks?.map(n => n.title).slice(0, 3) || [];
-            nts.forEach(nt => {
-              allTexts.push(nt);
-              mapping.push({ type: 'news', itemIdx });
-            });
-            const snips = item.snippets?.slice(0, 2) || [];
-            snips.forEach(snip => {
-              allTexts.push(snip);
-              mapping.push({ type: 'snippet', itemIdx });
-            });
-          });
-
-          const translatedAll = await this.translateBatch(allTexts, lang);
-          const tempTranslations = unique.map(() => ({ title: '', news: [], snippets: [] }));
-          translatedAll.forEach((txt, idx) => {
-            const m = mapping[idx];
-            if (m.type === 'title') tempTranslations[m.itemIdx].title = txt;
-            else if (m.type === 'news') tempTranslations[m.itemIdx].news.push(txt);
-            else if (m.type === 'snippet') tempTranslations[m.itemIdx].snippets.push(txt);
-          });
-
-          // CRITICAL FIX: Use for...of to await generateAIReport
-          for (let i = 0; i < unique.length; i++) {
-            const item = unique[i];
-            const trans = tempTranslations[i];
-            if (!item.translations) item.translations = {};
-            if (!item.aiReports) item.aiReports = {};
-            
-            item.translations[lang] = trans.title || item.originalTitle;
-            // Await the AI report generation
-            item.aiReports[lang] = await this.generateAIReport(item, lang, trans.news, trans.snippets, code);
-          }
+      // 2. Reuse or Generate Base AI Report
+      for (let item of unique) {
+        if (prevReportMap.has(item.originalTitle) && prevReportMap.get(item.originalTitle).ko) {
+          item.aiReports = prevReportMap.get(item.originalTitle);
+        } else {
+          // Generate new report in KO
+          const baseReport = await this.generateBaseAIReport(item, item.newsTitles, item.snippets, code);
+          item.aiReports.ko = baseReport;
+          await new Promise(r => setTimeout(r, 2000)); // Rate limit safety
         }
-        
-        const docRef = db.collection('trends').doc(code);
-        const oldDoc = await docRef.get();
-        await docRef.set({
-          items: unique,
-          previousItems: oldDoc.exists ? oldDoc.data().items || [] : [],
-          lastUpdated: admin.firestore.Timestamp.now()
-        });
       }
+
+      // 3. Batch Translate Titles and AI Reports
+      for (let lang of langs) {
+        const toTranslateTitles = unique.filter(i => !i.translations[lang]).map(i => i.originalTitle);
+        const translatedTitles = await this.translateBatch(toTranslateTitles, lang);
+        unique.filter(i => !i.translations[lang]).forEach((item, idx) => { item.translations[lang] = translatedTitles[idx] || item.originalTitle; });
+
+        const toTranslateReports = unique.filter(i => item.aiReports.ko && !i.aiReports[lang]).map(i => i.aiReports.ko);
+        if (toTranslateReports.length > 0) {
+          const translatedReports = await this.translateBatch(toTranslateReports, lang);
+          unique.filter(i => item.aiReports.ko && !i.aiReports[lang]).forEach((item, idx) => { 
+            item.aiReports[lang] = translatedReports[idx] || this.getFallbackReport(item.originalTitle, lang, code); 
+          });
+        } else {
+          // Fill missing ones with fallback if KO was empty
+          unique.forEach(item => { if(!item.aiReports[lang]) item.aiReports[lang] = this.getFallbackReport(item.originalTitle, lang, code); });
+        }
+      }
+
+      // 4. Final Meta (News/Videos)
+      for (let item of unique) {
+        item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
+        item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
+      }
+
+      await docRef.set({ items: unique, previousItems: previousItems, lastUpdated: admin.firestore.Timestamp.now() });
     }
-    console.log("Update completed successfully.");
-    process.exit(0);
   }
 }
+
 new TrendUpdater().updateAll();
