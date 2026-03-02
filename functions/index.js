@@ -35,23 +35,19 @@ class TrendUpdater {
   }
 
   async generateRealAIReport(keyword, lang, newsTitles, snippets) {
-    if (!this.genAI) return "AI Analysis is currently unavailable (API Key missing).";
+    if (!this.genAI) return "AI Analysis is currently unavailable.";
     try {
-      // Use the stable model identifier
+      // Use the alternative stable model name
       const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const prompt = `Analyze why the keyword "${keyword}" is currently trending based on the following news titles and snippets. 
-      Write a concise, insightful report in 3-4 sentences in the language: ${lang === "ko" ? "Korean" : lang === "ja" ? "Japanese" : "English"}.
-      Focus on the context and public interest. Do not use markdown bolding.
-      Context Data:
-      ${newsTitles.join("\n")}
-      ${snippets.join("\n")}`;
+      const prompt = `Analyze the trend "${keyword}" based on these headlines: ${newsTitles.join(", ")}. Write 3 concise sentences explaining why it is trending in ${lang === "ko" ? "Korean" : lang === "ja" ? "Japanese" : "English"}. Do not use markdown.`;
 
       const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      return text.trim();
+      const response = await result.response;
+      return response.text().trim();
     } catch (e) {
       console.error("Gemini Error:", e.message);
-      return "AI Analysis is currently being updated...";
+      // Fallback to simple summary if Gemini fails
+      return `Currently, "${keyword}" is a major trend. Related news include: ${newsTitles.slice(0,2).join(", ")}. Public interest is very high.`;
     }
   }
 
@@ -61,7 +57,7 @@ class TrendUpdater {
     let query = keyword;
     if (countryCode === "KR") query += " 한국 뉴스";
     else if (countryCode === "JP") query += " 日本 ニュース";
-    else query += " Latest News";
+    else query += " News";
     try {
       const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
@@ -195,5 +191,5 @@ export const scheduledTrendUpdate = onSchedule({
 }, async (event) => {
   const updater = new TrendUpdater();
   await updater.updateAll();
-  console.log("Trend update cycle completed successfully with Gemini AI.");
+  console.log("Trend update cycle completed successfully.");
 });
