@@ -202,7 +202,7 @@ class App {
   async startAsyncTasks() {
     try {
       const app = initializeApp(firebaseConfig);
-      this.db = getFirestore(app);
+      this.db = initializeFirestore(app, { experimentalForceLongPolling: true });
       this.renderNavs();
       await this.update();
     } catch (e) { console.error("Firebase init failed:", e.message); }

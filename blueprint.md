@@ -51,6 +51,8 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Refine YouTube search queries to target news videos by appending local news keywords (v2.2.4).
 - [x] Increment version to v2.2.4.
 - [x] Apply strict country/language filters (gl & hl) to YouTube and Google News searches (v2.2.4).
-- [x] Force local relevance for English keywords by appending country names to search queries (v2.3.0).
-- [x] Integrate Google Gemini 1.5 Flash API for real AI trend analysis (v2.3.0).
+- [x] Force local relevance for English keywords by appending country names to search queries (v2.3.1).
+- [x] Integrate Google Gemini 1.5 Flash API for real AI trend analysis (v2.3.1).
 - [x] Implement sequential processing with delays to respect Gemini Free Tier RPM limits.
+- [x] Force Firestore Long Polling to resolve connectivity issues (v2.3.1).
+- [x] Increment version to v2.3.1.
