@@ -64,7 +64,7 @@ let i18n = {
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 소중히 다루며 관련 법령을 준수합니다. (v2.1.5)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 소중히 다루며 관련 법령을 준수합니다. (v2.1.6)</p>
           <h3>1. 수집 항목 및 방법</h3>
           <p>회원가입 없이 이용 가능하며 접속 IP, 쿠키, 브라우저 정보 등이 자동 수집될 수 있습니다.</p>
           <h3>2. 구글 애드센스 (Google AdSense)</h3>
@@ -81,8 +81,8 @@ let i18n = {
       }
     }
   },
-  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文", menu: { about: "TrendUpについて", privacy: "個人情報保護方針", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト案内" }, pages: { about: { title: "TrendUp", content: `<p>グローバルトレンドプラットフォーム</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.5</p>` }, terms: { title: "Terms", content: `<p>利用規約</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } },
-  en: { title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original", menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, pages: { about: { title: "TrendUp", content: `<p>Global trend intelligence.</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.5</p>` }, terms: { title: "Terms", content: `<p>Terms</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } }
+  ja: { title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", original: "原文", menu: { about: "TrendUpについて", privacy: "個人情報保護方針", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト案内" }, pages: { about: { title: "TrendUp", content: `<p>グローバルトレンドプラットフォーム</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.6</p>` }, terms: { title: "Terms", content: `<p>利用規約</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } },
+  en: { title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", original: "Original", menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, pages: { about: { title: "TrendUp", content: `<p>Global trend intelligence.</p>` }, privacy: { title: "Privacy", content: `<p>v2.1.6</p>` }, terms: { title: "Terms", content: `<p>Terms</p>` }, contact: { title: "Contact", content: `<p>help@trendup.ai</p>` } } }
 };
 
 const firebaseConfig = { projectId: "test-76cdd" };
@@ -166,7 +166,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.1.5");
+    console.log("App Init: v2.1.6");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -212,7 +212,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.1.5)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.1.6)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
