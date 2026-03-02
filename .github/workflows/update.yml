@@ -1,12 +1,12 @@
 name: Scheduled Trend Update
 
 on:
-  schedule:
-    - cron: '*/10 * * * *'
+  # schedule:
+  #   - cron: '*/10 * * * *'
   workflow_dispatch: # 수동 실행 버튼 추가
 
 jobs:
-  update:
+...
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code

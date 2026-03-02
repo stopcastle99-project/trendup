@@ -10,7 +10,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Data Integrity:** Implemented batch translation with separators to prevent data tangling between languages.
 - **Persistence Optimization:** Added `localStorage` to preserve user country selection across page refreshes.
 - **Translation Quality:** Optimized AI report generation by translating news titles and snippets into the target language, ensuring a fully localized experience.
-- **Version Finalization:** Application finalized at **v2.1.8**.
+- **Version Finalization:** Application finalized at **v2.1.9**.
 
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -31,11 +31,14 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Final stabilization and removal of unstable scrapers (v1.8.4).
 - [x] Finalize project with Security Rules documentation (v1.8.5).
 - [x] Implement persistent country selection using `localStorage` (v2.1.4).
-- [x] Fix AI report translation issues for news titles and snippets (v2.1.8).
+- [x] Fix AI report translation issues for news titles and snippets (v2.1.9).
 - [x] Push all changes to GitHub.
-- [x] Update localization for Google AdSense compliance in English and Japanese (v2.1.8).
-- [x] Increment version to v2.1.8.
-- [x] Enrich Korean localization for Google AdSense compliance (v2.1.8).
-- [x] Increment version to v2.1.8.
-- [x] Simplify 'sun' icon SVG in theme menu (v2.1.8).
-- [x] Increment version to v2.1.8.
+- [x] Update localization for Google AdSense compliance in English and Japanese (v2.1.9).
+- [x] Increment version to v2.1.9.
+- [x] Enrich Korean localization for Google AdSense compliance (v2.1.9).
+- [x] Increment version to v2.1.9.
+- [x] Simplify 'sun' icon SVG in theme menu (v2.1.9).
+- [x] Increment version to v2.1.9.
+- [x] Migrate trend update logic from GitHub Actions to Firebase Cloud Functions (Scheduled Functions) (v2.1.9).
+- [x] Disable GitHub Actions cron schedule.
+- [x] Increment version to v2.1.9.
