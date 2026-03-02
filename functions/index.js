@@ -56,15 +56,20 @@ class TrendUpdater {
     } catch (e) { return []; }
   }
 
-  async getYouTubeVideos(keyword) {
+  async getYouTubeVideos(keyword, countryCode) {
+    let query = keyword;
+    if (countryCode === "KR") query += " 뉴스";
+    else if (countryCode === "JP") query += " ニュース";
+    else query += " News";
+
     try {
-      const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(keyword)}`);
+      const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`);
       const html = await res.text();
       const regex = /"videoRenderer":\{"videoId":"([^"]+)","thumbnail":\{.*?"title":\{"runs":\[\{"text":"([^"]+)"\}\]/g;
       const videos = [];
       let match;
       while ((match = regex.exec(html)) !== null && videos.length < 2) {
-        videos.push({ title: match[2], url: `https://www.youtube.com/watch?v=${match[1]}`, source: "YouTube" });
+        videos.push({ title: match[2], url: `https://www.youtube.com/watch?v=${match[1]}`, source: "YouTube News" });
       }
       return videos;
     } catch (e) { return []; }
@@ -125,7 +130,7 @@ class TrendUpdater {
           if (!item.newsLinks || item.newsLinks.length === 0) {
             item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
           }
-          item.videoLinks = await this.getYouTubeVideos(item.originalTitle);
+          item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
         }
         for (const lang of langs) {
           let allTexts = [];
