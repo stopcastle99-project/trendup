@@ -34,33 +34,56 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
-  async generateRealAIReport(keyword, lang, newsTitles, snippets) {
-    if (!this.genAI) return this.getFallbackReport(keyword, lang, newsTitles);
-    try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const prompt = `Analyze the trend "${keyword}" based on these headlines: ${newsTitles.join(", ")}. 
-      Write a concise, natural 3-sentence summary in ${lang === "ko" ? "pure Korean (no English mixed)" : lang === "ja" ? "Japanese" : "English"}. 
-      Explain why it is trending and the current context. Do not use markdown bolding.`;
+  async generateRealAIReport(item, lang, newsTitles, snippets, country) {
+    if (!this.genAI) return this.getFallbackReport(item.originalTitle, lang, newsTitles, country);
+    
+    const title = item.translations?.[lang] || item.originalTitle;
+    const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
+    const countryName = countryNames[country] || country;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      let analysis = response.text().trim();
-      if (!analysis || analysis.length < 10) throw new Error("Empty response");
-      return analysis;
-    } catch (e) {
-      console.error("Gemini Error:", e.message);
-      return this.getFallbackReport(keyword, lang, newsTitles);
+    const prompt = `
+      You are a professional trend analyst. Analyze the trending keyword '${title}' in ${countryName}.
+      
+      Reference Materials:
+      - Related News: ${newsTitles.join(' / ')}
+      - Context Snippets: ${snippets.join(' ')}
+
+      Task: Write a insightful 2-3 sentence report in ${lang === 'ko' ? 'Korean' : (lang === 'ja' ? 'Japanese' : 'English')}.
+      1. Explain why this is trending specifically in ${countryName}.
+      2. Synthesize the news to provide context. Do not just list titles.
+      3. Describe public reaction or social significance.
+      4. Maintain a professional, natural tone. No markdown bolding.
+
+      Write ONLY the final analysis. No headers, no intro.
+    `;
+
+    // Try models that are proven to work with this key
+    const modelsToTry = ["gemini-flash-latest", "gemini-pro-latest", "gemini-2.0-flash-exp"];
+    
+    for (const modelName of modelsToTry) {
+      try {
+        const model = this.genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const analysis = response.text().trim().replace(/\*\*/g, '');
+        if (analysis && analysis.length > 10) return analysis;
+      } catch (e) {
+        console.warn(`Attempt with ${modelName} failed:`, e.message);
+      }
     }
+
+    return this.getFallbackReport(title, lang, newsTitles, country);
   }
 
-  getFallbackReport(keyword, lang, newsTitles) {
-    const titles = newsTitles.slice(0, 2).join(", ");
-    if (lang === "ko") {
-      return `현재 "${keyword}" 키워드가 한국에서 활발히 논의되고 있습니다. 관련 소식으로는 ${titles || "다양한 실시간 이슈"} 등이 있으며, 사회적 관심도가 매우 높은 상태입니다.`;
-    } else if (lang === "ja") {
-      return `現在、「${keyword}」が日本で大きな注目を集めています。主なニュースには${titles || "様々な社会情勢"}などがあり、関心が高まっています。`;
+  getFallbackReport(title, lang, newsTitles, country) {
+    const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
+    const countryName = countryNames[country] || country;
+    if (lang === 'ko') {
+      return `${countryName} 내에서 '${title}' 키워드가 관련 보도를 통해 큰 주목을 받고 있습니다. 실시간 검색 및 소셜 미디어를 통해 대중의 높은 관심이 확인됩니다.`;
+    } else if (lang === 'ja') {
+      return `${countryName}内で'${title}'がニュースやSNSを通じて大きな注目を集めています.`;
     } else {
-      return `"${keyword}" is currently a major trend. Key highlights include ${titles || "various updates"}, drawing significant public interest.`;
+      return `'${title}' is drawing significant attention in ${countryName} through various news reports and social discussions.`;
     }
   }
 
@@ -160,7 +183,9 @@ class TrendUpdater {
           if (localNews && localNews.length > 0) item.newsLinks = localNews;
           item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
         }
+        
         for (const lang of langs) {
+          console.log(`  Language: ${lang}`);
           let allTexts = [];
           const mapping = [];
           unique.forEach((item, itemIdx) => {
@@ -179,14 +204,15 @@ class TrendUpdater {
             else if (m.type === "news") tempTranslations[m.itemIdx].news.push(txt);
             else if (m.type === "snippet") tempTranslations[m.itemIdx].snippets.push(txt);
           });
+
           for (let i = 0; i < unique.length; i++) {
             const item = unique[i];
             const trans = tempTranslations[i];
             if (!item.translations) item.translations = {};
             if (!item.aiReports) item.aiReports = {};
             item.translations[lang] = trans.title || item.originalTitle;
-            item.aiReports[lang] = await this.generateRealAIReport(item.originalTitle, lang, trans.news, trans.snippets);
-            await new Promise(res => setTimeout(res, 4000));
+            item.aiReports[lang] = await this.generateRealAIReport(item, lang, trans.news, trans.snippets, code);
+            await new Promise(res => setTimeout(res, 2000));
           }
         }
         const docRef = db.collection("trends").doc(code);
