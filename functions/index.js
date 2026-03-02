@@ -33,7 +33,7 @@ class TrendUpdater {
       return `현재 "${title}" 키워드가 글로벌 트렌드로 급부상하고 있습니다. 관련 보도에 따르면 ${newsTitles.length > 0 ? newsTitles.join(", ") : "다양한 매체"} 등의 소식이 주목받고 있으며, ${snippets.length > 0 ? snippets.join(" ") : "관련 분야"} 등의 사회적 맥락이 확인됩니다. AI 분석 결과, 해당 이슈에 대한 대중의 관심도가 매우 높은 것으로 나타납니다.`;
     } else if (lang === "ja") {
       const jaNews = newsTitles.length > 0 ? newsTitles.join("、") : "様々なメディア";
-      return `現在 "${title}" が世界的トレンドとして急上昇しています。${jaNews} などのニュースが注目されており, ${snippets.length > 0 ? snippets.join(" ") : "関連分野"} といった背景이 확인됩니다. AI分析の結果, この問題に対する国民の関心は非常に高いことがわかります。`;
+      return `現在 "${title}" が世界的トレンドとして急上昇しています。${jaNews} などのニュースが注目されており, ${snippets.length > 0 ? snippets.join(" ") : "関連分野"} といった背景이 확인됩니다. AI分析の結果, この問題に対する国民の関心は非常に高いことがわかります.`;
     } else {
       const enNews = newsTitles.length > 0 ? newsTitles.join(", ") : "various media outlets";
       return `"${title}" is rapidly emerging as a global trend. News highlights include ${enNews}. Contextual signals show ${snippets.length > 0 ? snippets.join(" ") : "relevant discussions"}. AI analysis indicates very high public interest in this issue.`;
@@ -43,15 +43,20 @@ class TrendUpdater {
   async getSupplementaryNews(keyword, countryCode) {
     const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
     const gl = countryCode;
+    let query = keyword;
+    if (countryCode === "KR") query += " 한국 뉴스";
+    else if (countryCode === "JP") query += " 日本 ニュース";
+    else query += " Latest News";
+
     try {
-      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(keyword)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
+      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
       const dom = new JSDOM(text, { contentType: "text/xml" });
       const items = dom.window.document.querySelectorAll("item");
       return Array.from(items).slice(0, 3).map(item => ({
         title: item.querySelector("title")?.textContent || "",
         url: item.querySelector("link")?.textContent || "",
-        source: "Google News"
+        source: "Local News"
       }));
     } catch (e) { return []; }
   }
@@ -60,8 +65,8 @@ class TrendUpdater {
     const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
     const gl = countryCode;
     let query = keyword;
-    if (countryCode === "KR") query += " 뉴스";
-    else if (countryCode === "JP") query += " ニュース";
+    if (countryCode === "KR") query += " 한국 뉴스";
+    else if (countryCode === "JP") query += " 日本 ニュース";
     else query += " News";
 
     try {
@@ -71,7 +76,7 @@ class TrendUpdater {
       const videos = [];
       let match;
       while ((match = regex.exec(html)) !== null && videos.length < 2) {
-        videos.push({ title: match[2], url: `https://www.youtube.com/watch?v=${match[1]}`, source: "YouTube News" });
+        videos.push({ title: match[2], url: `https://www.youtube.com/watch?v=${match[1]}`, source: "Local YouTube" });
       }
       return videos;
     } catch (e) { return []; }
@@ -129,9 +134,10 @@ class TrendUpdater {
       }
       if (unique.length > 0) {
         for (let item of unique) {
-          if (!item.newsLinks || item.newsLinks.length === 0) {
-            item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
-          }
+          // Force fetch supplementary news from local sources even if newsLinks exist, to ensure local context for English keywords
+          const localNews = await this.getSupplementaryNews(item.originalTitle, code);
+          if (localNews && localNews.length > 0) item.newsLinks = localNews;
+          
           item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
         }
         for (const lang of langs) {
