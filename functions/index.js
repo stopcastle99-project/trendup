@@ -211,11 +211,11 @@ class TrendUpdater {
 }
 
 export const scheduledTrendUpdate = onSchedule({
-  schedule: "every 30 minutes", 
+  schedule: "every 10 minutes", 
   secrets: ["GEMINI_API_KEY"],
   timeoutSeconds: 540
 }, async (event) => {
   const updater = new TrendUpdater();
   await updater.updateAll();
-  console.log("Smart refined trend update cycle completed.");
+  console.log("Real-time refined trend update cycle completed.");
 });
