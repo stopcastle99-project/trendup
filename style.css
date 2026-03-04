@@ -447,13 +447,18 @@
   /* Cookie Banner */
   .cookie-banner {
     position: fixed; bottom: 2rem; left: 2rem;
-    width: auto; max-width: 400px; background: var(--surface);
-    border: 1px solid var(--border); padding: 1.25rem; border-radius: var(--radius-lg);
+    width: calc(100% - 4rem); max-width: 350px; background: var(--surface);
+    border: 1px solid var(--border); padding: 1.5rem; border-radius: var(--radius-lg);
     box-shadow: var(--shadow-hover); z-index: 9999;
-    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    display: flex; flex-direction: column; gap: 1.25rem;
   }
-  .cookie-banner p { font-size: 0.8rem; font-weight: 500; line-height: 1.4; color: var(--text); }
-  .btn-sm { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 100px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
+  .cookie-banner p { font-size: 0.85rem; font-weight: 500; line-height: 1.5; color: var(--text); }
+  .btn-sm { 
+    padding: 0.7rem 1.2rem; background: var(--primary); color: white; border: none; 
+    border-radius: 100px; font-weight: 700; cursor: pointer; font-size: 0.8rem;
+    align-self: flex-end; transition: transform 0.2s;
+  }
+  .btn-sm:active { transform: scale(0.95); }
 
   /* Info Modals */
   trend-modal, trend-list { display: block; }
