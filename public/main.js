@@ -31,7 +31,7 @@ let i18n = {
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 소중히 여기며, 관련 법령을 준수합니다. (v2.5.1)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 소중히 여기며, 관련 법령을 준수합니다. (v2.5.2)</p>
           <h3>1. 개인정보 수집 및 이용</h3>
           <p>본 서비스는 별도의 회원가입 없이 모든 기능을 이용할 수 있습니다. 다만, 서비스 이용 과정에서 접속 IP, 쿠키, 브라우저 정보 등이 서비스 최적화 및 광고 게재를 위해 자동 수집될 수 있습니다.</p>
           <h3>2. 구글 애드센스 및 쿠키 사용</h3>
@@ -64,51 +64,65 @@ let i18n = {
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
     labels: { trends: "国:", language: "言語:" },
-    menu: { about: "TrendUpについて", privacy: "個人情報保護方針", terms: "利用規約", contact: "お問い合わせ", siteInfo: "사이트 안내" }, 
+    menu: { about: "TrendUpについて", privacy: "プライバシーポリシー", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト情報" }, 
     pages: { 
       about: { 
         title: "TrendUpについて", 
         content: `
-          <h2 style="margin-bottom:1.5rem;">世界を読む、最速のインテリジェンス, TrendUp</h2>
-          <p style="margin-bottom:1rem; line-height:1.8;">TrendUpは、高度なビッグデータ処理技術と最新のAIエンジンを融合させ、日本、韓国、アメリカなどの主要国における検索トレンドをリアルタイムで分析・可視化する次世代のデータ인텔리전스플랫폼입니다.</p>
+          <h2 style="margin-bottom:1.5rem;">世界を読む、最速のインテリジェンス TrendUp</h2>
+          <p style="margin-bottom:1rem; line-height:1.8;">TrendUpは、高度なビッグデータ処理技術と最新のAIエンジンを融合させ、日本、米国、韓国などの主要国における検索トレンドをリアルタイムで分析・可視化する次世代のデータインテリジェンスプラットフォームです。</p>
           <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">主な特徴</h3>
           <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
-            <li><strong>リアルタイム・데이터 파이프라인：</strong>世界中の信頼性の高いトレンド 데이터를 10분 간격으로 수집・정규화하여, 항상 최신 정보를 제공합니다.</li>
-            <li><strong>AIによる문맥 분석：</strong>単なるキーワード의 나열을 넘어, AI가 해당 트렌드의 발생 배경과 맥락을 파악하여 사용자의 언어로 요약 리포트를 생성합니다.</li>
-            <li><strong>グローバルインサイト：</strong>国別のトレンド比較を通じて、地域的な特色や世界共通의 관심사를 한눈에 파악할 수 있습니다.</li>
+            <li><strong>リアルタイム・データパイプライン：</strong>世界中の信頼性の高いトレンドデータを10分間隔で収集・正規化し、常に最新の情報を提供します。</li>
+            <li><strong>AIによる文脈分析：</strong>単なるキーワードの羅列を超え、AIがトレンドの背景と文脈を把握して、ユーザーの言語で最適化された要約レポートを生成します。</li>
+            <li><strong>グローバルインサイト：</strong>国別のトレンド比較を通じて、地域的な特色や世界共通の関心事を一目で把握し、世の中の動向を先読みできます。</li>
           </ul>
         ` 
       }, 
       privacy: { 
-        title: "個人情報保護方針 (Privacy Policy)", 
+        title: "プライバシーポリシー (Privacy Policy)", 
         content: `
-          <h2 style="margin-bottom:1.5rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.5.1)</p>
-          <h3 style="margin:1.2rem 0 0.5rem;">1. 収集する情報および収集方法</h3>
-          <p>当サービスは、会員登録なしで全ての機能を利用可能です。ただし、サービスの利用過程で、IPアドレス、クッキー（Cookie）、ブラウザの種類、アクセス日時などの情報が自動的に収集される場合があります。</p>
-          <h3 style="margin:1.2rem 0 0.5rem;">2. 情報の利用目的</h3>
-          <p>収集した情報は、サービスの提供および改善、利用状況の分析、広告の配信および最適化のために利用されます。</p>
-          <h3 style="margin:1.2rem 0 0.5rem;">3. 広告およびクッキーの利用</h3>
-          <p>当サイトはGoogleアドセンスを利用しています。Googleはクッキーを使用して、ユーザーの訪問履歴に基づいた適切な広告を配信します。詳細はGoogleのポリシーをご確認ください。</p>
+          <h2 style="margin-bottom:1.5rem;">プライバシーポリシー</h2>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.5.2)</p>
+          <h3 style="margin:1.2rem 0 0.5rem;">1. 個人情報の収集および収集方法</h3>
+          <p>当サービスは、会員登録なしで全ての機能を利用可能です。ただし、サービスの利用過程で、IPアドレス、クッキー（Cookie）、ブラウザの種類、アクセス日時などの情報がアクセスログとして自動的に収集される場合があります。</p>
+          <h3 style="margin:1.2rem 0 0.5rem;">2. 広告の配信について（Googleアドセンス）</h3>
+          <p>当サイトは、第三者配信の広告サービス「Googleアドセンス」を利用しています。Googleなどの広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、クッキー（Cookie）を使用することがあります。これには、ユーザーが当サイトや他のサイトに過去にアクセスした際の情報が含まれますが、氏名、住所、メールアドレス、電話番号など個人を特定する情報は含まれません。</p>
+          <p>ユーザーは、Googleの<a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--primary);">広告設定</a>でパーソナライズ広告を無効にできます。また、<a href="https://www.aboutads.info/" target="_blank" style="color:var(--primary);">www.aboutads.info</a>にアクセスすることで、第三者配信事業者のクッキーを無効にすることもできます。</p>
+          <h3 style="margin:1.2rem 0 0.5rem;">3. アクセス解析ツールについて</h3>
+          <p>当サイトでは、Googleによるアクセス解析ツール「Googleアナリティクス」を利用しています。このGoogleアナリティクスはトラフィックデータの収集のためにクッキーを使用しています。このトラフィックデータは匿名で収集されており、個人を特定するものではありません。</p>
+          <h3 style="margin:1.2rem 0 0.5rem;">4. 個人情報の利用目的</h3>
+          <p>収集した情報は、サービスの運営改善、利用状況の分析、および不正利用の防止のために利用されます。</p>
         ` 
       }, 
       terms: { 
-        title: "サービス利用規約 (Terms of Service)", 
+        title: "利用規約 (Terms of Service)", 
         content: `
-          <h2 style="margin-bottom:1.5rem;">サービス利用規約</h2>
-          <p style="margin-bottom:1rem;">本規約は、TrendUp（以下「当サービス」）の利用に関する条件を定めるものです。</p>
+          <h2 style="margin-bottom:1.5rem;">利用規約</h2>
+          <p style="margin-bottom:1rem;">この規約（以下「本規約」）は、TrendUp（以下「当サービス」）が提供するコンテンツの利用条件を定めるものです。</p>
           <h3 style="margin:1.2rem 0 0.5rem;">1. 免責事項</h3>
-          <p>当サービスで提供されるデータは参考用であり、正確性や完全性を保証するものではありません。情報の利用により生じた結果について、当サービスは一切の責任を負いません。</p>
+          <p>当サービスで提供される全てのトレンドデータおよびAIによる分析内容は、公開されている情報を基に自動生成されたものであり、その正確性、完全性、妥当性を保証するものではありません。情報の利用によって生じた損害や不利益について、当サービスは一切の責任を負いません。重要な意思決定の根拠として使用される際は、自己責任において行ってください。</p>
           <h3 style="margin:1.2rem 0 0.5rem;">2. 禁止事項</h3>
-          <p>サーバーへの過度な負荷、不正なスク레이핑, 運営を妨害する行為を固く禁じます。</p>
+          <p>ユーザーは、以下の行為を行ってはなりません。</p>
+          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc;">
+            <li>サーバーへの過度な負荷をかける行為</li>
+            <li>スクレイピングやクローラー、自動化ツールを用いたデータの無断取得</li>
+            <li>当サービスの運営を妨害する行為</li>
+            <li>その他、法令または公序良俗に反する行為</li>
+          </ul>
+          <h3 style="margin:1.2rem 0 0.5rem;">3. 知的財産権</h3>
+          <p>当サービスに含まれるロゴ、デザイン、プログラム等の知的財産権は、当サービスまたは正当な権利者に帰属します。</p>
+          <h3 style="margin:1.2rem 0 0.5rem;">4. 規約の変更</h3>
+          <p>当サービスは、必要に応じて本規約を変更することがあります。変更後の規約は、本サイト上に掲示した時点から効力を生じるものとします。</p>
         ` 
       }, 
       contact: { 
         title: "お問い合わせ (Contact)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">カスタマーサポート</h2>
-          <p style="margin-bottom:1rem;">서비스 관련 제안이나 문의사항은 아래 이메일로 연락 주시기 바랍니다.</p>
+          <p style="margin-bottom:1rem;">TrendUpに関するご意見、ご要望、ビジネスに関するお問い合わせは、以下のメールアドレスまでご連絡ください。</p>
           <p><strong>Email:</strong> <a href="mailto:help@trendup.ai" style="color:var(--primary);">help@trendup.ai</a></p>
+          <p style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted);">※ お問い合わせ内容によっては、回答にお時間をいただく場合や回答を差し控えさせていただく場合がございます。</p>
         ` 
       },
       cookie: {
@@ -139,7 +153,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.5.1)</p>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.5.2)</p>
           <h3>1. Information Collection</h3>
           <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
           <h3>2. Advertising and Cookies (Google AdSense)</h3>
@@ -254,7 +268,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.5.1");
+    console.log("App Init: v2.5.2");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -300,7 +314,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.5.1)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.5.2)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
