@@ -184,23 +184,26 @@ class TrendUpdater {
         const toTranslateTitles = unique.filter(i => !i.translations[lang]).map(i => i.originalTitle);
         if (toTranslateTitles.length > 0) {
           const translatedTitles = await this.translateBatch(toTranslateTitles, lang);
-          unique.filter(i => !i.translations[lang]).forEach((item, idx) => { item.translations[lang] = translatedTitles[idx] || item.originalTitle; });
+          unique.filter(i => !i.translations[lang]).forEach((item, idx) => { 
+            item.translations[lang] = (translatedTitles && translatedTitles[idx]) ? translatedTitles[idx] : item.originalTitle; 
+          });
         }
 
         const toTranslateReports = unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang]))).map(i => i.aiReports.ko);
         if (toTranslateReports.length > 0) {
           const translatedReports = await this.translateBatch(toTranslateReports, lang);
           unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang]))).forEach((item, idx) => { 
-            item.aiReports[lang] = translatedReports[idx] || this.getFallbackReport(item.originalTitle, lang, code); 
+            item.aiReports[lang] = (translatedReports && translatedReports[idx]) ? translatedReports[idx] : this.getFallbackReport(item.originalTitle, lang, code); 
           });
-        } else {
-          // Final sanity fill
-          unique.forEach(item => { if(!item.aiReports[lang]) item.aiReports[lang] = this.getFallbackReport(item.originalTitle, lang, code); });
         }
       }
 
-      // 4. Final Meta (News/Videos)
+      // 4. Final Sanity Check: Ensure all keys exist to prevent frontend failures
       for (let item of unique) {
+        for (let l of langs) {
+          if (!item.translations[l]) item.translations[l] = item.originalTitle;
+          if (!item.aiReports[l]) item.aiReports[l] = this.getFallbackReport(item.originalTitle, l, code);
+        }
         item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
         item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
       }
