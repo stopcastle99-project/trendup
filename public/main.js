@@ -95,14 +95,14 @@ let i18n = {
         title: "個人情報保護方針 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護에 노력합니다。(v2.4.15)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めます。(v2.4.15)</p>
           <h3>1. 情報の収集について</h3>
           <p>当サービスでは、ユーザー登録なしで全ての機能を利用可能ですが、サービス最適化や広告配信のために、IPアドレス、クッキー（Cookie）、ブラウザ情報、アクセスログなどが自動的に収集される場合があります。</p>
           <h3>2. 広告の配信について（Googleアドセンス）</h3>
           <p>当サイトは、第三者配信の広告サービス「Googleアドセンス」を利用しています。Googleはクッキー（Cookie）を使用して、ユーザーが当サイトや他のサイトに過去にアクセスした際の情報に基づき、適切な広告を配信します。</p>
           <p>ユーザーは、Googleの <a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--primary);">広告設定</a> でパーソナライズ広告を無効にできます。詳細はGoogleの <a href="https://policies.google.com/technologies/ads" target="_blank" style="color:var(--primary);">ポリシーと規約</a> をご確認ください。</p>
           <h3>3. 個人情報の管理</h3>
-          <p>収集された情報はサービスの改善および統計分析の目的でのみ使用され, 法令に定める場合を除き, ユーザーの同意なく第三者に提供されることはありません。</p>
+          <p>収集された情報はサービスの改善および統計分析の目的でのみ使用され、法令に定める場合を除き、ユーザーの同意なく第三者に提供されることはありません。</p>
         ` 
       }, 
       terms: { 
@@ -113,9 +113,9 @@ let i18n = {
           <h3>1. 情報の正確性に関する免責事項</h3>
           <p>当サービスが提供する全てのトレンドデータおよびAI分析内容は、公開情報を基に自動生成されたものです。情報のリアルタイム性、正確性、完全性を保証するものではなく、投資判断や重要な意思決定の根拠として使用することには適していません。情報の利用によって生じた結果について、当サービスは一切の責任を負いません。</p>
           <h3>2. 禁止事項</h3>
-          <p>当サービスのサーバーに過度な負荷をかける行為や、スク레이ピング、ボットなどの不正な方法によるデータの無断取得を厳禁します。</p>
+          <p>当サービスのサーバーに過度な負荷をかける行為や、スクレイピング、ボットなどの不正な方法によるデータの無断取得を厳禁します。</p>
           <h3>3. 規約の変更</h3>
-          <p>当サービスは運営上の必要に応じ, 関連法令に抵촉되지 않는 범위에서 본 규약을 언제든지 변경할 수 있는 것으로 합니다。</p>
+          <p>当サービスは運営上の必要に応じ、関連法令に抵触しない範囲で本規約をいつでも変更できるものとします。</p>
         ` 
       }, 
       contact: { 
@@ -218,9 +218,12 @@ class TrendService {
 
 class TrendList extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
-  set data({ trends, lang }) { this.render(trends, lang); }
-  render(trends, lang) {
+  set data({ trends, lang, country }) { this.render(trends, lang, country); }
+  render(trends, lang, country) {
     const t = i18n[lang] || i18n.en;
+    const countryToLang = { 'KR': 'ko', 'JP': 'ja', 'US': 'en' };
+    const nativeLang = countryToLang[country];
+
     const getTrendIcon = (dir) => {
       if (dir === 'up') return '<span style="color: #ff4d4d; font-weight: 900; font-size: 0.9rem;">↑</span>';
       if (dir === 'down') return '<span style="color: #4d79ff; font-weight: 900; font-size: 0.9rem;">↓</span>';
@@ -230,8 +233,9 @@ class TrendList extends HTMLElement {
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translated-subtitle { font-size: 0.75rem; color: var(--primary); opacity: 0.85; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
         const mainTitle = item.originalTitle || item.title;
-        const subTitle = item.translatedSubTitle || "";
-        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${subTitle ? `<span class="translated-subtitle">✨ ${subTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
+        const translatedTitle = item.translations?.[lang];
+        const showSub = (lang !== nativeLang) && translatedTitle && (translatedTitle.toLowerCase() !== mainTitle.toLowerCase());
+        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${showSub ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = () => {
