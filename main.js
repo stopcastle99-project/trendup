@@ -18,12 +18,14 @@ let i18n = {
         title: "TrendUp: 글로벌 트렌드 인텔리전스", 
         content: `
           <h2 style="margin-bottom:1.5rem;">세상을 읽는 가장 빠른 인텔리전스, TrendUp</h2>
-          <p style="margin-bottom:1rem; line-height:1.8;">TrendUp은 고도의 빅데이터 처리 기술과 최신 AI 엔진을 융합하여 한국, 일본, 미국 등 주요 국가의 검색 트렌드를 실시간으로 분석하고 시각화하는 차세대 데이터 인텔리전스 플랫폼입니다.</p>
-          <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">주요 특징</h3>
-          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
-            <li><strong>실시간 데이터 파이프라인:</strong> 전 세계의 신뢰도 높은 트렌드 데이터를 10분 간격으로 수집 및 정규화하여 항상 최신 정보를 제공합니다.</li>
-            <li><strong>문맥 기반 AI 분석:</strong> 단순한 키워드 나열을 넘어, AI가 해당 트렌드의 발생 배경과 맥락을 파악하여 사용자의 언어로 요약 리포트를 생성합니다.</li>
-            <li><strong>글로벌 인사이트:</strong> 국가별 트렌드 비교를 통해 지역적 특색과 전 세계 공통의 관심사를 한눈에 파악할 수 있습니다.</li>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUp은 고도의 빅데이터 처리 기술과 최신 AI 엔진(Google Gemini 2.0)을 융합하여 한국, 일본, 미국 등 주요 국가의 실시간 검색 트렌드를 분석하고 시각화하는 차세대 데이터 인텔리전스 플랫폼입니다.</p>
+          <h3 style="margin:1.5rem 0 0.8rem; border-left:4px solid var(--primary); padding-left:0.8rem; font-size:1.1rem;">우리의 미션</h3>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">정보의 홍수 속에서 가장 가치 있는 '맥락'을 찾아내는 것이 우리의 목표입니다. 단순한 키워드 나열이 아닌, 왜 이 키워드가 지금 뜨고 있는지, 어떤 사회적 배경이 있는지 AI를 통해 심층 분석하여 사용자에게 전달합니다.</p>
+          <h3 style="margin:1.5rem 0 0.8rem; border-left:4px solid var(--primary); padding-left:0.8rem; font-size:1.1rem;">주요 기술력</h3>
+          <ul style="margin-bottom:1.2rem; padding-left:1.5rem; list-style:disc; line-height:1.8;">
+            <li><strong>실시간 글로벌 파이프라인:</strong> 전 세계의 신뢰도 높은 트렌드 소스로부터 10분 단위로 데이터를 수집하여 정규화합니다.</li>
+            <li><strong>문맥 기반 AI 요약:</strong> 수집된 뉴스 조각들과 소셜 반응을 종합하여, AI가 인간이 읽기 편한 형태의 리포트로 재구성합니다.</li>
+            <li><strong>다국어 인사이트:</strong> 언어의 장벽을 넘어 각국의 트렌드를 모국어로 이해할 수 있도록 정교한 번역 및 로컬라이징을 지원합니다.</li>
           </ul>
         ` 
       },
@@ -31,28 +33,62 @@ let i18n = {
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보를 소중히 여기며, 관련 법령을 준수합니다. (v2.5.2)</p>
-          <h3>1. 개인정보 수집 및 이용</h3>
-          <p>본 서비스는 별도의 회원가입 없이 모든 기능을 이용할 수 있습니다. 다만, 서비스 이용 과정에서 접속 IP, 쿠키, 브라우저 정보 등이 서비스 최적화 및 광고 게재를 위해 자동 수집될 수 있습니다.</p>
-          <h3>2. 구글 애드센스 및 쿠키 사용</h3>
-          <p>본 사이트는 구글 애드센스를 사용합니다. 구글은 쿠키를 사용하여 사용자의 방문 기록을 바탕으로 맞춤형 광고를 게재합니다. 사용자는 구글의 광고 설정을 통해 이를 해제할 수 있습니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">TrendUp(이하 '본 사이트')은 방문자의 개인정보 보호를 중요하게 생각하며, 관련 법령을 준수합니다. 본 방침은 수집되는 정보의 종류와 사용 목적, 그리고 구글 애드센스 광고 게재와 관련된 사항을 안내합니다.</p>
+          
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">1. 개인정보 수집 및 목적</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">본 사이트는 별도의 회원가입이나 개인 식별 정보(성명, 연락처 등)를 수집하지 않습니다. 다만, 서비스 품질 개선 및 통계 분석, 광고 게재를 위해 다음과 같은 정보가 자동으로 생성 및 수집될 수 있습니다: IP 주소, 브라우저 종류, 방문 시간, 서비스 이용 기록 등.</p>
+
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">2. 구글 애드센스 및 쿠키(Cookie) 사용</h3>
+          <p style="margin-bottom:0.8rem; line-height:1.6;">본 사이트는 광고 수익을 통해 서비스를 무료로 운영하며, 이를 위해 <strong>구글 애드센스(Google AdSense)</strong>를 사용합니다.</p>
+          <ul style="margin-bottom:1rem; padding-left:1.5rem; list-style:circle; line-height:1.6;">
+            <li>구글을 포함한 타사 공급업체는 사용자의 이전 방문 기록을 바탕으로 광고를 게재하기 위해 쿠키를 사용합니다.</li>
+            <li>구글의 광고 쿠키(DART 쿠키)를 사용하면 본 사이트 및 인터넷상의 다른 사이트에 대한 방문 기록을 기반으로 사용자에게 맞춤형 광고를 제공할 수 있습니다.</li>
+            <li>사용자는 <a href="https://adssettings.google.com" target="_blank" style="color:var(--primary);">구글 광고 설정</a>을 방문하여 맞춤 설정된 광고를 해제할 수 있습니다.</li>
+          </ul>
+
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">3. 데이터 분석 및 타사 도구</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">본 사이트는 서비스 이용 분석을 위해 Google Analytics 등을 활용할 수 있으며, 이 과정에서 익명화된 데이터가 타사 플랫폼으로 전송될 수 있습니다. 이는 오직 더 나은 사용자 경험을 제공하기 위한 목적으로만 사용됩니다.</p>
+
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">4. 문의처</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">개인정보 보호와 관련하여 궁금한 사항은 <a href="mailto:help@trendup.ai" style="color:var(--primary);">help@trendup.ai</a>로 문의해 주시기 바랍니다.</p>
+          <p style="font-size:0.85rem; color:var(--text-muted);">최종 업데이트: 2026년 3월 4일</p>
         ` 
       },
       terms: { 
         title: "서비스 이용약관 (Terms of Service)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">서비스 이용약관</h2>
-          <p style="margin-bottom:1rem;">본 약관은 TrendUp 서비스 이용에 관한 권리와 의무를 규정합니다.</p>
-          <h3>1. 정보의 정확성</h3>
-          <p>본 서비스에서 제공하는 데이터와 AI 분석 내용은 참고용이며, 정확성이나 완전성을 보장하지 않습니다. 중요한 의사결정의 근거로 사용 시 주의가 필요합니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">본 약관은 TrendUp 서비스(이하 '서비스') 이용과 관련하여 제공자와 이용자 간의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.</p>
+          
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">1. 서비스의 목적 및 면책 고지</h3>
+          <p style="margin-bottom:0.8rem; line-height:1.6;">서비스는 공개된 데이터를 바탕으로 AI가 자동 생성한 분석 정보를 제공합니다. 제공되는 데이터와 분석 결과는 기술적 한계나 원천 데이터의 오류로 인해 실제와 다를 수 있습니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.6; color:var(--text-muted);">* 본 서비스에서 제공하는 모든 정보는 참고용이며, 이를 바탕으로 행해진 투자나 결정에 따른 결과에 대해 본 사이트는 어떠한 법적 책임도 지지 않습니다.</p>
+
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">2. 저작권 및 콘텐츠 이용</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">서비스가 제공하는 로고, 디자인, AI 분석 텍스트 등에 대한 권리는 TrendUp에 있습니다. 이용자는 서비스를 개인적 용도로만 이용해야 하며, 사전 동의 없는 상업적 이용이나 무단 크롤링, 대량 복제 행위를 금합니다.</p>
+
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">3. 서비스의 변경 및 중단</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">서비스는 운영상 또는 기술상의 필요에 따라 제공하는 기능의 전부 또는 일부를 예고 없이 수정하거나 중단할 수 있습니다.</p>
+
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">4. 약관의 개정</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">본 사이트는 필요 시 약관을 개정할 수 있으며, 변경된 내용은 사이트 내 공지를 통해 효력이 발생합니다.</p>
         ` 
       },
       contact: { 
         title: "문의하기 (Contact)", 
         content: `
-          <h2 style="margin-bottom:1.5rem;">고객 지원</h2>
-          <p style="margin-bottom:1rem;">서비스 관련 제안이나 문의사항은 아래 이메일로 연락 주시기 바랍니다.</p>
-          <p><strong>Email:</strong> <a href="mailto:help@trendup.ai" style="color:var(--primary);">help@trendup.ai</a></p>
+          <h2 style="margin-bottom:1.5rem;">고객 지원 및 비즈니스 문의</h2>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUp에 관심을 가져주셔서 감사합니다. 서비스 개선을 위한 제안, 오류 제보, 광고 및 비즈니스 협력 문의는 아래 채널을 통해 전달해 주시기 바랍니다.</p>
+          
+          <div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border);">
+            <p style="margin-bottom:0.8rem;"><strong>이메일 문의:</strong></p>
+            <p style="font-size:1.1rem;"><a href="mailto:help@trendup.ai" style="color:var(--primary); font-weight:700;">help@trendup.ai</a></p>
+          </div>
+          
+          <ul style="margin-top:1.5rem; font-size:0.9rem; color:var(--text-muted); line-height:1.6;">
+            <li>* 모든 문의는 영업일 기준 48시간 이내에 검토 후 답변드리기 위해 노력하고 있습니다.</li>
+            <li>* 무분별한 스팸이나 비방 목적의 메일은 답변이 제한될 수 있습니다.</li>
+          </ul>
         ` 
       },
       cookie: {
