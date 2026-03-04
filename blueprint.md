@@ -7,12 +7,12 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Model Upgrade:** Migrated from Gemini 1.5 Flash to the latest stable **Gemini 2.0 Flash**, providing faster and more accurate trend analysis for both root scripts and Cloud Functions.
 - **Dependency Update:** Upgraded core packages including `@google/generative-ai`, `firebase-admin` (v13+), and `jsdom` (v28+) across the project.
 - **Consistency:** Synchronized model priority and logic between `update-trends.js` and `functions/index.js`.
-- **Version Finalization:** Application updated to **v2.5.2**.
+- **Version Finalization:** Application updated to **v2.5.3**.
 
 ## Phase 32: i18n Fix & UI Text Stabilization (Done)
 - **i18n Cleanup:** Completely fixed mixed Korean and Japanese strings in the `i18n` object within `main.js`.
 - **Label Mapping:** Added missing translation labels (trends, language) and updated `refreshUIText` to support them.
-- **Version Consolidation:** Harmonized all version strings across `index.html`, `main.js`, and `blueprint.md` to **v2.5.2**.
+- **Version Consolidation:** Harmonized all version strings across `index.html`, `main.js`, and `blueprint.md` to **v2.5.3**.
 - **Public Sync:** Ensured all root assets are perfectly synchronized with the `public/` directory for production parity.
 - **UI Consistency:** Fixed hardcoded Korean text in several UI sections by ensuring they are controlled via `main.js`.
 
@@ -39,7 +39,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Push all changes to GitHub.
 - [x] Update localization for Google AdSense compliance in English and Japanese (v2.2.4).
 - [x] Increment version to v2.2.4.
-- [x] Enrich Korean localization for Google AdSense compliance (v2.5.2).
+- [x] Enrich Korean localization for Google AdSense compliance (v2.5.3).
 - [x] Update About, Privacy, Terms, and Contact sections across KO, JA, EN for AdSense standards.
 - [x] Synchronize public/main.js with updated site information.
 - [x] Increment version to v2.2.4.
@@ -72,6 +72,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Localize cookie banner text and button for Korean, Japanese, and English (v2.4.15).
 - [x] Update version to v2.4.15 and synchronize all root assets with the public/ directory.
 - [x] Push all changes to GitHub and deploy to Firebase.
-- [x] Upgrade Gemini API to **Gemini 2.0 Flash** for enhanced analysis (v2.5.2).
-- [x] Update core dependencies (`firebase-admin`, `jsdom`, `@google/generative-ai`) to latest versions (v2.5.2).
-- [x] Increment version to **v2.5.2**.
+- [x] Upgrade Gemini API to **Gemini 2.0 Flash** for enhanced analysis (v2.5.3).
+- [x] Update core dependencies (`firebase-admin`, `jsdom`, `@google/generative-ai`) to latest versions (v2.5.3).
+- [x] Increment version to **v2.5.3**.

@@ -42,22 +42,27 @@ class TrendUpdater {
     const countryName = countryNames[country] || country;
     const title = item.originalTitle;
 
+    // Enhanced Context: Merge news titles and snippets for better grounding
+    const combinedContext = [...newsTitles, ...snippets].join(' / ').slice(0, 1000);
+
     const prompt = `
-      You are a professional trend analyst. Analyze why '${title}' is trending in ${countryName}.
-      Ref News: ${newsTitles.join(' / ')}
-      Context: ${snippets.join(' ')}
-      Task: Write a insightful 2-sentence summary in Korean (한국어). 
-      Synthesize information, explain the cause and public reaction. No bolding.
+      너는 글로벌 트렌드 분석가야. '${title}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘.
+      참고 정보: ${combinedContext}
+      지시사항:
+      1. 위 정보를 바탕으로 이 트렌드의 구체적인 원인과 현재 상황을 분석해.
+      2. 반드시 한국어(Korean)로 작성해.
+      3. 친절하고 전문적인 말투로 2문장 내외로 요약해.
+      4. 불필요한 수식어나 '**' 같은 마크다운 기호는 절대 사용하지마.
     `;
 
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-flash-latest"];
+    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
     for (const modelName of modelsToTry) {
       try {
         const model = this.genAI.getGenerativeModel({ model: modelName });
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text().trim().replace(/\*\*/g, '');
-        if (text && text.length > 20) return text; // Ensure it's a real analysis, not a short failure response
+        if (text && text.length > 15 && !text.includes("죄송합니다") && !text.includes("알 수 없")) return text;
       } catch (e) { console.warn(`AI Attempt ${modelName} failed:`, e.message); }
     }
     return "";
@@ -84,23 +89,51 @@ class TrendUpdater {
     return fallbacks.some(f => report.includes(f)) || report.length < 30 || hasKoreanInJapanese;
   }
 
-  async getSupplementaryNews(keyword, countryCode) {
+  async getSupplementaryNews(keyword, countryCode, snippets = []) {
     const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
     const gl = countryCode;
-    let query = keyword;
-    if (countryCode === "KR") query += " 한국 뉴스";
-    else if (countryCode === "JP") query += " 日本 ニュース";
-    else query += " News";
+    
+    // 1. Context-Aware Query Building
+    let refinedQuery = keyword;
+    if (snippets && snippets.length > 0) {
+      // Use the first part of the snippet to narrow down the context
+      const context = snippets[0].split(/[.!?]/)[0].split(' ').slice(0, 3).join(' ');
+      if (context && context.length > 2 && !context.includes(keyword)) refinedQuery = `${keyword} ${context}`;
+    }
+
+    const countrySuffix = { 'KR': ' 뉴스', 'JP': ' ニュース', 'US': ' News' };
+    let query = `${refinedQuery}${countrySuffix[countryCode] || ' News'}`;
+
     try {
       const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
       const dom = new JSDOM(text, { contentType: "text/xml" });
       const items = dom.window.document.querySelectorAll("item");
-      return Array.from(items).slice(0, 3).map(item => ({
-        title: item.querySelector("title")?.textContent || "",
-        url: item.querySelector("link")?.textContent || "",
-        source: "Local News"
-      }));
+      
+      const trustedSources = ['연합뉴스', 'YTN', 'KBS', 'SBS', 'MBC', 'NHK', 'Yahoo', 'Reuters', 'AP', 'BBC', 'CNN', 'Times', 'NYT'];
+      const links = Array.from(items).map(item => {
+        const title = item.querySelector("title")?.textContent || "";
+        const source = title.split(" - ").pop() || "News";
+        return {
+          title: title.split(" - ")[0],
+          url: item.querySelector("link")?.textContent || "",
+          source: source
+        };
+      });
+
+      // 2. Priority Sorting: Trusted sources first
+      const sorted = links.sort((a, b) => {
+        const aTrusted = trustedSources.some(s => a.source.includes(s));
+        const bTrusted = trustedSources.some(s => b.source.includes(s));
+        return bTrusted - aTrusted;
+      });
+
+      const uniqueSources = new Set();
+      return sorted.filter(l => {
+        if (uniqueSources.has(l.source) || uniqueSources.size >= 3) return false;
+        uniqueSources.add(l.source);
+        return true;
+      });
     } catch (e) { return []; }
   }
 
@@ -145,8 +178,10 @@ class TrendUpdater {
       const domGT = new JSDOM(rssGT, { contentType: "text/xml" });
       const itemsGT = Array.from(domGT.window.document.querySelectorAll("item")).map(item => {
         const title = item.querySelector("title")?.textContent || "";
-        const snippets = Array.from(item.getElementsByTagName("ht:news_item_snippet")).map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim());
-        const news = Array.from(item.getElementsByTagName("ht:news_item_title")).map(t => t.textContent);
+        // Fix: Use localName to find tags with namespaces like 'ht:news_item_snippet'
+        const getNodes = (tagName) => Array.from(item.childNodes).filter(n => n.localName === tagName);
+        const snippets = getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim());
+        const news = getNodes("news_item_title").map(t => t.textContent);
         return { title, snippets, news };
       });
 
@@ -164,23 +199,34 @@ class TrendUpdater {
 
       // 2. Reuse or Generate/Refine AI Report
       for (let item of unique) {
-        const existingReports = prevReportMap.get(item.originalTitle);
-        // SMART CHECK: Only reuse if it's NOT a fallback message
-        if (existingReports && existingReports.ko && !this.isFallback(existingReports.ko)) {
+        const prevItem = previousItems.find(p => p.originalTitle === item.originalTitle);
+        const existingReports = prevItem ? prevItem.aiReports : null;
+        
+        // Smart Check: Reuse ONLY if news content is identical AND report exists
+        const isNewsSame = prevItem && JSON.stringify(item.newsTitles) === JSON.stringify(prevItem.newsTitles);
+        const hasValidReport = existingReports && existingReports.ko && !this.isFallback(existingReports.ko);
+
+        if (isNewsSame && hasValidReport) {
           item.aiReports = existingReports;
         } else {
-          // Generate NEW or Replace Fallback
-          console.log(`  - Generating/Refining report for: ${item.originalTitle}`);
+          // Generate NEW or Update changed content
+          console.log(`  - ${prevItem ? 'Updating' : 'Generating'} report for: ${item.originalTitle}`);
           const baseReport = await this.generateBaseAIReport(item, item.newsTitles, item.snippets, code);
           if (baseReport) {
             item.aiReports.ko = baseReport;
-            await new Promise(r => setTimeout(r, 3000)); // Safer delay for RPM
+            // Clear other languages to force re-translation for the new context
+            langs.filter(l => l !== 'ko').forEach(l => item.aiReports[l] = "");
+            await new Promise(r => setTimeout(r, 2000)); // Rate limiting
+          } else if (hasValidReport) {
+            // Fallback to old report if new generation fails but old one exists
+            item.aiReports = existingReports;
           }
         }
       }
 
       // 3. Batch Translate missing items
       for (let lang of langs) {
+        // Translate titles
         const toTranslateTitles = unique.filter(i => !i.translations[lang]).map(i => i.originalTitle);
         if (toTranslateTitles.length > 0) {
           const translatedTitles = await this.translateBatch(toTranslateTitles, lang);
@@ -189,11 +235,16 @@ class TrendUpdater {
           });
         }
 
-        const toTranslateReports = unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang]))).map(i => i.aiReports.ko);
+        // Translate reports (only those that are empty or were cleared due to content change)
+        const toTranslateReports = unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).map(i => i.aiReports.ko);
         if (toTranslateReports.length > 0) {
           const translatedReports = await this.translateBatch(toTranslateReports, lang);
-          unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang]))).forEach((item, idx) => { 
-            item.aiReports[lang] = (translatedReports && translatedReports[idx]) ? translatedReports[idx] : this.getFallbackReport(item.originalTitle, lang, code); 
+          unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).forEach((item, idx) => { 
+            if (translatedReports && translatedReports[idx]) {
+              item.aiReports[lang] = translatedReports[idx];
+            } else if (!item.aiReports[lang]) {
+              item.aiReports[lang] = this.getFallbackReport(item.originalTitle, lang, code);
+            }
           });
         }
       }
