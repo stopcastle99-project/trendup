@@ -359,11 +359,10 @@ class App {
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
 
-      document.querySelectorAll('.nav-label').forEach(label => {
-        const text = label.textContent.toLowerCase();
-        if (text.includes('trend')) label.textContent = t.labels?.trends || "Country:";
-        if (text.includes('lang')) label.textContent = t.labels?.language || "Language:";
-      });
+      // Translate 'Trends:' and 'Language:' labels in side menu
+      const navLabels = document.querySelectorAll('.nav-label');
+      if (navLabels[0]) navLabels[0].textContent = t.labels?.trends || "Country:";
+      if (navLabels[1]) navLabels[1].textContent = t.labels?.language || "Language:";
 
       document.querySelectorAll('[data-page]').forEach(link => {
         const key = link.getAttribute('data-page');
@@ -374,7 +373,7 @@ class App {
       if (cookieText && t.pages.cookie) cookieText.textContent = t.pages.cookie.text;
       const cookieBtn = document.getElementById('accept-cookies');
       if (cookieBtn && t.pages.cookie) cookieBtn.textContent = t.pages.cookie.btn;
-    } catch (e) {}
+    } catch (e) { console.error("UI refresh error:", e); }
   }
   initThemeIcons() {
     try {
