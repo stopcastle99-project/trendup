@@ -1,39 +1,5 @@
-import * as THREE from 'three';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore } from 'firebase/firestore';
-
-// --- Background Animation (Three.js) ---
-class BackgroundScene {
-  constructor() {
-    this.canvas = document.getElementById('bg-canvas');
-    if (!this.canvas) return;
-    try {
-      this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
-      this.scene = new THREE.Scene();
-      this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      this.camera.position.z = 5;
-      this.particles = [];
-      this.init();
-      this.animate();
-      window.addEventListener('resize', () => this.onResize());
-    } catch (e) { console.error("Three.js error:", e); }
-  }
-  init() {
-    const geometry = new THREE.IcosahedronGeometry(1, 1);
-    for (let i = 0; i < 40; i++) {
-      const material = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xff4d4d : 0xffaa00, wireframe: true, transparent: true, opacity: 0.08 });
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set((Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20);
-      mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-      const scale = Math.random() * 0.4 + 0.1;
-      mesh.scale.set(scale, scale, scale);
-      this.scene.add(mesh);
-      this.particles.push({ mesh, speed: Math.random() * 0.004 + 0.001, rot: Math.random() * 0.008 });
-    }
-  }
-  onResize() { if (!this.renderer) return; this.renderer.setSize(window.innerWidth, window.innerHeight); this.camera.aspect = window.innerWidth / window.innerHeight; this.camera.updateProjectionMatrix(); }
-  animate() { if (!this.renderer) return; requestAnimationFrame(() => this.animate()); this.particles.forEach(p => { p.mesh.rotation.x += p.rot; p.mesh.rotation.y += p.rot; p.mesh.position.y += p.speed; if (p.mesh.position.y > 10) p.mesh.position.y = -10; }); this.renderer.render(this.scene, this.camera); }
-}
 
 const ICONS = {
   sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
@@ -64,7 +30,7 @@ let i18n = {
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보 보호를 최우선으로 생각하며, 관련 법령을 준수합니다. (v2.4.14)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보 보호를 최우선으로 생각하며, 관련 법령을 준수합니다. (v2.4.15)</p>
           <h3>1. 개인정보 수집 및 이용</h3>
           <p>본 서비스는 회원가입 없이 모든 기능을 이용할 수 있습니다. 다만, 서비스 이용 과정에서 접속 IP, 쿠키, 브라우저 정보, 방문 기록 등이 서비스 최적화 및 광고 게재를 위해 자동 생성되어 수집될 수 있습니다.</p>
           <h3>2. 구글 애드센스 및 쿠키 사용 고지</h3>
@@ -129,7 +95,7 @@ let i18n = {
         title: "個人情報保護方針 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護에 노력합니다。(v2.4.14)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護에 노력합니다。(v2.4.15)</p>
           <h3>1. 情報の収集について</h3>
           <p>当サービスでは、ユーザー登録なしで全ての機能を利用可能ですが、サービス最適化や広告配信のために、IPアドレス、クッキー（Cookie）、ブラウザ情報、アクセスログなどが自動的に収集される場合があります。</p>
           <h3>2. 広告の配信について（Googleアドセンス）</h3>
@@ -194,7 +160,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.4.14)</p>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.4.15)</p>
           <h3>1. Information Collection</h3>
           <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
           <h3>2. Advertising and Cookies (Google AdSense)</h3>
@@ -314,7 +280,6 @@ customElements.define('trend-modal', TrendModal);
 class App {
   constructor() {
     this.service = new TrendService();
-    this.scene = new BackgroundScene();
     this.currentCountry = localStorage.getItem('country') || this.service.autoDetectCountry();
     this.currentLang = localStorage.getItem('lang') || (this.currentCountry === 'KR' ? 'ko' : this.currentCountry === 'JP' ? 'ja' : 'en');
     this.themeMode = localStorage.getItem('theme-mode') || 'system';
@@ -322,7 +287,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.4.14");
+    console.log("App Init: v2.4.15");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -368,7 +333,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.4.14)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.4.15)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
