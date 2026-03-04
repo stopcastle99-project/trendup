@@ -9,6 +9,13 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Consistency:** Synchronized model priority and logic between `update-trends.js` and `functions/index.js`.
 - **Version Finalization:** Application updated to **v2.5.0**.
 
+## Phase 32: i18n Fix & UI Text Stabilization (Done)
+- **i18n Cleanup:** Completely fixed mixed Korean and Japanese strings in the `i18n` object within `main.js`.
+- **Label Mapping:** Added missing translation labels (trends, language) and updated `refreshUIText` to support them.
+- **Version Consolidation:** Harmonized all version strings across `index.html`, `main.js`, and `blueprint.md` to **v2.5.0**.
+- **Public Sync:** Ensured all root assets are perfectly synchronized with the `public/` directory for production parity.
+- **UI Consistency:** Fixed hardcoded Korean text in several UI sections by ensuring they are controlled via `main.js`.
+
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features.
