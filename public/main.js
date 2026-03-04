@@ -259,8 +259,8 @@ class TrendList extends HTMLElement {
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
         const mainTitle = item.originalTitle || item.title;
         const translatedTitle = item.translations?.[lang];
-        // Show translation if language setting is different from trend source language
-        const showSub = (lang !== nativeLang) && translatedTitle && (translatedTitle.toLowerCase() !== mainTitle.toLowerCase());
+        // Show subtitle if translated title exists and is different from the main title
+        const showSub = translatedTitle && (translatedTitle.toLowerCase() !== mainTitle.toLowerCase());
         return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${showSub ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
