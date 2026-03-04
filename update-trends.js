@@ -3,7 +3,16 @@ import admin from "firebase-admin";
 import { JSDOM } from "jsdom";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-admin.initializeApp();
+// Firebase Initialization for both GitHub Actions and Local/Functions
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+} else {
+  admin.initializeApp();
+}
+
 const db = admin.firestore();
 
 class TrendUpdater {
