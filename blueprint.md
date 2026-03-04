@@ -3,14 +3,11 @@
 ## **Overview**
 TrendUp is a modern, high-performance web application that provides real-time Top 10 trends for various countries.
 
-## Phase 30: Full Stabilization & Permission Fix (Done)
-- **Security Optimization:** Successfully applied Firestore Security Rules (`allow read: if true`), enabling public access to trend data while maintaining server-side write exclusivity.
-- **Frontend Cleanup:** Removed unstable CORS-dependent scrapers from the frontend. The app now relies 100% on the high-performance, pre-translated DB data.
-- **Deployment Parity:** Synchronized all root assets with the `public/` directory to ensure seamless Cloudflare Pages deployment.
-- **Data Integrity:** Implemented batch translation with separators to prevent data tangling between languages.
-- **Persistence Optimization:** Added `localStorage` to preserve user country selection across page refreshes.
-- **Translation Quality:** Optimized AI report generation by translating news titles and snippets into the target language, ensuring a fully localized experience.
-- **Version Finalization:** Application finalized at **v2.2.4**.
+## Phase 31: Gemini 2.0 Upgrade & Package Optimization (Done)
+- **Model Upgrade:** Migrated from Gemini 1.5 Flash to the latest stable **Gemini 2.0 Flash**, providing faster and more accurate trend analysis for both root scripts and Cloud Functions.
+- **Dependency Update:** Upgraded core packages including `@google/generative-ai`, `firebase-admin` (v13+), and `jsdom` (v28+) across the project.
+- **Consistency:** Synchronized model priority and logic between `update-trends.js` and `functions/index.js`.
+- **Version Finalization:** Application updated to **v2.5.0**.
 
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -66,3 +63,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Localize cookie banner text and button for Korean, Japanese, and English (v2.4.15).
 - [x] Update version to v2.4.15 and synchronize all root assets with the public/ directory.
 - [x] Push all changes to GitHub and deploy to Firebase.
+- [x] Upgrade Gemini API to **Gemini 2.0 Flash** for enhanced analysis (v2.5.0).
+- [x] Update core dependencies (`firebase-admin`, `jsdom`, `@google/generative-ai`) to latest versions (v2.5.0).
+- [x] Increment version to **v2.5.0**.
