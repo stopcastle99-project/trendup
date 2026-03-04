@@ -2,6 +2,14 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <script>
+    (function() {
+      const mode = localStorage.getItem('theme-mode') || 'system';
+      let theme = mode;
+      if (mode === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Primary Meta Tags -->
