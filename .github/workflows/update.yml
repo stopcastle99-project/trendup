@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # 수동 실행 버튼 추가
 
 jobs:
-...
+  update-trends:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -23,4 +23,6 @@ jobs:
       - name: Run Update Script
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node update-trends.js
+
