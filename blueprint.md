@@ -63,6 +63,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Optimize Gemini prompts to strictly use the target language and avoid English mixing.
 - [x] Completely remove hardcoded English fallback in AI analysis (v2.3.6).
 - [x] Fix localized fallback logic for AI reports.
-- [x] Localize cookie banner text and button for Korean, Japanese, and English (v2.4.10).
-- [x] Update version to v2.4.10 and synchronize all root assets with the public/ directory.
+- [x] Localize cookie banner text and button for Korean, Japanese, and English (v2.4.11).
+- [x] Update version to v2.4.11 and synchronize all root assets with the public/ directory.
 - [x] Push all changes to GitHub and deploy to Firebase.

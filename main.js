@@ -64,7 +64,7 @@ let i18n = {
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보 보호를 최우선으로 생각하며, 관련 법령을 준수합니다. (v2.4.10)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보 보호를 최우선으로 생각하며, 관련 법령을 준수합니다. (v2.4.11)</p>
           <h3>1. 개인정보 수집 및 이용</h3>
           <p>본 서비스는 회원가입 없이 모든 기능을 이용할 수 있습니다. 다만, 서비스 이용 과정에서 접속 IP, 쿠키, 브라우저 정보, 방문 기록 등이 서비스 최적화 및 광고 게재를 위해 자동 생성되어 수집될 수 있습니다.</p>
           <h3>2. 구글 애드센스 및 쿠키 사용 고지</h3>
@@ -115,13 +115,13 @@ let i18n = {
       about: { 
         title: "TrendUpについて", 
         content: `
-          <h2 style="margin-bottom:1.5rem;">TrendUp：世界を読む、最速のインテリジェンス</h2>
-          <p style="margin-bottom:1rem; line-height:1.8;">TrendUpは、ビッグデータ処理技術と最新のAIエンジンを駆使し、日本、韓国、アメリカなどの主要国における検索トレンドをリアルタイムで分析・可視化する次世代のデータ分析プラットフォームです。</p>
+          <h2 style="margin-bottom:1.5rem;">TrendUp：世界を読む、最速의 인텔리전스</h2>
+          <p style="margin-bottom:1rem; line-height:1.8;">TrendUp은, 빅데이터 처리 기술과 최신 AI 엔진을 구사하여, 일본, 한국, 미국 등의 주요국에서의 검색 트렌드를 실시간으로 분석·가시화하는 차세대 데이터 분석 플랫폼입니다.</p>
           <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">主な特徴</h3>
           <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
-            <li><strong>リアルタイム・データパイプライン：</strong>各国のトレンドデータを最短10分間隔で取得し、最新の情報を提供します。</li>
-            <li><strong>AIによる多言語要約：</strong>検索キーワードの背景をAIが分析し、ユーザーの言語で分かりやすく要約します。</li>
-            <li><strong>グローバル視点：</strong>国別のトレンド比較を通じて、世界規模での関心事の変化を捉えることができます。</li>
+            <li><strong>リアルタイム・데이터 파이프라인:</strong> 각국의 트렌드 데이터를 최단 10분 간격으로 취득하여 최신 정보를 제공합니다.</li>
+            <li><strong>AIによる多言語要約:</strong> 검색 키워드의 배경을 AI가 분석하여 사용자의 언어로 알기 쉽게 요약합니다.</li>
+            <li><strong>글로벌 시점:</strong> 국가별 트렌드 비교를 통해 세계 규모에서의 관심사 변화를 포착할 수 있습니다.</li>
           </ul>
         ` 
       }, 
@@ -129,36 +129,36 @@ let i18n = {
         title: "個人情報保護方針 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の保護に努めます。(v2.4.10)</p>
-          <h3>1. 情報の収集について</h3>
-          <p>当サービスでは、ユーザー登録なしで利用可能ですが、アクセス解析や広告配信のために、IPアドレス、クッキー（Cookie）、ブラウザ情報などが自動的に収集される場合があります。</p>
-          <h3>2. 広告の配信について（Googleアドセンス）</h3>
-          <p>当サービスは、第三者配信の広告サービス「Googleアドセンス」を利用しています。広告配信事業者は、ユーザーの興味に応じた広告を表示するためにクッキー（Cookie）を使用することがあります。これにより、当サイトや他のサイトへの過去のアクセス情報に基づいた広告が配信されます。</p>
-          <p>ユーザーは、Googleの広告設定でパーソナライズ広告を無効にできます。詳細はGoogleの <a href="https://policies.google.com/technologies/ads" target="_blank" style="color:var(--primary);">広告に関する規約</a> をご確認ください。</p>
-          <h3>3. 免責事項</h3>
-          <p>当サイトからリンクやバナーなどによって他のサイトに移動された場合、移動先サイトで提供される情報、サービス等について一切の責任を負いません。</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）은, 사용자 프라이버시를 존중하며 개인정보 보호에 노력합니다。(v2.4.11)</p>
+          <h3>1. 정보 수집에 대하여</h3>
+          <p>당 서비스에서는 사용자 등록 없이 이용 가능하지만, 액세스 분석이나 광고 배신을 위해 IP 주소, 쿠키(Cookie), 브라우저 정보 등이 자동적으로 수집되는 경우가 있습니다.</p>
+          <h3>2. 광고 배신에 대하여 (Google 애드센스)</h3>
+          <p>당 서비스는 제3자 배신의 광고 서비스 「Google 애드센스」를 이용하고 있습니다. 광고 배신 사업자는 사용자의 흥미에 따른 광고를 표시하기 위해 쿠키(Cookie)를 사용하는 경우가 있습니다. 이에 따라 당 사이트나 다른 사이트로의 과거 액세스 정보에 기반한 광고가 배신됩니다.</p>
+          <p>사용자는 Google 광고 설정에서 개인화 광고를 무효화할 수 있습니다. 자세한 내용은 Google의 <a href="https://policies.google.com/technologies/ads" target="_blank" style="color:var(--primary);">광고에 관한 규약</a>을 확인해 주십시오.</p>
+          <h3>3. 면책 사항</h3>
+          <p>당 사이트에서 링크나 배너 등에 의해 다른 사이트로 이동된 경우, 이동지 사이트에서 제공되는 정보, 서비스 등에 대해 일절의 책임을 지지 않습니다.</p>
         ` 
       }, 
       terms: { 
         title: "サービス利用規約 (Terms of Service)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">サービス利用規約</h2>
-          <p style="margin-bottom:1rem;">当サービスを利用することにより、本規約に同意したものとみなされます。</p>
-          <h3>1. データの正確性について</h3>
-          <p>当サービスが提供するトレンドデータおよびAIによる要約は、外部の公開情報を基に自動生成されています。情報の正確性、完全性、有用性について保証するものではありません。投資や重要な意思決定の判断材料として利用しないでください。</p>
-          <h3>2. 禁止事項</h3>
-          <p>当サービスのサーバーに過度な負荷をかける行為や、スクレイピング等によるデータの無断取得を禁止します。</p>
-          <h3>3. 規約の変更</h3>
-          <p>当サービスは、必要に応じて本規約をいつでも変更できるものとします。</p>
+          <p style="margin-bottom:1rem;">당 서비스를 이용함으로써 본 규약에 동의한 것으로 간주됩니다.</p>
+          <h3>1. 데이터의 정확성에 대하여</h3>
+          <p>당 서비스가 제공하는 트렌드 데이터 및 AI에 의한 요약은 외부 공개 정보를 기반으로 자동 생성되고 있습니다. 정보의 정확성, 완전성, 유용성에 대해 보증하는 것이 아닙니다. 투자나 중요한 의사 결정의 판단 재료로 이용하지 마십시오.</p>
+          <h3>2. 금지 사항</h3>
+          <p>당 서비스 서버에 과도한 부하를 주는 행위나 스크레이핑 등에 의한 데이터 무단 취득을 금지합니다.</p>
+          <h3>3. 규약의 변경</h3>
+          <p>당 서비스는 필요에 따라 본 규약을 언제든지 변경할 수 있는 것으로 합니다.</p>
         ` 
       }, 
       contact: { 
         title: "お問い合わせ (Contact)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">お問い合わせ</h2>
-          <p style="margin-bottom:1rem;">当サービスに関するご質問、フィードバック、ビジネスに関するお問い合わせは、以下のメールアドレスまでご連絡ください。</p>
+          <p style="margin-bottom:1rem;">당 서비스에 관한 질문, 피드백, 비즈니스에 관한 문의는 다음 메일 주소로 연락 주십시오.</p>
           <p><strong>Email:</strong> help@trendup.ai</p>
-          <p style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted);">※お問い合わせ内容によっては、回答にお時間をいただく場合や、お答えできない場合がございます。</p>
+          <p style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted);">※ 문의 내용에 따라서는 답변에 시간을 정하는 경우나, 대답할 수 없는 경우가 있습니다.</p>
         ` 
       } 
     } 
@@ -190,7 +190,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.4.10)</p>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.4.11)</p>
           <h3>1. Information Collection</h3>
           <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
           <h3>2. Advertising and Cookies (Google AdSense)</h3>
@@ -318,7 +318,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.4.10");
+    console.log("App Init: v2.4.11");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -364,7 +364,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.4.10)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.4.11)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
@@ -486,13 +486,17 @@ class App {
         const dbData = trendDoc.data();
         const itemsMapped = dbData.items.map(item => {
           const originalTitle = item.originalTitle || item.title;
-          const translatedTitle = item.titleTranslations?.[this.currentLang] || originalTitle;
+          const translatedTitle = item.translations?.[this.currentLang] || originalTitle;
           const aiReport = item.aiReports?.[this.currentLang] || "";
           
+          // Enhanced logic: Only show subtitle if the current lang is DIFFERENT from the original country language
+          const countryToLang = { 'KR': 'ko', 'JP': 'ja', 'US': 'en' };
+          const showSub = (this.currentLang !== countryToLang[this.currentCountry]) && (translatedTitle.toLowerCase() !== originalTitle.toLowerCase());
+
           return {
             ...item,
             displayTitle: originalTitle,
-            translatedSubTitle: (translatedTitle !== originalTitle) ? translatedTitle : "",
+            translatedSubTitle: showSub ? translatedTitle : "",
             aiReport: aiReport
           };
         });

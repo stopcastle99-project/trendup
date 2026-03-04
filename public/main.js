@@ -64,7 +64,7 @@ let i18n = {
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보 보호를 최우선으로 생각하며, 관련 법령을 준수합니다. (v2.4.10)</p>
+          <p style="margin-bottom:1rem;">TrendUp(이하 '서비스')은 이용자의 개인정보 보호를 최우선으로 생각하며, 관련 법령을 준수합니다. (v2.4.11)</p>
           <h3>1. 개인정보 수집 및 이용</h3>
           <p>본 서비스는 회원가입 없이 모든 기능을 이용할 수 있습니다. 다만, 서비스 이용 과정에서 접속 IP, 쿠키, 브라우저 정보, 방문 기록 등이 서비스 최적화 및 광고 게재를 위해 자동 생성되어 수집될 수 있습니다.</p>
           <h3>2. 구글 애드센스 및 쿠키 사용 고지</h3>
@@ -129,7 +129,7 @@ let i18n = {
         title: "個人情報保護方針 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">個人情報保護方針</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は, ユーザー의 프라이버시를 존중하고 개인정보 보호에 노력합니다。(v2.4.10)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）은, 사용자 프라이버시를 존중하며 개인정보 보호에 노력합니다。(v2.4.11)</p>
           <h3>1. 정보 수집에 대하여</h3>
           <p>당 서비스에서는 사용자 등록 없이 이용 가능하지만, 액세스 분석이나 광고 배신을 위해 IP 주소, 쿠키(Cookie), 브라우저 정보 등이 자동적으로 수집되는 경우가 있습니다.</p>
           <h3>2. 광고 배신에 대하여 (Google 애드센스)</h3>
@@ -190,7 +190,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.4.10)</p>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.4.11)</p>
           <h3>1. Information Collection</h3>
           <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
           <h3>2. Advertising and Cookies (Google AdSense)</h3>
@@ -289,7 +289,7 @@ class TrendModal extends HTMLElement {
         .replace(/미국/g, 'アメリカ')
         .replace(/이\(가\)/g, '')
         .replace(/내에서/g, '国内で')
-        .replace(/가 /g, 'が ');
+        .replace(/가 /g, '가 ');
     }
     this.render(trend, lang, analysis);
   }
@@ -318,7 +318,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.4.10");
+    console.log("App Init: v2.4.11");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -364,7 +364,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.4.10)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.4.11)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
@@ -486,13 +486,17 @@ class App {
         const dbData = trendDoc.data();
         const itemsMapped = dbData.items.map(item => {
           const originalTitle = item.originalTitle || item.title;
-          const translatedTitle = item.titleTranslations?.[this.currentLang] || originalTitle;
+          const translatedTitle = item.translations?.[this.currentLang] || originalTitle;
           const aiReport = item.aiReports?.[this.currentLang] || "";
           
+          // Enhanced logic: Only show subtitle if the current lang is DIFFERENT from the original country language
+          const countryToLang = { 'KR': 'ko', 'JP': 'ja', 'US': 'en' };
+          const showSub = (this.currentLang !== countryToLang[this.currentCountry]) && (translatedTitle.toLowerCase() !== originalTitle.toLowerCase());
+
           return {
             ...item,
             displayTitle: originalTitle,
-            translatedSubTitle: (translatedTitle !== originalTitle) ? translatedTitle : "",
+            translatedSubTitle: showSub ? translatedTitle : "",
             aiReport: aiReport
           };
         });
