@@ -255,17 +255,13 @@ class TrendList extends HTMLElement {
       if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; font-weight: 800; border: 1px solid #ffaa00; padding: 1px 4px; border-radius: 4px; letter-spacing: -0.02em;">NEW</span>';
       return '<span style="color: var(--text-muted); opacity: 0.3; font-size: 0.8rem;">-</span>';
     };
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .original-subtitle { font-size: 0.75rem; color: var(--text-muted); opacity: 0.7; margin-top: 0.2rem; font-weight: 400; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
+    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translated-subtitle { font-size: 0.75rem; color: var(--primary); opacity: 0.85; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
-        const originalTitle = item.originalTitle || item.title;
-        const translatedTitle = item.translations?.[lang] || originalTitle;
-        const hasTranslation = translatedTitle.toLowerCase() !== originalTitle.toLowerCase();
-        
-        // Use translated title as main if setting is not the native country lang OR if it's different
-        const mainDisplay = (lang !== nativeLang || hasTranslation) ? translatedTitle : originalTitle;
-        const subDisplay = hasTranslation ? ` 원문: ${originalTitle}` : '';
-
-        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainDisplay}</span>${subDisplay ? `<span class="original-subtitle">${subDisplay}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
+        const mainTitle = item.originalTitle || item.title;
+        const translatedTitle = item.translations?.[lang];
+        // Show translation if language setting is different from trend source language
+        const showSub = (lang !== nativeLang) && translatedTitle && (translatedTitle.toLowerCase() !== mainTitle.toLowerCase());
+        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${showSub ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = () => {
