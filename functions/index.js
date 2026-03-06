@@ -19,7 +19,9 @@ class TrendUpdater {
     if (!texts || texts.length === 0) return [];
     const translateSingle = async (text, tl) => {
       try {
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`);
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`, {
+          headers: { "User-Agent": "Mozilla/5.0" }
+        });
         const data = await res.json();
         return data[0].map(x => x[0]).join("").trim();
       } catch (e) { return text; }
@@ -27,9 +29,14 @@ class TrendUpdater {
     try {
       const separator = " ||| ";
       const combinedText = texts.join(separator);
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`);
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`, {
+        headers: { "User-Agent": "Mozilla/5.0" }
+      });
       const data = await res.json();
-      const results = data[0].map(x => x[0]).join("").split(/\|\|\||\| \| \|/).map(s => s.trim());
+      const combinedResult = data[0].map(x => x[0]).join("");
+      // 분리 로직 강화: 공백이 유동적일 수 있으므로 정규표현식 사용
+      const results = combinedResult.split(/\s*\|[ |]*\|[ |]*\|\s*/).map(s => s.trim());
+      
       return results.length === texts.length ? results : await Promise.all(texts.map(t => translateSingle(t, targetLang)));
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
