@@ -59,7 +59,7 @@ class TrendUpdater {
       Synthesize information, explain the cause and public reaction. No bolding.
     `;
 
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-flash-latest"];
+    const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001", "gemini-2.0-flash-lite", "gemini-2.0-flash"];
     for (const modelName of modelsToTry) {
       try {
         const model = this.genAI.getGenerativeModel({ model: modelName });

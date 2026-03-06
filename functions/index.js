@@ -55,7 +55,7 @@ class TrendUpdater {
       4. 불필요한 수식어나 '**' 같은 마크다운 기호는 절대 사용하지마.
     `;
 
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
+    const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001", "gemini-flash-latest", "gemini-pro"];
     for (const modelName of modelsToTry) {
       try {
         const model = this.genAI.getGenerativeModel({ model: modelName });
