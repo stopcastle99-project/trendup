@@ -8,26 +8,26 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Improved Robustness:** Updated model lists in both local scripts and Cloud Functions to ensure continuous operation despite future model deprecations.
 - **Dependency Update:** Upgraded core packages including `@google/generative-ai`, `firebase-admin` (v13+), and `jsdom` (v28+) across the project.
 - **Consistency:** Synchronized model priority and logic between `update-trends.js` and `firebase-functions/index.js`.
-- **Version Finalization:** Application updated to **v2.7.3**.
+- **Version Finalization:** Application updated to **v2.7.4**.
 
 ## Phase 32: i18n Fix & UI Text Stabilization (Done)
 - **i18n Cleanup:** Completely fixed mixed Korean and Japanese strings in the `i18n` object within `main.js`.
 - **Label Mapping:** Added missing translation labels (trends, language) and updated `refreshUIText` to support them.
-- **Version Consolidation:** Harmonized all version strings across `index.html`, `main.js`, and `blueprint.md` to **v2.7.3**.
+- **Version Consolidation:** Harmonized all version strings across `index.html`, `main.js`, and `blueprint.md` to **v2.7.4**.
 - **Public Sync:** Ensured all root assets are perfectly synchronized with the `public/` directory for production parity.
 - **UI Consistency:** Fixed hardcoded Korean text in several UI sections by ensuring they are controlled via `main.js`.
 
 ## Phase 33: Cloudflare Pages Build Fix & Version Bump (Done)
 - **Functions Renaming:** Renamed `functions/` to `firebase-functions/` to prevent Cloudflare Pages from incorrectly attempting to build it as a Cloudflare Worker.
 - **Configuration Sync:** Updated `firebase.json` and `blueprint.md` to reflect the new directory structure.
-- **Version Upgrade:** Bumped application version to **v2.7.3**.
+- **Version Upgrade:** Bumped application version to **v2.7.4**.
 - **Public Asset Sync:** Synchronized all root assets (`index.html`, `main.js`, `style.css`) to the `public/` directory.
 
-## Phase 34: Hybrid Translation Engine (v2.7.3) (Done)
+## Phase 34: Hybrid Translation Engine (v2.7.4) (Done)
 - **Dual Translation:** Implemented a hybrid translation logic that uses Google Translate first and falls back to **Gemini AI** for high-quality translation of proper nouns and slang.
 - **Validation:** Added server-side validation to detect failed translations (e.g., Korean text remaining in English output).
 - **Character Filtering:** Enhanced `main.js` to filter out invalid characters (CJK in EN mode) to ensure UI cleanliness.
-- **Version Upgrade:** Bumped application version to **v2.7.3**.
+- **Version Upgrade:** Bumped application version to **v2.7.4**.
 
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.
@@ -85,6 +85,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Localize cookie banner text and button for Korean, Japanese, and English (v2.4.15).
 - [x] Update version to v2.4.15 and synchronize all root assets with the public/ directory.
 - [x] Push all changes to GitHub and deploy to Firebase.
-- [x] Upgrade Gemini API to **Gemini 2.5 Flash** for enhanced analysis (v2.7.3).
-- [x] Update core dependencies (`firebase-admin`, `jsdom`, `@google/generative-ai`) to latest versions (v2.7.3).
-- [x] Increment version to **v2.7.3**.
+- [x] Upgrade Gemini API to **Gemini 2.5 Flash** for enhanced analysis (v2.7.4).
+- [x] Update core dependencies (`firebase-admin`, `jsdom`, `@google/generative-ai`) to latest versions (v2.7.4).
+- [x] Increment version to **v2.7.4**.

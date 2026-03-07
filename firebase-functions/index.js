@@ -43,19 +43,13 @@ class TrendUpdater {
     if (!this.genAI || !titles || titles.length === 0) return [];
     const langNames = { 'ko': 'Korean', 'ja': 'Japanese', 'en': 'English' };
     const targetLangName = langNames[targetLang] || 'English';
-    const prompt = `Translate the following trending keywords into natural ${targetLangName}. Rules: 1. If it's a person's name or a brand, use the official ${targetLangName} name. 2. Provide only the translated results, separated by " ||| ". 3. Do not include any explanation or numbering.\n\nKeywords to translate:\n${titles.join('\n')}`;
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
-    for (const modelName of modelsToTry) {
-      try {
-        const model = this.genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().trim();
-        const results = text.split(/\s*\|[ |]*\|[ |]*\|\s*/).map(s => s.trim());
-        if (results.length === titles.length) return results;
-      } catch (e) { console.warn(`Gemini Translation Attempt ${modelName} failed:`, e.message); }
-    }
-    return [];
+    const prompt = `Translate the following trending keywords into natural ${targetLangName}. Separated by " ||| ". No explanations.\n${titles.join('\n')}`;
+    try {
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text().trim().split(/\s*\|[ |]*\|[ |]*\|\s*/).map(s => s.trim());
+    } catch (e) { return []; }
   }
 
   containsWrongScript(text, targetLang) {
@@ -70,67 +64,34 @@ class TrendUpdater {
   isSupportedKeyword(text) {
     if (!text) return false;
     const trimmed = text.trim();
-    if (trimmed.length < 2) {
-      if (!/[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFF]/.test(trimmed)) return false;
-    }
+    if (trimmed.length < 2 && !/[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFF]/.test(trimmed)) return false;
     if (/^\[.*\]$/.test(trimmed)) return false;
-
-    const hasTarget = /[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(trimmed);
-    if (!hasTarget) return false;
-
-    // Block specific noise scripts (Vietnamese accents, Arabic, Cyrillic, Thai)
-    const badScriptRegex = /[\u0100-\u024F\u1E00-\u1EFF\u00C0-\u00FF\u0600-\u06FF\u0400-\u04FF\u0E00-\u0E7F]/;
-    return !badScriptRegex.test(trimmed);
+    if (!/[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(trimmed)) return false;
+    const badRegex = /[\u0100-\u024F\u1E00-\u1EFF\u00C0-\u00FF\u0600-\u06FF\u0400-\u04FF\u0E00-\u0E7F]/;
+    return !badRegex.test(trimmed);
   }
 
   async generateBaseAIReport(item, newsTitles, snippets, country) {
     if (!this.genAI) return "";
-    const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
-    const countryName = countryNames[country] || country;
-    const combinedContext = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
-    const prompt = `분석 대상 키워드: '${item.originalTitle}'\n해당 국가: ${countryName}\n최신 뉴스 제목들: ${combinedContext}\n\n위의 최신 뉴스 제목들을 분석하여, 이 키워드가 왜 '지금 이 순간' ${countryName}에서 급상승 트렌드인지 요약해줘. 지시사항: 1. 일반적인 역사나 프로필 정보는 제외하고, 뉴스 제목에 나타난 '오늘의 구체적인 사건'에 집중해. 2. 왜 화제인지 그 핵심 이유를 첫 문장에 바로 언급해. 3. 2문장 내외로 명확하고 전문적으로 작성해. 4. 반드시 한국어로 작성하고 마크다운(**)은 사용하지마.`;
-    const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001"];
-    for (const modelName of modelsToTry) {
-      try {
-        const model = this.genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().trim().replace(/\*\*/g, '');
-        if (text && text.length > 15) return text;
-      } catch (e) {}
-    }
-    return "";
-  }
-
-  getFallbackReport(title, lang, country) {
-    const mapping = {
-      'ko': { 'KR': '대한민국', 'JP': '일본', 'US': '미국' },
-      'ja': { 'KR': '韓国', 'JP': '日本', 'US': 'アメリカ' },
-      'en': { 'KR': 'South Korea', 'JP': 'Japan', 'US': 'USA' }
-    };
-    const c = mapping[lang]?.[country] || mapping['en'][country] || country;
-    if (lang === 'ko') return `${c}에서 '${title}' 키워드가 주목받고 있습니다.`;
-    if (lang === 'ja') return `${c}国内で'${title}'が注目を集めています.`;
-    return `'${title}' is drawing attention in ${c}.`;
-  }
-
-  isFallback(report, lang) {
-    if (!report) return true;
-    const fbs = ["주목받고 있습니다", "注目を集めています", "drawing attention", "生成中です"];
-    return fbs.some(f => report.includes(f)) || report.length < 20;
+    const countryName = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' }[country] || country;
+    const context = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
+    const prompt = `키워드: '${item.originalTitle}' (${countryName})\n뉴스: ${context}\n\n위 뉴스를 기반으로 이 키워드가 왜 지금 트렌드인지 한국어로 2문장 요약해. 마크다운 쓰지마.`;
+    try {
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt);
+      return result.response.text().trim().replace(/\*\*/g, '');
+    } catch (e) { return ""; }
   }
 
   async getSupplementaryNews(keyword, countryCode) {
     const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
     const gl = countryCode;
-    const suffix = { 'KR': ' 뉴스', 'JP': ' ニュース', 'US': ' News' };
-    const query = `${keyword}${suffix[countryCode] || ' News'}`;
+    const query = `${keyword}${ { 'KR': ' 뉴스', 'JP': ' ニュース', 'US': ' News' }[countryCode] || ' News'}`;
     try {
       const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
       const dom = new JSDOM(text, { contentType: "text/xml" });
-      const items = Array.from(dom.window.document.querySelectorAll("item")).slice(0, 5);
-      return items.map(item => {
+      return Array.from(dom.window.document.querySelectorAll("item")).slice(0, 3).map(item => {
         const title = item.querySelector("title")?.textContent || "";
         return { title: title.split(" - ")[0], url: item.querySelector("link")?.textContent || "", source: title.split(" - ").pop() || "News" };
       });
@@ -140,7 +101,7 @@ class TrendUpdater {
   async getYouTubeVideos(keyword, countryCode) {
     const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
     const gl = countryCode;
-    const query = countryCode === "KR" ? `${keyword} 한국 뉴스` : (countryCode === "JP" ? `${keyword} 日本 ニュース` : `${keyword} News`);
+    const query = keyword + (countryCode === "KR" ? " 한국 뉴스" : (countryCode === "JP" ? " 日本 ニュース" : " News"));
     try {
       const res = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&gl=${gl}&hl=${hl}`);
       const html = await res.text();
@@ -163,21 +124,14 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Candidates from all sources
+      // 1. Fetch Candidates (Increased Pool)
       let itemsPortal = [];
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       if (url) {
         try {
           const resP = await fetch(url).then(r => r.text());
           const domP = new JSDOM(resP);
-          const selectors = [".rank-item .text", ".rank-text", "span.text", "a.rank-item", ".Trend_Trend__item__name"];
-          for (const s of selectors) {
-            const elements = Array.from(domP.window.document.querySelectorAll(s));
-            if (elements.length > 0) {
-              itemsPortal = elements.map(el => el.textContent.trim()).filter(t => t && t.length > 1);
-              break;
-            }
-          }
+          itemsPortal = Array.from(domP.window.document.querySelectorAll(".rank-item .text, .rank-text, .Trend_Trend__item__name")).map(el => el.textContent.trim()).filter(t => t && t.length > 1);
         } catch (e) {}
       }
       
@@ -189,62 +143,47 @@ class TrendUpdater {
         return { title, snippets: getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim()), news: getNodes("news_item_title").map(t => t.textContent) };
       });
 
-      // 2. INTEGRATE: Interleave Google and Portal candidates
-      const allCandidates = [];
-      const maxC = Math.max(itemsGT.length, itemsPortal.length);
-      for (let i = 0; i < maxC; i++) {
-        if (itemsGT[i]) allCandidates.push(itemsGT[i].title);
-        if (itemsPortal[i]) allCandidates.push(itemsPortal[i]);
-      }
-
+      // 2. Select Top 10
       const unique = [];
       const seen = new Set();
-      
-      // Select valid top 10
-      for (let title of allCandidates) {
+      const combined = [];
+      const maxL = Math.max(itemsGT.length, itemsPortal.length);
+      for(let i=0; i<maxL; i++) { if(itemsGT[i]) combined.push(itemsGT[i].title); if(itemsPortal[i]) combined.push(itemsPortal[i]); }
+
+      for (let title of combined) {
         const lower = title.toLowerCase();
         if (!seen.has(lower) && this.isSupportedKeyword(title)) {
           seen.add(lower);
-          const gtData = itemsGT.find(i => i.title === title) || { snippets: [], news: [] };
-          unique.push({ originalTitle: title, snippets: gtData.snippets, newsTitles: gtData.news, translations: {}, aiReports: {} });
+          const gt = itemsGT.find(i => i.title === title) || { snippets: [], news: [] };
+          unique.push({ originalTitle: title, snippets: gt.snippets, newsTitles: gt.news, translations: {}, aiReports: {} });
         }
         if (unique.length >= 10) break;
       }
 
-      // ABSOLUTE GUARANTEE: If still under 10, reuse valid previous items
+      // Fill with previous if still under 10
       if (unique.length < 10) {
-        console.warn(`Insufficient items for ${code} (${unique.length}/10). Reusing previous items...`);
-        for (let prevItem of previousItems) {
-          const lower = prevItem.originalTitle.toLowerCase();
-          if (!seen.has(lower) && this.isSupportedKeyword(prevItem.originalTitle)) {
-            seen.add(lower);
-            unique.push({ ...prevItem, trendDir: 'steady' }); // Reset direction for reused items
+        for (let p of previousItems) {
+          if (!seen.has(p.originalTitle.toLowerCase()) && this.isSupportedKeyword(p.originalTitle)) {
+            seen.add(p.originalTitle.toLowerCase());
+            unique.push({ ...p, translations: {}, aiReports: {} });
           }
           if (unique.length >= 10) break;
         }
       }
 
-      // 3. AI Reports & Fresh News
-      for (let item of unique) {
-        item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
-        item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
-        const freshNews = item.newsLinks.map(l => l.title);
+      // 3. PARALLEL PROCESSING: News, Videos, and AI Reports
+      await Promise.all(unique.map(async (item) => {
+        [item.newsLinks, item.videoLinks] = await Promise.all([this.getSupplementaryNews(item.originalTitle, code), this.getYouTubeVideos(item.originalTitle, code)]);
+        const freshTitles = item.newsLinks.map(l => l.title);
         const prev = previousItems.find(p => p.originalTitle === item.originalTitle);
-        if (prev && JSON.stringify(freshNews) === JSON.stringify(prev.newsLinks?.map(l => l.title)) && prev.aiReports?.ko && !this.isFallback(prev.aiReports.ko)) {
+        if (prev && JSON.stringify(freshTitles) === JSON.stringify(prev.newsLinks?.map(l => l.title)) && prev.aiReports?.ko) {
           item.aiReports = prev.aiReports;
         } else {
-          const report = await this.generateBaseAIReport(item, freshNews, item.snippets, code);
-          if (report) {
-            item.aiReports.ko = report;
-            langs.filter(l => l !== 'ko').forEach(l => item.aiReports[l] = "");
-            await new Promise(r => setTimeout(r, 2000));
-          } else if (prev && prev.aiReports?.ko) {
-            item.aiReports = prev.aiReports;
-          }
+          item.aiReports.ko = await this.generateBaseAIReport(item, freshTitles, item.snippets, code);
         }
-      }
+      }));
 
-      // 4. Translation
+      // 4. Batch Translation
       for (let lang of langs) {
         const toTTitle = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
         if (toTTitle.length > 0) {
@@ -255,20 +194,20 @@ class TrendUpdater {
             const gemRes = await this.translateWithGemini(fIdx.map(idx => toTTitle[idx]), lang);
             if (gemRes.length === fIdx.length) fIdx.forEach((idx, gi) => { transT[idx] = gemRes[gi]; });
           }
-          unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).forEach((item, idx) => { 
-            item.translations[lang] = (transT && transT[idx]) ? transT[idx] : item.originalTitle; 
-          });
+          unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).forEach((item, idx) => { item.translations[lang] = transT[idx] || item.originalTitle; });
         }
+
         const toTRep = unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).map(i => i.aiReports.ko);
         if (toTRep.length > 0) {
           const transR = await this.translateBatch(toTRep, lang);
-          unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).forEach((item, idx) => { 
-            if (transR && transR[idx]) item.aiReports[lang] = transR[idx];
+          unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).forEach((item, idx) => {
+            if (transR[idx]) item.aiReports[lang] = transR[idx];
             else if (!item.aiReports[lang]) item.aiReports[lang] = this.getFallbackReport(item.originalTitle, lang, code);
           });
         }
       }
 
+      // Final Sanity Fill
       for (let item of unique) {
         for (let l of langs) {
           if (!item.translations[l]) item.translations[l] = item.originalTitle;
@@ -285,6 +224,5 @@ export const scheduledTrendUpdate = onSchedule({
   secrets: ["GEMINI_API_KEY"],
   timeoutSeconds: 540
 }, async (event) => {
-  const updater = new TrendUpdater();
-  await updater.updateAll();
+  await new TrendUpdater().updateAll();
 });
