@@ -34,11 +34,50 @@ class TrendUpdater {
       });
       const data = await res.json();
       const combinedResult = data[0].map(x => x[0]).join("");
-      // 분리 로직 강화: 공백이 유동적일 수 있으므로 정규표현식 사용
       const results = combinedResult.split(/\s*\|[ |]*\|[ |]*\|\s*/).map(s => s.trim());
       
       return results.length === texts.length ? results : await Promise.all(texts.map(t => translateSingle(t, targetLang)));
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
+  }
+
+  // Backup Translation using Gemini for proper nouns and slang
+  async translateWithGemini(titles, targetLang) {
+    if (!this.genAI || !titles || titles.length === 0) return [];
+    const langNames = { 'ko': 'Korean', 'ja': 'Japanese', 'en': 'English' };
+    const targetLangName = langNames[targetLang] || 'English';
+    
+    const prompt = `
+      Translate the following trending keywords into natural ${targetLangName}.
+      Rules:
+      1. If it's a person's name or a brand, use the official ${targetLangName} name.
+      2. Provide only the translated results, separated by " ||| ".
+      3. Do not include any explanation or numbering.
+      
+      Keywords to translate:
+      ${titles.join('\n')}
+    `;
+
+    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
+    for (const modelName of modelsToTry) {
+      try {
+        const model = this.genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim();
+        const results = text.split(/\s*\|[ |]*\|[ |]*\|\s*/).map(s => s.trim());
+        if (results.length === titles.length) return results;
+      } catch (e) { console.warn(`Gemini Translation Attempt ${modelName} failed:`, e.message); }
+    }
+    return [];
+  }
+
+  containsWrongScript(text, targetLang) {
+    if (!text) return true;
+    const hasHangul = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
+    const hasKana = /[ぁ-んァ-ン]/.test(text);
+    if (targetLang === 'ja') return hasHangul;
+    if (targetLang === 'en') return hasHangul || hasKana;
+    return false;
   }
 
   // Generate a single report in Korean (Base Language)
@@ -233,11 +272,29 @@ class TrendUpdater {
 
       // 3. Batch Translate missing items
       for (let lang of langs) {
-        // Translate titles
-        const toTranslateTitles = unique.filter(i => !i.translations[lang]).map(i => i.originalTitle);
+        // Translate titles with Hybrid Logic (Google -> Gemini Fallback)
+        const toTranslateTitles = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
         if (toTranslateTitles.length > 0) {
-          const translatedTitles = await this.translateBatch(toTranslateTitles, lang);
-          unique.filter(i => !i.translations[lang]).forEach((item, idx) => { 
+          // Attempt 1: Google Translate (Free)
+          let translatedTitles = await this.translateBatch(toTranslateTitles, lang);
+          
+          // Identify failures (items that still contain source script)
+          const failedIndices = [];
+          translatedTitles.forEach((t, idx) => {
+            if (this.containsWrongScript(t, lang)) failedIndices.push(idx);
+          });
+
+          // Attempt 2: Gemini Fallback for failures
+          if (failedIndices.length > 0) {
+            console.log(`  - Gemini fallback translation for ${failedIndices.length} items in ${lang}`);
+            const failedTitles = failedIndices.map(idx => toTranslateTitles[idx]);
+            const geminiResults = await this.translateWithGemini(failedTitles, lang);
+            if (geminiResults.length === failedTitles.length) {
+              failedIndices.forEach((idx, gIdx) => { translatedTitles[idx] = geminiResults[gIdx]; });
+            }
+          }
+
+          unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).forEach((item, idx) => { 
             item.translations[lang] = (translatedTitles && translatedTitles[idx]) ? translatedTitles[idx] : item.originalTitle; 
           });
         }
