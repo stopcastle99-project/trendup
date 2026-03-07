@@ -58,8 +58,8 @@ class TrendUpdater {
     const context = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
     const prompt = `대상 키워드: '${item.originalTitle}' (${countryName})\n참고 정보: ${context}\n\n위 정보를 분석하여 이 키워드가 왜 지금 트렌드인지 한국어로 2문장 요약해줘. 마크다운(**) 금지.`;
     
-    // Most standard and reliable model list
-    const modelNames = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+    // Discovery revealed gemini-2.5-flash is the primary model for this key
+    const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"];
     
     for (const name of modelNames) {
       try {
