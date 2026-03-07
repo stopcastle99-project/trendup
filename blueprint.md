@@ -17,6 +17,12 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Public Sync:** Ensured all root assets are perfectly synchronized with the `public/` directory for production parity.
 - **UI Consistency:** Fixed hardcoded Korean text in several UI sections by ensuring they are controlled via `main.js`.
 
+## Phase 33: Cloudflare Pages Build Fix & Version Bump (Done)
+- **Functions Renaming:** Renamed `functions/` to `firebase-functions/` to prevent Cloudflare Pages from incorrectly attempting to build it as a Cloudflare Worker.
+- **Configuration Sync:** Updated `firebase.json` and `blueprint.md` to reflect the new directory structure.
+- **Version Upgrade:** Bumped application version to **v2.6.0**.
+- **Public Asset Sync:** Synchronized all root assets (`index.html`, `main.js`, `style.css`) to the `public/` directory.
+
 ## Execution Steps
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features.

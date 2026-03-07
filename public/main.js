@@ -307,7 +307,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.5.9");
+    console.log("App Init: v2.5.2");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -353,7 +353,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.5.9)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.5.4)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
