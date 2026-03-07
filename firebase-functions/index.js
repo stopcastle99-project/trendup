@@ -67,14 +67,10 @@ class TrendUpdater {
     return false;
   }
 
-  // FIX: Rectified Regex syntax
   isSupportedKeyword(text) {
     if (!text) return false;
-    // 1. Must contain supported scripts (fixed bracket error)
     const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(text);
     if (!hasSupported) return false;
-
-    // 2. Strict Whitelist: No Vietnamese/French accents, no Arabic/Cyrillic
     const whitelistRegex = /^[\u0000-\u007F\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF\uFF00-\uFFEF\s\u2000-\u206F\u2E00-\u2E7F]*$/;
     return whitelistRegex.test(text);
   }
@@ -83,8 +79,24 @@ class TrendUpdater {
     if (!this.genAI) return "";
     const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
     const countryName = countryNames[country] || country;
-    const combinedContext = [...newsTitles, ...snippets].join(' / ').slice(0, 1000);
-    const prompt = `분석 대상 키워드: '${item.originalTitle}'\n해당 국가: ${countryName}\n참고 뉴스/정보: ${combinedContext}\n\n위 정보를 바탕으로, 이 키워드가 왜 '지금 이 순간' ${countryName}에서 급상승 트렌드인지 분석해줘. 지시사항: 1. 일반적인 역사나 인물 프로필 설명은 배제하고, 반드시 '오늘' 발생한 특정 사건이나 뉴스에만 집중해. 2. 왜 지금 화제인지 그 핵심 이유를 첫 문장에 바로 언급해. 3. 2문장 내외로 명확하고 전문적으로 작성해. 4. 반드시 한국어로 작성하고 마크다운(**)은 쓰지마.`;
+    
+    // Prioritize newsTitles (freshly fetched) over snippets
+    const combinedContext = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
+    
+    const prompt = `
+      분석 대상 키워드: '${item.originalTitle}'
+      해당 국가: ${countryName}
+      최신 뉴스 제목들: ${combinedContext}
+
+      위의 최신 뉴스 제목들을 분석하여, 이 키워드가 왜 '지금 이 순간' ${countryName}에서 급상승 트렌드인지 요약해줘.
+      
+      지시사항:
+      1. 일반적인 역사나 프로필 정보는 제외하고, 뉴스 제목에 나타난 '오늘의 구체적인 사건'에 집중해.
+      2. 왜 화제인지 그 핵심 이유를 첫 문장에 바로 언급해.
+      3. 2문장 내외로 명확하고 전문적으로 작성해.
+      4. 반드시 한국어로 작성하고 마크다운(**)은 사용하지마.
+    `;
+
     const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001"];
     for (const modelName of modelsToTry) {
       try {
@@ -125,7 +137,7 @@ class TrendUpdater {
       const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
       const dom = new JSDOM(text, { contentType: "text/xml" });
-      const items = Array.from(dom.window.document.querySelectorAll("item")).slice(0, 3);
+      const items = Array.from(dom.window.document.querySelectorAll("item")).slice(0, 5);
       return items.map(item => {
         const title = item.querySelector("title")?.textContent || "";
         return { title: title.split(" - ")[0], url: item.querySelector("link")?.textContent || "", source: title.split(" - ").pop() || "News" };
@@ -159,23 +171,17 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Source A: Portal (Enhanced Selectors)
+      // 1. Fetch Trends
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       let itemsPortal = [];
       if (url) {
         try {
           const resP = await fetch(url).then(r => r.text());
           const domP = new JSDOM(resP);
-          if (code === "KR") {
-            // Signal.bz has various rank-item selectors
-            itemsPortal = Array.from(domP.window.document.querySelectorAll(".rank-item .text, .rank-text")).map(el => el.textContent.trim()).filter(t => t);
-          } else {
-            itemsPortal = Array.from(domP.window.document.querySelectorAll(".Trend_Trend__item__name")).map(el => el.textContent.trim()).filter(t => t);
-          }
+          itemsPortal = Array.from(domP.window.document.querySelectorAll(".rank-item .text, .rank-text, .Trend_Trend__item__name")).map(el => el.textContent.trim()).filter(t => t);
         } catch (e) {}
       }
       
-      // 2. Fetch Source B: Google Trends
       const rssGT = await fetch(`https://trends.google.com/trending/rss?geo=${code}`).then(r => r.text()).catch(() => "");
       const domGT = new JSDOM(rssGT, { contentType: "text/xml" });
       const itemsGT = Array.from(domGT.window.document.querySelectorAll("item")).map(item => {
@@ -184,18 +190,16 @@ class TrendUpdater {
         return { title, snippets: getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim()), news: getNodes("news_item_title").map(t => t.textContent) };
       });
 
-      // 3. INTEGRATE: Robust merge
+      // 2. Interleave and Select Top 10
       const interleaved = [];
       const maxLength = Math.max(itemsPortal.length, itemsGT.length);
       for (let i = 0; i < maxLength; i++) {
-        if (itemsPortal[i]) interleaved.push({ title: itemsPortal[i], source: 'portal' });
-        if (itemsGT[i]) interleaved.push({ title: itemsGT[i].title, source: 'google' });
+        if (itemsPortal[i]) interleaved.push({ title: itemsPortal[i] });
+        if (itemsGT[i]) interleaved.push({ title: itemsGT[i].title });
       }
 
       const unique = [];
       const seen = new Set();
-      
-      // Filter Pass
       for (let obj of interleaved) {
         const lower = obj.title.toLowerCase();
         if (!seen.has(lower) && this.isSupportedKeyword(obj.title)) {
@@ -206,28 +210,25 @@ class TrendUpdater {
         if (unique.length >= 10) break;
       }
 
-      // Final Check: Ensure 10 items even if news info is missing
-      if (unique.length < 10) {
-        console.warn(`Warning: Only ${unique.length} valid items found for ${code}. Scouring remaining portal items...`);
-        for (let title of itemsPortal) {
-          const lower = title.toLowerCase();
-          if (!seen.has(lower) && this.isSupportedKeyword(title)) {
-            seen.add(lower);
-            unique.push({ originalTitle: title, snippets: [], newsTitles: [], translations: {}, aiReports: {} });
-          }
-          if (unique.length >= 10) break;
-        }
-      }
-
-      // 4. AI Reports & Translations
+      // 3. ENHANCED: Fetch Fresh News FIRST, then Generate AI Report
       for (let item of unique) {
+        // Fetch real-time news links first
+        item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
+        item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
+        
+        // Use these fresh news titles as the primary context for Gemini
+        const freshNewsTitles = item.newsLinks.map(l => l.title);
+        
         const prev = previousItems.find(p => p.originalTitle === item.originalTitle);
-        if (prev && JSON.stringify(item.newsTitles) === JSON.stringify(prev.newsTitles) && prev.aiReports?.ko && !this.isFallback(prev.aiReports.ko)) {
+        // Only reuse if news content is exactly the same (rare with fresh links)
+        if (prev && JSON.stringify(freshNewsTitles) === JSON.stringify(prev.newsLinks?.map(l => l.title)) && prev.aiReports?.ko && !this.isFallback(prev.aiReports.ko)) {
           item.aiReports = prev.aiReports;
         } else {
-          const base = await this.generateBaseAIReport(item, item.newsTitles, item.snippets, code);
-          if (base) {
-            item.aiReports.ko = base;
+          console.log(`  - Fresh AI Analysis for: ${item.originalTitle}`);
+          // Pass both fresh titles and RSS snippets for maximum grounding
+          const report = await this.generateBaseAIReport(item, freshNewsTitles, item.snippets, code);
+          if (report) {
+            item.aiReports.ko = report;
             langs.filter(l => l !== 'ko').forEach(l => item.aiReports[l] = "");
             await new Promise(r => setTimeout(r, 2000));
           } else if (prev && prev.aiReports?.ko) {
@@ -236,6 +237,7 @@ class TrendUpdater {
         }
       }
 
+      // 4. Translation and Sync
       for (let lang of langs) {
         const toTTitle = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
         if (toTTitle.length > 0) {
@@ -265,8 +267,6 @@ class TrendUpdater {
           if (!item.translations[l]) item.translations[l] = item.originalTitle;
           if (!item.aiReports[l]) item.aiReports[l] = this.getFallbackReport(item.originalTitle, l, code);
         }
-        item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
-        item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
       }
       await docRef.set({ items: unique, previousItems: previousItems, lastUpdated: admin.firestore.Timestamp.now() });
     }
