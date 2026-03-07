@@ -67,10 +67,14 @@ class TrendUpdater {
     return false;
   }
 
+  // FIX: Rectified Regex syntax
   isSupportedKeyword(text) {
     if (!text) return false;
-    const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF[a-zA-Z0-9]/.test(text);
+    // 1. Must contain supported scripts (fixed bracket error)
+    const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(text);
     if (!hasSupported) return false;
+
+    // 2. Strict Whitelist: No Vietnamese/French accents, no Arabic/Cyrillic
     const whitelistRegex = /^[\u0000-\u007F\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF\uFF00-\uFFEF\s\u2000-\u206F\u2E00-\u2E7F]*$/;
     return whitelistRegex.test(text);
   }
@@ -155,16 +159,19 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Source A: Portal (Signal for KR, Yahoo for JP)
+      // 1. Fetch Source A: Portal (Enhanced Selectors)
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       let itemsPortal = [];
       if (url) {
         try {
           const resP = await fetch(url).then(r => r.text());
           const domP = new JSDOM(resP);
-          itemsPortal = code === "KR" ? 
-            Array.from(domP.window.document.querySelectorAll(".rank-item .text")).map(el => el.textContent.trim()) : 
-            Array.from(domP.window.document.querySelectorAll(".Trend_Trend__item__name")).map(el => el.textContent.trim());
+          if (code === "KR") {
+            // Signal.bz has various rank-item selectors
+            itemsPortal = Array.from(domP.window.document.querySelectorAll(".rank-item .text, .rank-text")).map(el => el.textContent.trim()).filter(t => t);
+          } else {
+            itemsPortal = Array.from(domP.window.document.querySelectorAll(".Trend_Trend__item__name")).map(el => el.textContent.trim()).filter(t => t);
+          }
         } catch (e) {}
       }
       
@@ -177,7 +184,7 @@ class TrendUpdater {
         return { title, snippets: getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim()), news: getNodes("news_item_title").map(t => t.textContent) };
       });
 
-      // 3. INTEGRATE: Interleave Source A and Source B for balanced results
+      // 3. INTEGRATE: Robust merge
       const interleaved = [];
       const maxLength = Math.max(itemsPortal.length, itemsGT.length);
       for (let i = 0; i < maxLength; i++) {
@@ -188,7 +195,7 @@ class TrendUpdater {
       const unique = [];
       const seen = new Set();
       
-      // First Pass: Get Integrated Top 10
+      // Filter Pass
       for (let obj of interleaved) {
         const lower = obj.title.toLowerCase();
         if (!seen.has(lower) && this.isSupportedKeyword(obj.title)) {
@@ -199,8 +206,9 @@ class TrendUpdater {
         if (unique.length >= 10) break;
       }
 
-      // Second Pass: If still under 10, exhaust remaining Portal items specifically
+      // Final Check: Ensure 10 items even if news info is missing
       if (unique.length < 10) {
+        console.warn(`Warning: Only ${unique.length} valid items found for ${code}. Scouring remaining portal items...`);
         for (let title of itemsPortal) {
           const lower = title.toLowerCase();
           if (!seen.has(lower) && this.isSupportedKeyword(title)) {
@@ -211,7 +219,7 @@ class TrendUpdater {
         }
       }
 
-      // 4. AI Reports & Translations (Same logic)
+      // 4. AI Reports & Translations
       for (let item of unique) {
         const prev = previousItems.find(p => p.originalTitle === item.originalTitle);
         if (prev && JSON.stringify(item.newsTitles) === JSON.stringify(prev.newsTitles) && prev.aiReports?.ko && !this.isFallback(prev.aiReports.ko)) {
@@ -235,9 +243,8 @@ class TrendUpdater {
           const fIdx = [];
           transT.forEach((t, idx) => { if (this.containsWrongScript(t, lang)) fIdx.push(idx); });
           if (fIdx.length > 0) {
-            const fTitles = fIdx.map(idx => toTTitle[idx]);
-            const gemRes = await this.translateWithGemini(fTitles, lang);
-            if (gemRes.length === fTitles.length) fIdx.forEach((idx, gi) => { transT[idx] = gemRes[gi]; });
+            const gemRes = await this.translateWithGemini(fIdx.map(idx => toTTitle[idx]), lang);
+            if (gemRes.length === fIdx.length) fIdx.forEach((idx, gi) => { transT[idx] = gemRes[gi]; });
           }
           unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).forEach((item, idx) => { 
             item.translations[lang] = (transT && transT[idx]) ? transT[idx] : item.originalTitle; 
