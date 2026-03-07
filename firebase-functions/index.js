@@ -52,30 +52,11 @@ class TrendUpdater {
     } catch (e) { return []; }
   }
 
-  containsWrongScript(text, targetLang) {
-    if (!text) return true;
-    const hasHangul = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
-    const hasKana = /[ぁ-んァ-ン]/.test(text);
-    if (targetLang === 'ja') return hasHangul;
-    if (targetLang === 'en') return hasHangul || hasKana;
-    return false;
-  }
-
-  isSupportedKeyword(text) {
-    if (!text) return false;
-    const trimmed = text.trim();
-    if (trimmed.length < 2 && !/[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFF]/.test(trimmed)) return false;
-    if (/^\[.*\]$/.test(trimmed)) return false;
-    if (!/[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(trimmed)) return false;
-    const badRegex = /[\u0100-\u024F\u1E00-\u1EFF\u00C0-\u00FF\u0600-\u06FF\u0400-\u04FF\u0E00-\u0E7F]/;
-    return !badRegex.test(trimmed);
-  }
-
   async generateBaseAIReport(item, newsTitles, snippets, country) {
     if (!this.genAI) return "";
     const countryName = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' }[country] || country;
-    const context = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
-    const prompt = `키워드: '${item.originalTitle}' (${countryName})\n뉴스: ${context}\n\n위 뉴스를 기반으로 이 키워드가 왜 지금 트렌드인지 한국어로 2문장 요약해. 마크다운 쓰지마.`;
+    const context = [...newsTitles, ...snippets].join(' / ').slice(0, 1000);
+    const prompt = `키워드: '${item.originalTitle}' (${countryName})\n뉴스: ${context}\n\n위 정보를 바탕으로 이 키워드가 왜 현재 트렌드인지 한국어로 2문장 요약해줘.`;
     try {
       const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
@@ -124,34 +105,14 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Candidates (Increased Pool & Alternative for KR)
+      // 1. Simple Fetch (Reverting complex filtering)
       let itemsPortal = [];
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
-      
       if (url) {
         try {
-          const resP = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" } }).then(r => r.text());
+          const resP = await fetch(url).then(r => r.text());
           const domP = new JSDOM(resP);
-          const selectors = [".rank-item .text", ".rank-text", "span.text", "a.rank-item", ".Trend_Trend__item__name"];
-          for (const s of selectors) {
-            const elements = Array.from(domP.window.document.querySelectorAll(s));
-            if (elements.length > 0) {
-              itemsPortal = elements.map(el => el.textContent.trim()).filter(t => t && t.length > 1);
-              break;
-            }
-          }
-          console.log(`  - Portal (${code}) found ${itemsPortal.length} items.`);
-        } catch (e) { console.error(`  - Portal fetch error for ${code}:`, e.message); }
-      }
-
-      // Alternative for KR if Signal fails
-      if (code === "KR" && itemsPortal.length < 5) {
-        try {
-          console.log("  - Attempting backup KR source (Nate)...");
-          const resN = await fetch("https://www.nate.com/").then(r => r.text());
-          const domN = new JSDOM(resN);
-          const nateTrends = Array.from(domN.window.document.querySelectorAll(".isKeyword a")).map(el => el.textContent.trim());
-          if (nateTrends.length > 0) itemsPortal = [...itemsPortal, ...nateTrends];
+          itemsPortal = Array.from(domP.window.document.querySelectorAll(".rank-item .text, .rank-text, .Trend_Trend__item__name")).map(el => el.textContent.trim()).filter(t => t);
         } catch (e) {}
       }
       
@@ -163,16 +124,13 @@ class TrendUpdater {
         return { title, snippets: getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim()), news: getNodes("news_item_title").map(t => t.textContent) };
       });
 
-      // 2. Select Top 10
       const unique = [];
       const seen = new Set();
-      const combined = [];
-      const maxL = Math.max(itemsGT.length, itemsPortal.length);
-      for(let i=0; i<maxL; i++) { if(itemsGT[i]) combined.push(itemsGT[i].title); if(itemsPortal[i]) combined.push(itemsPortal[i]); }
+      const combined = [...itemsPortal, ...itemsGT.map(i => i.title)];
 
       for (let title of combined) {
         const lower = title.toLowerCase();
-        if (!seen.has(lower) && this.isSupportedKeyword(title)) {
+        if (!seen.has(lower)) {
           seen.add(lower);
           const gt = itemsGT.find(i => i.title === title) || { snippets: [], news: [] };
           unique.push({ originalTitle: title, snippets: gt.snippets, newsTitles: gt.news, translations: {}, aiReports: {} });
@@ -180,60 +138,26 @@ class TrendUpdater {
         if (unique.length >= 10) break;
       }
 
-      // Fill with previous if still under 10
-      if (unique.length < 10) {
-        for (let p of previousItems) {
-          if (!seen.has(p.originalTitle.toLowerCase()) && this.isSupportedKeyword(p.originalTitle)) {
-            seen.add(p.originalTitle.toLowerCase());
-            unique.push({ ...p, translations: {}, aiReports: {} });
-          }
-          if (unique.length >= 10) break;
-        }
-      }
-
-      // 3. PARALLEL PROCESSING: News, Videos, and AI Reports
+      // 2. Parallel Processing (Keep this for speed)
       await Promise.all(unique.map(async (item) => {
         [item.newsLinks, item.videoLinks] = await Promise.all([this.getSupplementaryNews(item.originalTitle, code), this.getYouTubeVideos(item.originalTitle, code)]);
-        const freshTitles = item.newsLinks.map(l => l.title);
-        const prev = previousItems.find(p => p.originalTitle === item.originalTitle);
-        if (prev && JSON.stringify(freshTitles) === JSON.stringify(prev.newsLinks?.map(l => l.title)) && prev.aiReports?.ko) {
-          item.aiReports = prev.aiReports;
-        } else {
-          item.aiReports.ko = await this.generateBaseAIReport(item, freshTitles, item.snippets, code);
-        }
+        item.aiReports.ko = await this.generateBaseAIReport(item, item.newsLinks.map(l => l.title), item.snippets, code);
       }));
 
-      // 4. Batch Translation
+      // 3. Simple Translation
       for (let lang of langs) {
-        const toTTitle = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
+        const toTTitle = unique.filter(i => !i.translations[lang]).map(i => i.originalTitle);
         if (toTTitle.length > 0) {
-          let transT = await this.translateBatch(toTTitle, lang);
-          const fIdx = [];
-          transT.forEach((t, idx) => { if (this.containsWrongScript(t, lang)) fIdx.push(idx); });
-          if (fIdx.length > 0) {
-            const gemRes = await this.translateWithGemini(fIdx.map(idx => toTTitle[idx]), lang);
-            if (gemRes.length === fIdx.length) fIdx.forEach((idx, gi) => { transT[idx] = gemRes[gi]; });
-          }
-          unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).forEach((item, idx) => { item.translations[lang] = transT[idx] || item.originalTitle; });
+          const transT = await this.translateBatch(toTTitle, lang);
+          unique.filter(i => !i.translations[lang]).forEach((item, idx) => { item.translations[lang] = transT[idx] || item.originalTitle; });
         }
-
-        const toTRep = unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).map(i => i.aiReports.ko);
+        const toTRep = unique.filter(i => i.aiReports.ko && !i.aiReports[lang]).map(i => i.aiReports.ko);
         if (toTRep.length > 0) {
           const transR = await this.translateBatch(toTRep, lang);
-          unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).forEach((item, idx) => {
-            if (transR[idx]) item.aiReports[lang] = transR[idx];
-            else if (!item.aiReports[lang]) item.aiReports[lang] = this.getFallbackReport(item.originalTitle, lang, code);
-          });
+          unique.filter(i => i.aiReports.ko && !i.aiReports[lang]).forEach((item, idx) => { item.aiReports[lang] = transR[idx] || ""; });
         }
       }
 
-      // Final Sanity Fill
-      for (let item of unique) {
-        for (let l of langs) {
-          if (!item.translations[l]) item.translations[l] = item.originalTitle;
-          if (!item.aiReports[l]) item.aiReports[l] = this.getFallbackReport(item.originalTitle, l, code);
-        }
-      }
       await docRef.set({ items: unique, previousItems: previousItems, lastUpdated: admin.firestore.Timestamp.now() });
     }
   }

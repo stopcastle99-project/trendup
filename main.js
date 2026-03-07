@@ -119,7 +119,7 @@ let i18n = {
         title: "プライバシーポリシー (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">プライバシーポリシー</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.7.5)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.8.0)</p>
           <h3 style="margin:1.2rem 0 0.5rem;">1. 個人情報の収集および収集方法</h3>
           <p>当サービスは、会員登録なしで全ての機能を利用可能です。ただし、サービスの利用過程で、IPアドレス、クッキー（Cookie）、ブラウザの種類、アクセス日時などの情報がアクセスログとして自動的に収集される場合があります。</p>
           <h3 style="margin:1.2rem 0 0.5rem;">2. 広告の配信について（Googleアドセンス）</h3>
@@ -189,7 +189,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.7.5)</p>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.8.0)</p>
           <h3>1. Information Collection</h3>
           <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
           <h3>2. Advertising and Cookies (Google AdSense)</h3>
@@ -258,20 +258,14 @@ class TrendList extends HTMLElement {
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translated-subtitle { font-size: 0.75rem; color: var(--primary); opacity: 0.85; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
         const mainTitle = item.originalTitle || item.title;
-        let translatedTitle = (item.translations && item.translations[lang]) ? item.translations[lang] : "";
-
-        // Language Integrity Check: Hide translations that contain source language characters
-        const hasHangul = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(translatedTitle);
-        const hasKana = /[ぁ-んァ-ン]/.test(translatedTitle);
-
-        if (lang === 'ja' && hasHangul) translatedTitle = ""; // Hide Korean in Japanese mode
-        if (lang === 'en' && (hasHangul || hasKana)) translatedTitle = ""; // Hide CJK in English mode
+        const translatedTitle = (item.translations && item.translations[lang]) ? item.translations[lang] : "";
 
         // Show translation if language setting is different from trend source language
         const showSub = translatedTitle && (translatedTitle.toLowerCase() !== mainTitle.toLowerCase());
 
         return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${showSub ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
-      }).join('')}</div>`;    this.shadowRoot.querySelectorAll('.item').forEach(el => { 
+      }).join('')}</div>`;
+    this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = () => {
         const trendData = trends[parseInt(el.dataset.index)];
         window.dispatchEvent(new CustomEvent('open-trend-modal', { detail: trendData }));
@@ -359,7 +353,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.7.5)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.8.0)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
