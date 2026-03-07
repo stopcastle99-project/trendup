@@ -119,7 +119,7 @@ let i18n = {
         title: "プライバシーポリシー (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">プライバシーポリシー</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.6.0)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.6.1)</p>
           <h3 style="margin:1.2rem 0 0.5rem;">1. 個人情報の収集および収集方法</h3>
           <p>当サービスは、会員登録なしで全ての機能を利用可能です。ただし、サービスの利用過程で、IPアドレス、クッキー（Cookie）、ブラウザの種類、アクセス日時などの情報がアクセスログとして自動的に収集される場合があります。</p>
           <h3 style="margin:1.2rem 0 0.5rem;">2. 広告の配信について（Googleアドセンス）</h3>
@@ -189,7 +189,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.6.0)</p>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.6.1)</p>
           <h3>1. Information Collection</h3>
           <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
           <h3>2. Advertising and Cookies (Google AdSense)</h3>
@@ -359,7 +359,7 @@ class App {
       const t = i18n[this.currentLang] || i18n.en;
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.6.0)`;
+      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.6.1)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
