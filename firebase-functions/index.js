@@ -124,14 +124,34 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Candidates (Increased Pool)
+      // 1. Fetch Candidates (Increased Pool & Alternative for KR)
       let itemsPortal = [];
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
+      
       if (url) {
         try {
-          const resP = await fetch(url).then(r => r.text());
+          const resP = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" } }).then(r => r.text());
           const domP = new JSDOM(resP);
-          itemsPortal = Array.from(domP.window.document.querySelectorAll(".rank-item .text, .rank-text, .Trend_Trend__item__name")).map(el => el.textContent.trim()).filter(t => t && t.length > 1);
+          const selectors = [".rank-item .text", ".rank-text", "span.text", "a.rank-item", ".Trend_Trend__item__name"];
+          for (const s of selectors) {
+            const elements = Array.from(domP.window.document.querySelectorAll(s));
+            if (elements.length > 0) {
+              itemsPortal = elements.map(el => el.textContent.trim()).filter(t => t && t.length > 1);
+              break;
+            }
+          }
+          console.log(`  - Portal (${code}) found ${itemsPortal.length} items.`);
+        } catch (e) { console.error(`  - Portal fetch error for ${code}:`, e.message); }
+      }
+
+      // Alternative for KR if Signal fails
+      if (code === "KR" && itemsPortal.length < 5) {
+        try {
+          console.log("  - Attempting backup KR source (Nate)...");
+          const resN = await fetch("https://www.nate.com/").then(r => r.text());
+          const domN = new JSDOM(resN);
+          const nateTrends = Array.from(domN.window.document.querySelectorAll(".isKeyword a")).map(el => el.textContent.trim());
+          if (nateTrends.length > 0) itemsPortal = [...itemsPortal, ...nateTrends];
         } catch (e) {}
       }
       
