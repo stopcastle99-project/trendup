@@ -8,12 +8,12 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Improved Robustness:** Updated model lists in both local scripts and Cloud Functions to ensure continuous operation despite future model deprecations.
 - **Dependency Update:** Upgraded core packages including `@google/generative-ai`, `firebase-admin` (v13+), and `jsdom` (v28+) across the project.
 - **Consistency:** Synchronized model priority and logic between `update-trends.js` and `firebase-functions/index.js`.
-- **Version Finalization:** Application updated to **v2.5.4**.
+- **Version Finalization:** Application updated to **v2.6.0**.
 
 ## Phase 32: i18n Fix & UI Text Stabilization (Done)
 - **i18n Cleanup:** Completely fixed mixed Korean and Japanese strings in the `i18n` object within `main.js`.
 - **Label Mapping:** Added missing translation labels (trends, language) and updated `refreshUIText` to support them.
-- **Version Consolidation:** Harmonized all version strings across `index.html`, `main.js`, and `blueprint.md` to **v2.5.4**.
+- **Version Consolidation:** Harmonized all version strings across `index.html`, `main.js`, and `blueprint.md` to **v2.6.0**.
 - **Public Sync:** Ensured all root assets are perfectly synchronized with the `public/` directory for production parity.
 - **UI Consistency:** Fixed hardcoded Korean text in several UI sections by ensuring they are controlled via `main.js`.
 
@@ -79,6 +79,6 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Localize cookie banner text and button for Korean, Japanese, and English (v2.4.15).
 - [x] Update version to v2.4.15 and synchronize all root assets with the public/ directory.
 - [x] Push all changes to GitHub and deploy to Firebase.
-- [x] Upgrade Gemini API to **Gemini 2.5 Flash** for enhanced analysis (v2.5.4).
-- [x] Update core dependencies (`firebase-admin`, `jsdom`, `@google/generative-ai`) to latest versions (v2.5.4).
-- [x] Increment version to **v2.5.4**.
+- [x] Upgrade Gemini API to **Gemini 2.5 Flash** for enhanced analysis (v2.6.0).
+- [x] Update core dependencies (`firebase-admin`, `jsdom`, `@google/generative-ai`) to latest versions (v2.6.0).
+- [x] Increment version to **v2.6.0**.
