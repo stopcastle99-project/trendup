@@ -69,47 +69,22 @@ class TrendUpdater {
 
   isSupportedKeyword(text) {
     if (!text) return false;
-
-    // 1. Minimum Length Check: Must be at least 2 chars, or a single CJK char
     const trimmed = text.trim();
     const isSingleCJK = trimmed.length === 1 && /[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFF]/.test(trimmed);
     if (trimmed.length < 2 && !isSingleCJK) return false;
-
-    // 2. Noise Pattern Check: Block bracketed metadata like [유], [AD], etc.
     if (/^\[.*\]$/.test(trimmed)) return false;
-
-    // 3. Script Check: Must contain supported scripts
     const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(trimmed);
     if (!hasSupported) return false;
-
-    // 4. Strict Whitelist
     const whitelistRegex = /^[\u0000-\u007F\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF\uFF00-\uFFEF\s\u2000-\u206F\u2E00-\u2E7F]*$/;
     return whitelistRegex.test(trimmed);
   }
-
 
   async generateBaseAIReport(item, newsTitles, snippets, country) {
     if (!this.genAI) return "";
     const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
     const countryName = countryNames[country] || country;
-    
-    // Prioritize newsTitles (freshly fetched) over snippets
     const combinedContext = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
-    
-    const prompt = `
-      분석 대상 키워드: '${item.originalTitle}'
-      해당 국가: ${countryName}
-      최신 뉴스 제목들: ${combinedContext}
-
-      위의 최신 뉴스 제목들을 분석하여, 이 키워드가 왜 '지금 이 순간' ${countryName}에서 급상승 트렌드인지 요약해줘.
-      
-      지시사항:
-      1. 일반적인 역사나 프로필 정보는 제외하고, 뉴스 제목에 나타난 '오늘의 구체적인 사건'에 집중해.
-      2. 왜 화제인지 그 핵심 이유를 첫 문장에 바로 언급해.
-      3. 2문장 내외로 명확하고 전문적으로 작성해.
-      4. 반드시 한국어로 작성하고 마크다운(**)은 사용하지마.
-    `;
-
+    const prompt = `분석 대상 키워드: '${item.originalTitle}'\n해당 국가: ${countryName}\n최신 뉴스 제목들: ${combinedContext}\n\n위의 최신 뉴스 제목들을 분석하여, 이 키워드가 왜 '지금 이 순간' ${countryName}에서 급상승 트렌드인지 요약해줘. 지시사항: 1. 일반적인 역사나 프로필 정보는 제외하고, 뉴스 제목에 나타난 '오늘의 구체적인 사건'에 집중해. 2. 왜 화제인지 그 핵심 이유를 첫 문장에 바로 언급해. 3. 2문장 내외로 명확하고 전문적으로 작성해. 4. 반드시 한국어로 작성하고 마크다운(**)은 사용하지마.`;
     const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001"];
     for (const modelName of modelsToTry) {
       try {
@@ -184,17 +159,28 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Trends
+      // 1. Fetch Source A: Portal (Signal for KR, Yahoo for JP)
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       let itemsPortal = [];
       if (url) {
         try {
           const resP = await fetch(url).then(r => r.text());
           const domP = new JSDOM(resP);
-          itemsPortal = Array.from(domP.window.document.querySelectorAll(".rank-item .text, .rank-text, .Trend_Trend__item__name")).map(el => el.textContent.trim()).filter(t => t);
-        } catch (e) {}
+          // Enhanced Selectors for Signal.bz
+          const selectors = [".rank-item .text", ".rank-text", "span.text", "a.rank-item"];
+          let found = [];
+          for (const s of selectors) {
+            const elements = Array.from(domP.window.document.querySelectorAll(s));
+            if (elements.length > 0) {
+              found = elements.map(el => el.textContent.trim()).filter(t => t && t.length > 1);
+              break;
+            }
+          }
+          itemsPortal = found;
+        } catch (e) { console.error(`Portal fetch failed for ${code}:`, e.message); }
       }
       
+      // 2. Fetch Source B: Google Trends
       const rssGT = await fetch(`https://trends.google.com/trending/rss?geo=${code}`).then(r => r.text()).catch(() => "");
       const domGT = new JSDOM(rssGT, { contentType: "text/xml" });
       const itemsGT = Array.from(domGT.window.document.querySelectorAll("item")).map(item => {
@@ -203,43 +189,50 @@ class TrendUpdater {
         return { title, snippets: getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim()), news: getNodes("news_item_title").map(t => t.textContent) };
       });
 
-      // 2. Interleave and Select Top 10
-      const interleaved = [];
-      const maxLength = Math.max(itemsPortal.length, itemsGT.length);
-      for (let i = 0; i < maxLength; i++) {
-        if (itemsPortal[i]) interleaved.push({ title: itemsPortal[i] });
-        if (itemsGT[i]) interleaved.push({ title: itemsGT[i].title });
-      }
-
+      // 3. INTEGRATE: Balanced Mix with Priority
       const unique = [];
       const seen = new Set();
-      for (let obj of interleaved) {
-        const lower = obj.title.toLowerCase();
-        if (!seen.has(lower) && this.isSupportedKeyword(obj.title)) {
+      
+      // Merge Strategy: Google Trends (Official) + Portal (Real-time)
+      const candidates = [];
+      const maxLength = Math.max(itemsGT.length, itemsPortal.length);
+      for (let i = 0; i < maxLength; i++) {
+        if (itemsGT[i]) candidates.push({ title: itemsGT[i].title, isGoogle: true });
+        if (itemsPortal[i]) candidates.push({ title: itemsPortal[i], isGoogle: false });
+      }
+
+      for (let cand of candidates) {
+        const lower = cand.title.toLowerCase();
+        if (!seen.has(lower) && this.isSupportedKeyword(cand.title)) {
           seen.add(lower);
-          const gt = itemsGT.find(i => i.title === obj.title) || { snippets: [], news: [] };
-          unique.push({ originalTitle: obj.title, snippets: gt.snippets, newsTitles: gt.news, translations: {}, aiReports: {} });
+          const gtData = itemsGT.find(i => i.title === cand.title) || { snippets: [], news: [] };
+          unique.push({ originalTitle: cand.title, snippets: gtData.snippets, newsTitles: gtData.news, translations: {}, aiReports: {} });
         }
         if (unique.length >= 10) break;
       }
 
-      // 3. ENHANCED: Fetch Fresh News FIRST, then Generate AI Report
+      // FINAL FALLBACK: If under 10, use ANY valid remaining portal items
+      if (unique.length < 10) {
+        for (let title of itemsPortal) {
+          const lower = title.toLowerCase();
+          if (!seen.has(lower) && this.isSupportedKeyword(title)) {
+            seen.add(lower);
+            unique.push({ originalTitle: title, snippets: [], newsTitles: [], translations: {}, aiReports: {} });
+          }
+          if (unique.length >= 10) break;
+        }
+      }
+
+      // 4. AI Reports & Fresh News
       for (let item of unique) {
-        // Fetch real-time news links first
         item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
         item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
-        
-        // Use these fresh news titles as the primary context for Gemini
-        const freshNewsTitles = item.newsLinks.map(l => l.title);
-        
+        const freshNews = item.newsLinks.map(l => l.title);
         const prev = previousItems.find(p => p.originalTitle === item.originalTitle);
-        // Only reuse if news content is exactly the same (rare with fresh links)
-        if (prev && JSON.stringify(freshNewsTitles) === JSON.stringify(prev.newsLinks?.map(l => l.title)) && prev.aiReports?.ko && !this.isFallback(prev.aiReports.ko)) {
+        if (prev && JSON.stringify(freshNews) === JSON.stringify(prev.newsLinks?.map(l => l.title)) && prev.aiReports?.ko && !this.isFallback(prev.aiReports.ko)) {
           item.aiReports = prev.aiReports;
         } else {
-          console.log(`  - Fresh AI Analysis for: ${item.originalTitle}`);
-          // Pass both fresh titles and RSS snippets for maximum grounding
-          const report = await this.generateBaseAIReport(item, freshNewsTitles, item.snippets, code);
+          const report = await this.generateBaseAIReport(item, freshNews, item.snippets, code);
           if (report) {
             item.aiReports.ko = report;
             langs.filter(l => l !== 'ko').forEach(l => item.aiReports[l] = "");
@@ -250,7 +243,7 @@ class TrendUpdater {
         }
       }
 
-      // 4. Translation and Sync
+      // 5. Translation
       for (let lang of langs) {
         const toTTitle = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
         if (toTTitle.length > 0) {
