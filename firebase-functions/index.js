@@ -56,30 +56,22 @@ class TrendUpdater {
     if (!this.genAI) return "";
     const countryName = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' }[country] || country;
     const context = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
-    const prompt = `
-      대상 키워드: '${item.originalTitle}'
-      해당 국가: ${countryName}
-      참고 정보: ${context}
-
-      위 정보를 분석하여, 왜 이 키워드가 지금 트렌드인지 한국어로 2문장 요약해줘.
-      - 역사나 프로필은 생략하고 현재 상황에 집중할 것.
-      - 마크다운 기호(**)는 사용하지 말 것.
-    `;
+    const prompt = `대상 키워드: '${item.originalTitle}' (${countryName})\n참고 정보: ${context}\n\n위 정보를 분석하여 이 키워드가 왜 지금 트렌드인지 한국어로 2문장 요약해줘. 마크다운(**) 금지.`;
     
-    const models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"];
+    // Most standard and reliable model list
+    const modelNames = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
     
-    for (const modelName of models) {
+    for (const name of modelNames) {
       try {
-        const model = this.genAI.getGenerativeModel({ model: modelName });
+        const model = this.genAI.getGenerativeModel({ model: name });
         const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().trim().replace(/\*\*/g, '');
+        const text = result.response.text().trim().replace(/\*\*/g, '');
         if (text && text.length > 10) {
-          console.log(`  - Gemini Success with [${modelName}] for: ${item.originalTitle}`);
+          console.log(`  - Gemini Success: ${name} for ${item.originalTitle}`);
           return text;
         }
       } catch (e) {
-        console.warn(`  - Gemini [${modelName}] failed: ${e.message.substring(0, 50)}`);
+        console.warn(`  - Gemini Attempt [${name}] failed:`, e.message.substring(0, 80));
       }
     }
     return "";

@@ -12,42 +12,28 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey);
 
 async function testGeminiReport() {
-  console.log("🚀 Starting Gemini AI Report Test...");
+  console.log("🚀 Starting Gemini AI Report Test (Forced v1 API)...");
+  const models = ["models/gemini-1.5-flash", "models/gemini-1.5-pro", "models/gemini-2.0-flash"];
   
-  const testKeyword = "뉴진스";
-  const testNewsTitles = [
-    "뉴진스, 새로운 미니 앨범 발표 및 월드 투어 일정 공개",
-    "빌보드 차트 휩쓴 뉴진스, 글로벌 영향력 입증",
-    "뉴진스 멤버들의 최근 패션 화보 화제"
-  ];
-  const testSnippets = [
-    "뉴진스가 오늘 오전 기자회견을 통해 새로운 프로젝트 소식을 전했습니다.",
-    "팬들의 기대감이 고조되는 가운데 실시간 검색어 1위에 올랐습니다."
-  ];
+  const prompt = "대한민국 트렌드 '뉴진스'에 대해 한국어로 1문장 요약해줘.";
 
-  const countryName = "대한민국";
-  const context = [...testNewsTitles, ...testSnippets].join(' / ');
-  
-  const prompt = `키워드: '${testKeyword}' (${countryName})\n뉴스: ${context}\n\n위 정보를 바탕으로 이 키워드가 왜 현재 트렌드인지 한국어로 2문장 요약해줘.`;
-
-  console.log(`- Prompt: ${prompt.substring(0, 50)}...`);
-
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
-    
-    if (text) {
-      console.log("✅ Success! Gemini AI Response:");
-      console.log("-----------------------------------------");
-      console.log(text);
-      console.log("-----------------------------------------");
-    } else {
-      console.error("❌ Received empty response from Gemini AI.");
+  for (const modelName of models) {
+    try {
+      console.log(`Testing model: ${modelName} via API v1...`);
+      // Use explicit model ID path for v1
+      const model = genAI.getGenerativeModel({ model: modelName }, { apiVersion: 'v1' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text().trim();
+      
+      if (text) {
+        console.log(`✅ SUCCESS with [${modelName}]!`);
+        console.log("Response:", text);
+        return;
+      }
+    } catch (error) {
+      console.error(`❌ Failed with [${modelName}]:`, error.message.substring(0, 100));
     }
-  } catch (error) {
-    console.error("❌ Gemini AI Test failed:", error.message);
   }
 }
 
