@@ -58,11 +58,13 @@ class TrendUpdater {
     const title = item.originalTitle;
 
     const prompt = `
-      You are a professional trend analyst. Analyze why '${title}' is trending in ${countryName}.
-      Ref News: ${newsTitles.join(' / ')}
-      Context: ${snippets.join(' ')}
-      Task: Write a insightful 2-sentence summary in Korean (한국어). 
-      Synthesize information, explain the cause and public reaction. No bolding.
+      '${title}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘.
+      참고 정보: ${newsTitles.join(' / ')} / ${snippets.join(' ')}
+      지시사항:
+      1. 인사말, 자기소개, 불필요한 미사여구 없이 바로 분석 내용만 작성해.
+      2. 위 정보를 바탕으로 트렌드의 구체적인 원인과 현재 상황을 2문장 내외로 요약해.
+      3. 반드시 한국어(Korean)로 작성해.
+      4. '**' 같은 마크다운 기호는 절대 사용하지마.
     `;
 
     const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001", "gemini-2.0-flash-lite", "gemini-2.0-flash"];

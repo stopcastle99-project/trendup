@@ -53,13 +53,13 @@ class TrendUpdater {
     const combinedContext = [...newsTitles, ...snippets].join(' / ').slice(0, 1000);
 
     const prompt = `
-      너는 글로벌 트렌드 분석가야. '${title}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘.
+      '${title}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘.
       참고 정보: ${combinedContext}
       지시사항:
-      1. 위 정보를 바탕으로 이 트렌드의 구체적인 원인과 현재 상황을 분석해.
-      2. 반드시 한국어(Korean)로 작성해.
-      3. 친절하고 전문적인 말투로 2문장 내외로 요약해.
-      4. 불필요한 수식어나 '**' 같은 마크다운 기호는 절대 사용하지마.
+      1. 인사말, 자기소개, 불필요한 미사여구 없이 바로 분석 내용만 작성해.
+      2. 위 정보를 바탕으로 트렌드의 구체적인 원인과 현재 상황을 2문장 내외로 요약해.
+      3. 반드시 한국어(Korean)로 작성해.
+      4. '**' 같은 마크다운 기호는 절대 사용하지마.
     `;
 
     const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001", "gemini-flash-latest", "gemini-pro"];
