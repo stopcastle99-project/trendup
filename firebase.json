@@ -15,7 +15,7 @@
   },
   "functions": [
     {
-      "source": "functions",
+      "source": "firebase-functions",
       "codebase": "default",
       "runtime": "nodejs22",
       "ignore": [

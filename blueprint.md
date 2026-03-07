@@ -7,7 +7,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Model Upgrade:** Migrated from Gemini 2.0 Flash to the latest stable **Gemini 2.5 Flash** due to 404 errors with older model names.
 - **Improved Robustness:** Updated model lists in both local scripts and Cloud Functions to ensure continuous operation despite future model deprecations.
 - **Dependency Update:** Upgraded core packages including `@google/generative-ai`, `firebase-admin` (v13+), and `jsdom` (v28+) across the project.
-- **Consistency:** Synchronized model priority and logic between `update-trends.js` and `functions/index.js`.
+- **Consistency:** Synchronized model priority and logic between `update-trends.js` and `firebase-functions/index.js`.
 - **Version Finalization:** Application updated to **v2.5.4**.
 
 ## Phase 32: i18n Fix & UI Text Stabilization (Done)
