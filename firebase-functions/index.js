@@ -80,6 +80,17 @@ class TrendUpdater {
     return false;
   }
 
+  // Check if keyword contains supported scripts (KO, JA, EN, or Kanji)
+  isSupportedKeyword(text) {
+    if (!text) return false;
+    // Check for Hangul, Kana, Latin (English/Numbers), or Kanji (Chinese/Japanese characters)
+    const hasHangul = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
+    const hasKana = /[ぁ-んァ-ン]/.test(text);
+    const hasLatin = /[a-zA-Z0-9]/.test(text);
+    const hasKanji = /[\u4e00-\u9faf]/.test(text);
+    return hasHangul || hasKana || hasLatin || hasKanji;
+  }
+
   // Generate a single report in Korean (Base Language)
   async generateBaseAIReport(item, newsTitles, snippets, country) {
     if (!this.genAI) return "";
@@ -123,7 +134,7 @@ class TrendUpdater {
     const countryName = mapping[lang]?.[country] || mapping['en'][country] || country;
 
     if (lang === 'ko') return `${countryName}에서 '${title}' 키워드가 관련 보도를 통해 주목받고 있습니다.`;
-    if (lang === 'ja') return `${countryName}国内で'${title}'が注目を集めています。`; // '가' 제거 및 'が'로 교체
+    if (lang === 'ja') return `${countryName}国内で'${title}'が注目を集めています。`;
     return `'${title}' is drawing attention in ${countryName} through various news reports.`;
   }
 
@@ -142,7 +153,6 @@ class TrendUpdater {
     // 1. Context-Aware Query Building
     let refinedQuery = keyword;
     if (snippets && snippets.length > 0) {
-      // Use the first part of the snippet to narrow down the context
       const context = snippets[0].split(/[.!?]/)[0].split(' ').slice(0, 3).join(' ');
       if (context && context.length > 2 && !context.includes(keyword)) refinedQuery = `${keyword} ${context}`;
     }
@@ -167,7 +177,6 @@ class TrendUpdater {
         };
       });
 
-      // 2. Priority Sorting: Trusted sources first
       const sorted = links.sort((a, b) => {
         const aTrusted = trustedSources.some(s => a.source.includes(s));
         const bTrusted = trustedSources.some(s => b.source.includes(s));
@@ -214,17 +223,16 @@ class TrendUpdater {
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
       const prevReportMap = new Map(previousItems.map(i => [i.originalTitle, i.aiReports || {}]));
 
-      // 1. Fetch Trends
+      // 1. Fetch Trends (Read more items to filter out noise)
       let url = code === "KR" ? "https://signal.bz/" : "https://search.yahoo.co.jp/realtime/term";
       const resPortal = await fetch(url).then(r => r.text()).catch(() => "");
       const domPortal = new JSDOM(resPortal);
-      const itemsPortal = code === "KR" ? Array.from(domPortal.window.document.querySelectorAll(".rank-item .text")).slice(0,10).map(el => el.textContent.trim()) : Array.from(domPortal.window.document.querySelectorAll(".Trend_Trend__item__name")).slice(0,10).map(el => el.textContent.trim());
+      const itemsPortal = code === "KR" ? Array.from(domPortal.window.document.querySelectorAll(".rank-item .text")).slice(0,20).map(el => el.textContent.trim()) : Array.from(domPortal.window.document.querySelectorAll(".Trend_Trend__item__name")).slice(0,20).map(el => el.textContent.trim());
       
       const rssGT = await fetch(`https://trends.google.com/trending/rss?geo=${code}`).then(r => r.text()).catch(() => "");
       const domGT = new JSDOM(rssGT, { contentType: "text/xml" });
       const itemsGT = Array.from(domGT.window.document.querySelectorAll("item")).map(item => {
         const title = item.querySelector("title")?.textContent || "";
-        // Fix: Use localName to find tags with namespaces like 'ht:news_item_snippet'
         const getNodes = (tagName) => Array.from(item.childNodes).filter(n => n.localName === tagName);
         const snippets = getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim());
         const news = getNodes("news_item_title").map(t => t.textContent);
@@ -234,9 +242,12 @@ class TrendUpdater {
       const unique = [];
       const seen = new Set();
       const rawTitles = [...itemsPortal, ...itemsGT.map(i => i.title)];
+      
       for (let title of rawTitles) {
-        if (!seen.has(title.toLowerCase())) {
-          seen.add(title.toLowerCase());
+        const lowerTitle = title.toLowerCase();
+        // FILTERING: Must be unique AND contain supported scripts (KO, JA, EN, Kanji)
+        if (!seen.has(lowerTitle) && this.isSupportedKeyword(title)) {
+          seen.add(lowerTitle);
           const gtData = itemsGT.find(i => i.title === title) || { snippets: [], news: [] };
           unique.push({ originalTitle: title, snippets: gtData.snippets, newsTitles: gtData.news, translations: {}, aiReports: {} });
         }
@@ -247,24 +258,19 @@ class TrendUpdater {
       for (let item of unique) {
         const prevItem = previousItems.find(p => p.originalTitle === item.originalTitle);
         const existingReports = prevItem ? prevItem.aiReports : null;
-        
-        // Smart Check: Reuse ONLY if news content is identical AND report exists
         const isNewsSame = prevItem && JSON.stringify(item.newsTitles) === JSON.stringify(prevItem.newsTitles);
         const hasValidReport = existingReports && existingReports.ko && !this.isFallback(existingReports.ko);
 
         if (isNewsSame && hasValidReport) {
           item.aiReports = existingReports;
         } else {
-          // Generate NEW or Update changed content
           console.log(`  - ${prevItem ? 'Updating' : 'Generating'} report for: ${item.originalTitle}`);
           const baseReport = await this.generateBaseAIReport(item, item.newsTitles, item.snippets, code);
           if (baseReport) {
             item.aiReports.ko = baseReport;
-            // Clear other languages to force re-translation for the new context
             langs.filter(l => l !== 'ko').forEach(l => item.aiReports[l] = "");
-            await new Promise(r => setTimeout(r, 2000)); // Rate limiting
+            await new Promise(r => setTimeout(r, 2000));
           } else if (hasValidReport) {
-            // Fallback to old report if new generation fails but old one exists
             item.aiReports = existingReports;
           }
         }
@@ -272,21 +278,13 @@ class TrendUpdater {
 
       // 3. Batch Translate missing items
       for (let lang of langs) {
-        // Translate titles with Hybrid Logic (Google -> Gemini Fallback)
         const toTranslateTitles = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
         if (toTranslateTitles.length > 0) {
-          // Attempt 1: Google Translate (Free)
           let translatedTitles = await this.translateBatch(toTranslateTitles, lang);
-          
-          // Identify failures (items that still contain source script)
           const failedIndices = [];
-          translatedTitles.forEach((t, idx) => {
-            if (this.containsWrongScript(t, lang)) failedIndices.push(idx);
-          });
+          translatedTitles.forEach((t, idx) => { if (this.containsWrongScript(t, lang)) failedIndices.push(idx); });
 
-          // Attempt 2: Gemini Fallback for failures
           if (failedIndices.length > 0) {
-            console.log(`  - Gemini fallback translation for ${failedIndices.length} items in ${lang}`);
             const failedTitles = failedIndices.map(idx => toTranslateTitles[idx]);
             const geminiResults = await this.translateWithGemini(failedTitles, lang);
             if (geminiResults.length === failedTitles.length) {
@@ -299,7 +297,6 @@ class TrendUpdater {
           });
         }
 
-        // Translate reports (only those that are empty or were cleared due to content change)
         const toTranslateReports = unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).map(i => i.aiReports.ko);
         if (toTranslateReports.length > 0) {
           const translatedReports = await this.translateBatch(toTranslateReports, lang);
@@ -313,7 +310,7 @@ class TrendUpdater {
         }
       }
 
-      // 4. Final Sanity Check: Ensure all keys exist to prevent frontend failures
+      // 4. Final Sanity Check
       for (let item of unique) {
         for (let l of langs) {
           if (!item.translations[l]) item.translations[l] = item.originalTitle;
