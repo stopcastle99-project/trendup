@@ -70,13 +70,17 @@ class TrendUpdater {
   isSupportedKeyword(text) {
     if (!text) return false;
     const trimmed = text.trim();
-    const isSingleCJK = trimmed.length === 1 && /[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFF]/.test(trimmed);
-    if (trimmed.length < 2 && !isSingleCJK) return false;
+    if (trimmed.length < 2) {
+      if (!/[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFF]/.test(trimmed)) return false;
+    }
     if (/^\[.*\]$/.test(trimmed)) return false;
-    const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(trimmed);
-    if (!hasSupported) return false;
-    const whitelistRegex = /^[\u0000-\u007F\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF\uFF00-\uFFEF\s\u2000-\u206F\u2E00-\u2E7F]*$/;
-    return whitelistRegex.test(trimmed);
+
+    const hasTarget = /[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(trimmed);
+    if (!hasTarget) return false;
+
+    // Block specific noise scripts (Vietnamese accents, Arabic, Cyrillic, Thai)
+    const badScriptRegex = /[\u0100-\u024F\u1E00-\u1EFF\u00C0-\u00FF\u0600-\u06FF\u0400-\u04FF\u0E00-\u0E7F]/;
+    return !badScriptRegex.test(trimmed);
   }
 
   async generateBaseAIReport(item, newsTitles, snippets, country) {
@@ -159,28 +163,24 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Source A: Portal (Signal for KR, Yahoo for JP)
-      let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
+      // 1. Fetch Candidates from all sources
       let itemsPortal = [];
+      let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       if (url) {
         try {
           const resP = await fetch(url).then(r => r.text());
           const domP = new JSDOM(resP);
-          // Enhanced Selectors for Signal.bz
-          const selectors = [".rank-item .text", ".rank-text", "span.text", "a.rank-item"];
-          let found = [];
+          const selectors = [".rank-item .text", ".rank-text", "span.text", "a.rank-item", ".Trend_Trend__item__name"];
           for (const s of selectors) {
             const elements = Array.from(domP.window.document.querySelectorAll(s));
             if (elements.length > 0) {
-              found = elements.map(el => el.textContent.trim()).filter(t => t && t.length > 1);
+              itemsPortal = elements.map(el => el.textContent.trim()).filter(t => t && t.length > 1);
               break;
             }
           }
-          itemsPortal = found;
-        } catch (e) { console.error(`Portal fetch failed for ${code}:`, e.message); }
+        } catch (e) {}
       }
       
-      // 2. Fetch Source B: Google Trends
       const rssGT = await fetch(`https://trends.google.com/trending/rss?geo=${code}`).then(r => r.text()).catch(() => "");
       const domGT = new JSDOM(rssGT, { contentType: "text/xml" });
       const itemsGT = Array.from(domGT.window.document.querySelectorAll("item")).map(item => {
@@ -189,41 +189,42 @@ class TrendUpdater {
         return { title, snippets: getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim()), news: getNodes("news_item_title").map(t => t.textContent) };
       });
 
-      // 3. INTEGRATE: Balanced Mix with Priority
+      // 2. INTEGRATE: Interleave Google and Portal candidates
+      const allCandidates = [];
+      const maxC = Math.max(itemsGT.length, itemsPortal.length);
+      for (let i = 0; i < maxC; i++) {
+        if (itemsGT[i]) allCandidates.push(itemsGT[i].title);
+        if (itemsPortal[i]) allCandidates.push(itemsPortal[i]);
+      }
+
       const unique = [];
       const seen = new Set();
       
-      // Merge Strategy: Google Trends (Official) + Portal (Real-time)
-      const candidates = [];
-      const maxLength = Math.max(itemsGT.length, itemsPortal.length);
-      for (let i = 0; i < maxLength; i++) {
-        if (itemsGT[i]) candidates.push({ title: itemsGT[i].title, isGoogle: true });
-        if (itemsPortal[i]) candidates.push({ title: itemsPortal[i], isGoogle: false });
-      }
-
-      for (let cand of candidates) {
-        const lower = cand.title.toLowerCase();
-        if (!seen.has(lower) && this.isSupportedKeyword(cand.title)) {
+      // Select valid top 10
+      for (let title of allCandidates) {
+        const lower = title.toLowerCase();
+        if (!seen.has(lower) && this.isSupportedKeyword(title)) {
           seen.add(lower);
-          const gtData = itemsGT.find(i => i.title === cand.title) || { snippets: [], news: [] };
-          unique.push({ originalTitle: cand.title, snippets: gtData.snippets, newsTitles: gtData.news, translations: {}, aiReports: {} });
+          const gtData = itemsGT.find(i => i.title === title) || { snippets: [], news: [] };
+          unique.push({ originalTitle: title, snippets: gtData.snippets, newsTitles: gtData.news, translations: {}, aiReports: {} });
         }
         if (unique.length >= 10) break;
       }
 
-      // FINAL FALLBACK: If under 10, use ANY valid remaining portal items
+      // ABSOLUTE GUARANTEE: If still under 10, reuse valid previous items
       if (unique.length < 10) {
-        for (let title of itemsPortal) {
-          const lower = title.toLowerCase();
-          if (!seen.has(lower) && this.isSupportedKeyword(title)) {
+        console.warn(`Insufficient items for ${code} (${unique.length}/10). Reusing previous items...`);
+        for (let prevItem of previousItems) {
+          const lower = prevItem.originalTitle.toLowerCase();
+          if (!seen.has(lower) && this.isSupportedKeyword(prevItem.originalTitle)) {
             seen.add(lower);
-            unique.push({ originalTitle: title, snippets: [], newsTitles: [], translations: {}, aiReports: {} });
+            unique.push({ ...prevItem, trendDir: 'steady' }); // Reset direction for reused items
           }
           if (unique.length >= 10) break;
         }
       }
 
-      // 4. AI Reports & Fresh News
+      // 3. AI Reports & Fresh News
       for (let item of unique) {
         item.newsLinks = await this.getSupplementaryNews(item.originalTitle, code);
         item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
@@ -243,7 +244,7 @@ class TrendUpdater {
         }
       }
 
-      // 5. Translation
+      // 4. Translation
       for (let lang of langs) {
         const toTTitle = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
         if (toTTitle.length > 0) {
