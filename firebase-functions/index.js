@@ -67,17 +67,18 @@ class TrendUpdater {
     return false;
   }
 
-  // REFINED: Balanced Filtering
+  // ENHANCED: Strict Whitelist filtering (Only standard Latin, KO, JA, Numbers, and Spaces)
   isSupportedKeyword(text) {
     if (!text) return false;
-    // 1. Must contain at least one character from KO, JA, or standard EN/Numeric
+    // 1. Minimum requirement: Must contain at least one character from KO, JA, or standard EN
     const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF[a-zA-Z0-9]/.test(text);
-    // 2. Must NOT contain specific noise scripts (Arabic, Cyrillic, Thai, etc.)
-    const hasNoiseScript = /[\u0600-\u06FF\u0400-\u04FF\u0E00-\u0E7F]/.test(text);
-    // 3. Exclude European accents (to block French/Spanish spikes in KO/JP/US views)
-    const hasEuropeanAccents = /[\u00C0-\u00FF]/.test(text);
-    
-    return hasSupported && !hasNoiseScript && !hasEuropeanAccents;
+    if (!hasSupported) return false;
+
+    // 2. ABSOLUTE WHITELIST: Only allow characters within these specific ranges.
+    // Any character outside this (like Vietnamese accents, French accents, Arabic, etc.) will cause immediate failure.
+    // Ranges: Basic Latin (00-7F), Hangul (AC00-D7AF), Kana (3040-30FF), Kanji (4E00-9FFF), Full-width (FF00-FFEF), Common Punctuation (\u2000-\u206F)
+    const whitelistRegex = /^[\u0000-\u007F\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF\uFF00-\uFFEF\s\u2000-\u206F\u2E00-\u2E7F]*$/;
+    return whitelistRegex.test(text);
   }
 
   async generateBaseAIReport(item, newsTitles, snippets, country) {
@@ -160,13 +161,14 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Trends (Extended Pool)
+      // 1. Fetch Trends (Read as many as possible to fill 10 after filtering)
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       let itemsPortal = [];
       if (url) {
         try {
           const resP = await fetch(url).then(r => r.text());
           const domP = new JSDOM(resP);
+          // Get all available items from portal
           itemsPortal = code === "KR" ? 
             Array.from(domP.window.document.querySelectorAll(".rank-item .text")).map(el => el.textContent.trim()) : 
             Array.from(domP.window.document.querySelectorAll(".Trend_Trend__item__name")).map(el => el.textContent.trim());
@@ -184,6 +186,8 @@ class TrendUpdater {
       const unique = [];
       const seen = new Set();
       const rawTitles = [...itemsPortal, ...itemsGT.map(i => i.title)];
+      
+      // ENSURE 10 ITEMS: Keep looping until we have 10, or run out of candidates
       for (let title of rawTitles) {
         const lower = title.toLowerCase();
         if (!seen.has(lower) && this.isSupportedKeyword(title)) {
@@ -194,7 +198,7 @@ class TrendUpdater {
         if (unique.length >= 10) break;
       }
 
-      // 2. Generate/Reuse AI Report
+      // 2. AI Reports
       for (let item of unique) {
         const prev = previousItems.find(p => p.originalTitle === item.originalTitle);
         if (prev && JSON.stringify(item.newsTitles) === JSON.stringify(prev.newsTitles) && prev.aiReports?.ko && !this.isFallback(prev.aiReports.ko)) {
@@ -211,7 +215,7 @@ class TrendUpdater {
         }
       }
 
-      // 3. Hybrid Translation
+      // 3. Translation
       for (let lang of langs) {
         const toTTitle = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
         if (toTTitle.length > 0) {
@@ -238,7 +242,7 @@ class TrendUpdater {
         }
       }
 
-      // 4. Final Sanity Check
+      // 4. Final Sync
       for (let item of unique) {
         for (let l of langs) {
           if (!item.translations[l]) item.translations[l] = item.originalTitle;
