@@ -67,16 +67,10 @@ class TrendUpdater {
     return false;
   }
 
-  // ENHANCED: Strict Whitelist filtering (Only standard Latin, KO, JA, Numbers, and Spaces)
   isSupportedKeyword(text) {
     if (!text) return false;
-    // 1. Minimum requirement: Must contain at least one character from KO, JA, or standard EN
     const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF[a-zA-Z0-9]/.test(text);
     if (!hasSupported) return false;
-
-    // 2. ABSOLUTE WHITELIST: Only allow characters within these specific ranges.
-    // Any character outside this (like Vietnamese accents, French accents, Arabic, etc.) will cause immediate failure.
-    // Ranges: Basic Latin (00-7F), Hangul (AC00-D7AF), Kana (3040-30FF), Kanji (4E00-9FFF), Full-width (FF00-FFEF), Common Punctuation (\u2000-\u206F)
     const whitelistRegex = /^[\u0000-\u007F\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF\uFF00-\uFFEF\s\u2000-\u206F\u2E00-\u2E7F]*$/;
     return whitelistRegex.test(text);
   }
@@ -161,20 +155,20 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Trends (Read as many as possible to fill 10 after filtering)
+      // 1. Fetch Source A: Portal (Signal for KR, Yahoo for JP)
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       let itemsPortal = [];
       if (url) {
         try {
           const resP = await fetch(url).then(r => r.text());
           const domP = new JSDOM(resP);
-          // Get all available items from portal
           itemsPortal = code === "KR" ? 
             Array.from(domP.window.document.querySelectorAll(".rank-item .text")).map(el => el.textContent.trim()) : 
             Array.from(domP.window.document.querySelectorAll(".Trend_Trend__item__name")).map(el => el.textContent.trim());
         } catch (e) {}
       }
       
+      // 2. Fetch Source B: Google Trends
       const rssGT = await fetch(`https://trends.google.com/trending/rss?geo=${code}`).then(r => r.text()).catch(() => "");
       const domGT = new JSDOM(rssGT, { contentType: "text/xml" });
       const itemsGT = Array.from(domGT.window.document.querySelectorAll("item")).map(item => {
@@ -183,22 +177,41 @@ class TrendUpdater {
         return { title, snippets: getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim()), news: getNodes("news_item_title").map(t => t.textContent) };
       });
 
+      // 3. INTEGRATE: Interleave Source A and Source B for balanced results
+      const interleaved = [];
+      const maxLength = Math.max(itemsPortal.length, itemsGT.length);
+      for (let i = 0; i < maxLength; i++) {
+        if (itemsPortal[i]) interleaved.push({ title: itemsPortal[i], source: 'portal' });
+        if (itemsGT[i]) interleaved.push({ title: itemsGT[i].title, source: 'google' });
+      }
+
       const unique = [];
       const seen = new Set();
-      const rawTitles = [...itemsPortal, ...itemsGT.map(i => i.title)];
       
-      // ENSURE 10 ITEMS: Keep looping until we have 10, or run out of candidates
-      for (let title of rawTitles) {
-        const lower = title.toLowerCase();
-        if (!seen.has(lower) && this.isSupportedKeyword(title)) {
+      // First Pass: Get Integrated Top 10
+      for (let obj of interleaved) {
+        const lower = obj.title.toLowerCase();
+        if (!seen.has(lower) && this.isSupportedKeyword(obj.title)) {
           seen.add(lower);
-          const gt = itemsGT.find(i => i.title === title) || { snippets: [], news: [] };
-          unique.push({ originalTitle: title, snippets: gt.snippets, newsTitles: gt.news, translations: {}, aiReports: {} });
+          const gt = itemsGT.find(i => i.title === obj.title) || { snippets: [], news: [] };
+          unique.push({ originalTitle: obj.title, snippets: gt.snippets, newsTitles: gt.news, translations: {}, aiReports: {} });
         }
         if (unique.length >= 10) break;
       }
 
-      // 2. AI Reports
+      // Second Pass: If still under 10, exhaust remaining Portal items specifically
+      if (unique.length < 10) {
+        for (let title of itemsPortal) {
+          const lower = title.toLowerCase();
+          if (!seen.has(lower) && this.isSupportedKeyword(title)) {
+            seen.add(lower);
+            unique.push({ originalTitle: title, snippets: [], newsTitles: [], translations: {}, aiReports: {} });
+          }
+          if (unique.length >= 10) break;
+        }
+      }
+
+      // 4. AI Reports & Translations (Same logic)
       for (let item of unique) {
         const prev = previousItems.find(p => p.originalTitle === item.originalTitle);
         if (prev && JSON.stringify(item.newsTitles) === JSON.stringify(prev.newsTitles) && prev.aiReports?.ko && !this.isFallback(prev.aiReports.ko)) {
@@ -215,7 +228,6 @@ class TrendUpdater {
         }
       }
 
-      // 3. Translation
       for (let lang of langs) {
         const toTTitle = unique.filter(i => !i.translations[lang] || this.containsWrongScript(i.translations[lang], lang)).map(i => i.originalTitle);
         if (toTTitle.length > 0) {
@@ -231,7 +243,6 @@ class TrendUpdater {
             item.translations[lang] = (transT && transT[idx]) ? transT[idx] : item.originalTitle; 
           });
         }
-
         const toTRep = unique.filter(i => i.aiReports.ko && (!i.aiReports[lang] || this.isFallback(i.aiReports[lang], lang))).map(i => i.aiReports.ko);
         if (toTRep.length > 0) {
           const transR = await this.translateBatch(toTRep, lang);
@@ -242,7 +253,6 @@ class TrendUpdater {
         }
       }
 
-      // 4. Final Sync
       for (let item of unique) {
         for (let l of langs) {
           if (!item.translations[l]) item.translations[l] = item.originalTitle;
