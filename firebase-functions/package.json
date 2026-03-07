@@ -1,6 +1,6 @@
 {
   "name": "functions",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "TrendUp Scheduled Updates",
   "main": "index.js",
   "type": "module",

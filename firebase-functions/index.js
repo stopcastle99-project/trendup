@@ -69,11 +69,24 @@ class TrendUpdater {
 
   isSupportedKeyword(text) {
     if (!text) return false;
-    const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(text);
+
+    // 1. Minimum Length Check: Must be at least 2 chars, or a single CJK char
+    const trimmed = text.trim();
+    const isSingleCJK = trimmed.length === 1 && /[\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFF]/.test(trimmed);
+    if (trimmed.length < 2 && !isSingleCJK) return false;
+
+    // 2. Noise Pattern Check: Block bracketed metadata like [유], [AD], etc.
+    if (/^\[.*\]$/.test(trimmed)) return false;
+
+    // 3. Script Check: Must contain supported scripts
+    const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFFa-zA-Z0-9]/.test(trimmed);
     if (!hasSupported) return false;
+
+    // 4. Strict Whitelist
     const whitelistRegex = /^[\u0000-\u007F\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF\uFF00-\uFFEF\s\u2000-\u206F\u2E00-\u2E7F]*$/;
-    return whitelistRegex.test(text);
+    return whitelistRegex.test(trimmed);
   }
+
 
   async generateBaseAIReport(item, newsTitles, snippets, country) {
     if (!this.genAI) return "";
