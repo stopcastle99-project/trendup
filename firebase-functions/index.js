@@ -67,18 +67,17 @@ class TrendUpdater {
     return false;
   }
 
-  // ENHANCED: Only allow characters from KO, JA, and standard EN (Basic Latin)
+  // REFINED: Balanced Filtering
   isSupportedKeyword(text) {
     if (!text) return false;
-    // Regex targets characters OUTSIDE:
-    // 1. Basic Latin (English, Numbers, Symbols): \u0000-\u007F
-    // 2. Hangul (Korean): \uAC00-\uD7A3, \u1100-\u11FF, \u3130-\u318F
-    // 3. Japanese (Hiragana, Katakana): \u3040-\u30FF
-    // 4. CJK Kanji (Common in JA/KO): \u4E00-\u9FFF
-    // 5. Full-width forms: \uFF00-\uFFEF
-    const unsupportedRegex = /[^\u0000-\u007F\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF\uFF00-\uFFEF]/;
-    // If any character matches the unsupported set (like French accents é, à, or Arabic/Cyrillic), return false
-    return !unsupportedRegex.test(text);
+    // 1. Must contain at least one character from KO, JA, or standard EN/Numeric
+    const hasSupported = /[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F\u3040-\u30FF\u4E00-\u9FFF[a-zA-Z0-9]/.test(text);
+    // 2. Must NOT contain specific noise scripts (Arabic, Cyrillic, Thai, etc.)
+    const hasNoiseScript = /[\u0600-\u06FF\u0400-\u04FF\u0E00-\u0E7F]/.test(text);
+    // 3. Exclude European accents (to block French/Spanish spikes in KO/JP/US views)
+    const hasEuropeanAccents = /[\u00C0-\u00FF]/.test(text);
+    
+    return hasSupported && !hasNoiseScript && !hasEuropeanAccents;
   }
 
   async generateBaseAIReport(item, newsTitles, snippets, country) {
@@ -86,22 +85,7 @@ class TrendUpdater {
     const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
     const countryName = countryNames[country] || country;
     const combinedContext = [...newsTitles, ...snippets].join(' / ').slice(0, 1000);
-    
-    const prompt = `
-      분석 대상 키워드: '${item.originalTitle}'
-      해당 국가: ${countryName}
-      참고 뉴스/정보: ${combinedContext}
-
-      위 정보를 바탕으로, 이 키워드가 왜 '지금 이 순간' ${countryName}에서 급상승 트렌드인지 분석해줘.
-      
-      지시사항:
-      1. 일반적인 역사, 과거 이력, 인물 프로필 같은 뻔한 배경 설명은 절대 하지마.
-      2. 반드시 '오늘' 또는 '현재' 발생한 특정 사건, 뉴스, 발표 내용에만 집중해서 분석해.
-      3. 왜 '갑자기' 사람들이 검색하고 있는지 그 핵심 이유를 첫 문장에 바로 언급해.
-      4. 인사말 없이 2문장 내외로 명확하고 전문적인 어조로 작성해.
-      5. 반드시 한국어(Korean)로 작성하고, 마크다운 기호(**)는 사용하지마.
-    `;
-
+    const prompt = `분석 대상 키워드: '${item.originalTitle}'\n해당 국가: ${countryName}\n참고 뉴스/정보: ${combinedContext}\n\n위 정보를 바탕으로, 이 키워드가 왜 '지금 이 순간' ${countryName}에서 급상승 트렌드인지 분석해줘. 지시사항: 1. 일반적인 역사나 인물 프로필 설명은 배제하고, 반드시 '오늘' 발생한 특정 사건이나 뉴스에만 집중해. 2. 왜 지금 화제인지 그 핵심 이유를 첫 문장에 바로 언급해. 3. 2문장 내외로 명확하고 전문적으로 작성해. 4. 반드시 한국어로 작성하고 마크다운(**)은 쓰지마.`;
     const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001"];
     for (const modelName of modelsToTry) {
       try {
@@ -109,8 +93,8 @@ class TrendUpdater {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text().trim().replace(/\*\*/g, '');
-        if (text && text.length > 15 && !text.includes("죄송합니다")) return text;
-      } catch (e) { console.warn(`AI Attempt ${modelName} failed:`, e.message); }
+        if (text && text.length > 15) return text;
+      } catch (e) {}
     }
     return "";
   }
@@ -123,7 +107,7 @@ class TrendUpdater {
     };
     const c = mapping[lang]?.[country] || mapping['en'][country] || country;
     if (lang === 'ko') return `${c}에서 '${title}' 키워드가 주목받고 있습니다.`;
-    if (lang === 'ja') return `${c}国内で'${title}'が注目を集めています。`;
+    if (lang === 'ja') return `${c}国内で'${title}'が注目を集めています.`;
     return `'${title}' is drawing attention in ${c}.`;
   }
 
@@ -142,12 +126,11 @@ class TrendUpdater {
       const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
       const text = await res.text();
       const dom = new JSDOM(text, { contentType: "text/xml" });
-      const items = dom.window.document.querySelectorAll("item");
-      const links = Array.from(items).slice(0, 5).map(item => {
+      const items = Array.from(dom.window.document.querySelectorAll("item")).slice(0, 3);
+      return items.map(item => {
         const title = item.querySelector("title")?.textContent || "";
         return { title: title.split(" - ")[0], url: item.querySelector("link")?.textContent || "", source: title.split(" - ").pop() || "News" };
       });
-      return links.slice(0, 3);
     } catch (e) { return []; }
   }
 
@@ -177,15 +160,17 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
 
-      // 1. Fetch Trends (Fix: Only use portal for KR/JP)
+      // 1. Fetch Trends (Extended Pool)
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       let itemsPortal = [];
       if (url) {
-        const resP = await fetch(url).then(r => r.text()).catch(() => "");
-        const domP = new JSDOM(resP);
-        itemsPortal = code === "KR" ? 
-          Array.from(domP.window.document.querySelectorAll(".rank-item .text")).slice(0, 20).map(el => el.textContent.trim()) : 
-          Array.from(domP.window.document.querySelectorAll(".Trend_Trend__item__name")).slice(0, 20).map(el => el.textContent.trim());
+        try {
+          const resP = await fetch(url).then(r => r.text());
+          const domP = new JSDOM(resP);
+          itemsPortal = code === "KR" ? 
+            Array.from(domP.window.document.querySelectorAll(".rank-item .text")).map(el => el.textContent.trim()) : 
+            Array.from(domP.window.document.querySelectorAll(".Trend_Trend__item__name")).map(el => el.textContent.trim());
+        } catch (e) {}
       }
       
       const rssGT = await fetch(`https://trends.google.com/trending/rss?geo=${code}`).then(r => r.text()).catch(() => "");
@@ -201,7 +186,6 @@ class TrendUpdater {
       const rawTitles = [...itemsPortal, ...itemsGT.map(i => i.title)];
       for (let title of rawTitles) {
         const lower = title.toLowerCase();
-        // FILTERING: Deduplicate AND check script integrity
         if (!seen.has(lower) && this.isSupportedKeyword(title)) {
           seen.add(lower);
           const gt = itemsGT.find(i => i.title === title) || { snippets: [], news: [] };
