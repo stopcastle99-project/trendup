@@ -86,7 +86,22 @@ class TrendUpdater {
     const countryNames = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' };
     const countryName = countryNames[country] || country;
     const combinedContext = [...newsTitles, ...snippets].join(' / ').slice(0, 1000);
-    const prompt = `'${item.originalTitle}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘. 참고 정보: ${combinedContext}\n지시사항: 1. 인사말 없이 분석 내용만 작성해. 2. 2문장 내외로 요약해. 3. 반드시 한국어로 작성해. 4. 마크다운 기호 사용금지.`;
+    
+    const prompt = `
+      분석 대상 키워드: '${item.originalTitle}'
+      해당 국가: ${countryName}
+      참고 뉴스/정보: ${combinedContext}
+
+      위 정보를 바탕으로, 이 키워드가 왜 '지금 이 순간' ${countryName}에서 급상승 트렌드인지 분석해줘.
+      
+      지시사항:
+      1. 일반적인 역사, 과거 이력, 인물 프로필 같은 뻔한 배경 설명은 절대 하지마.
+      2. 반드시 '오늘' 또는 '현재' 발생한 특정 사건, 뉴스, 발표 내용에만 집중해서 분석해.
+      3. 왜 '갑자기' 사람들이 검색하고 있는지 그 핵심 이유를 첫 문장에 바로 언급해.
+      4. 인사말 없이 2문장 내외로 명확하고 전문적인 어조로 작성해.
+      5. 반드시 한국어(Korean)로 작성하고, 마크다운 기호(**)는 사용하지마.
+    `;
+
     const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash-001"];
     for (const modelName of modelsToTry) {
       try {
@@ -94,8 +109,8 @@ class TrendUpdater {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text().trim().replace(/\*\*/g, '');
-        if (text && text.length > 15) return text;
-      } catch (e) {}
+        if (text && text.length > 15 && !text.includes("죄송합니다")) return text;
+      } catch (e) { console.warn(`AI Attempt ${modelName} failed:`, e.message); }
     }
     return "";
   }
