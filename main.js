@@ -351,9 +351,10 @@ class App {
   refreshUIText() {
     try {
       const t = i18n[this.currentLang] || i18n.en;
+      document.documentElement.setAttribute('lang', this.currentLang); // Update HTML lang attribute
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.8.4)`;
+      if (footerText) footerText.textContent = `© 2026 GlobalTrendUp. All rights reserved. (v2.8.4)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
@@ -375,6 +376,29 @@ class App {
       if (cookieBtn && t.pages.cookie) cookieBtn.textContent = t.pages.cookie.btn;
     } catch (e) { console.error("UI refresh error:", e); }
   }
+
+  updateSEOMeta(firstTrend) {
+    if (!firstTrend) return;
+    const t = i18n[this.currentLang] || i18n.en;
+    const trendTitle = firstTrend.originalTitle || firstTrend.title;
+    const translatedTitle = (firstTrend.translations && firstTrend.translations[this.currentLang]) ? firstTrend.translations[this.currentLang] : trendTitle;
+    
+    // 1. Update Document Title
+    const newTitle = `GlobalTrendUp | ${this.currentCountry} #1: ${translatedTitle}`;
+    document.title = newTitle;
+
+    // 2. Update Meta Description
+    const description = `${this.currentCountry} Real-time Trend #1: "${translatedTitle}". ${t.summary}. | Check out the latest global trends with AI summaries on GlobalTrendUp.`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', description);
+
+    // 3. Update Open Graph Meta
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', newTitle);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', description);
+  }
+
   initThemeIcons() {
     try {
       const sunIcons = document.querySelectorAll('.sun-svg');
@@ -474,7 +498,13 @@ class App {
         const dbData = trendDoc.data();
         const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
         const trendListEl = document.getElementById('top-trends');
-        if (trendListEl) trendListEl.data = { trends, lang: this.currentLang, country: this.currentCountry };
+        if (trendListEl) {
+          trendListEl.data = { trends, lang: this.currentLang, country: this.currentCountry };
+          // Update SEO Meta with the #1 trending topic
+          if (trends && trends.length > 0) {
+            this.updateSEOMeta(trends[0]);
+          }
+        }
         const date = dbData.lastUpdated.toDate();
         const lastUpdatedEl = document.getElementById('last-updated');
         if (lastUpdatedEl) lastUpdatedEl.textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}`;
