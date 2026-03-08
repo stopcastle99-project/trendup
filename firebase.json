@@ -2,6 +2,9 @@
   "hosting": {
     "public": "public",
     "cleanUrls": true,
+    "predeploy": [
+      "cp naver1141b796dc8b921333cb22d8a36d78d6.html public/"
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",
