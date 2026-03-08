@@ -131,27 +131,44 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
       
-      for (let item of items) {
+      // 1. Generate Base AI Reports (Korean) first
+      await Promise.all(items.map(async (item) => {
         allKeywords.push(item.originalTitle);
         item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code) || `${code} Hot Trend: ${item.originalTitle}`;
+      }));
+
+      // 2. Batch Translation for Titles and Reports
+      for (const lang of langs) {
+        console.log(`  - Translating into ${lang}...`);
         
-        // Fix: Translate into ALL target languages including 'ko' if necessary
-        for (let lang of langs) {
-          const translatedTitle = await this.translateBatch([item.originalTitle], lang);
-          item.translations[lang] = translatedTitle[0] || item.originalTitle;
-          
-          if (lang === 'ko') continue;
-          const translatedReport = await this.translateBatch([item.aiReports.ko], lang);
-          item.aiReports[lang] = translatedReport[0] || item.aiReports.ko;
+        // Translate Titles
+        const titlesToTranslate = items.map(i => i.originalTitle);
+        const translatedTitles = await this.translateBatch(titlesToTranslate, lang);
+        items.forEach((item, idx) => {
+          item.translations[lang] = translatedTitles[idx] || item.originalTitle;
+        });
+
+        // Translate AI Reports (skip if lang is ko)
+        if (lang !== 'ko') {
+          const reportsToTranslate = items.map(i => i.aiReports.ko);
+          const translatedReports = await this.translateBatch(reportsToTranslate, lang);
+          items.forEach((item, idx) => {
+            item.aiReports[lang] = translatedReports[idx] || item.aiReports.ko;
+          });
         }
-        item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
       }
+
+      // 3. Fetch YouTube Videos
+      await Promise.all(items.map(async (item) => {
+        item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
+      }));
+
       await docRef.set({ items, previousItems, lastUpdated: admin.firestore.Timestamp.now() });
     }
     this.generateSitemap(allKeywords);
     const ver = this.bumpVersion();
     this.executeDeploy(ver);
-    console.log("Translation logic fixed and deployment triggered.");
+    console.log("Update Complete.");
     process.exit(0);
   }
 }
