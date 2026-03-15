@@ -39,40 +39,30 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
-  async translateWithGemini(titles, targetLang) {
-    if (!this.genAI || !titles || titles.length === 0) return [];
-    const langNames = { 'ko': 'Korean', 'ja': 'Japanese', 'en': 'English' };
-    const targetLangName = langNames[targetLang] || 'English';
-    const prompt = `Translate the following trending keywords into natural ${targetLangName}. Separated by " ||| ". No explanations.\n${titles.join('\n')}`;
-    try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim().split(/\s*\|[ |]*\|[ |]*\|\s*/).map(s => s.trim());
-    } catch (e) { return []; }
-  }
-
-  async generateBaseAIReport(item, newsTitles, snippets, country) {
+  async generateBaseAIReport(item, newsTitles, snippets, country, previousItems = []) {
     if (!this.genAI) return "";
+    
+    // Check if report already exists for this title in previous items
+    const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
+    if (existing && existing.aiReports && existing.aiReports.ko) {
+      console.log(`  - Reusing existing AI report for: ${item.originalTitle}`);
+      return existing.aiReports.ko;
+    }
+
     const countryName = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' }[country] || country;
     const context = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
     const prompt = `대상 키워드: '${item.originalTitle}' (${countryName})\n참고 정보: ${context}\n\n위 정보를 분석하여 이 키워드가 왜 지금 트렌드인지 한국어로 2문장 요약해줘. 마크다운(**) 금지.`;
     
-    // Discovery revealed gemini-2.5-flash is the primary model for this key
-    const modelNames = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"];
-    
-    for (const name of modelNames) {
-      try {
-        const model = this.genAI.getGenerativeModel({ model: name });
-        const result = await model.generateContent(prompt);
-        const text = result.response.text().trim().replace(/\*\*/g, '');
-        if (text && text.length > 10) {
-          console.log(`  - Gemini Success: ${name} for ${item.originalTitle}`);
-          return text;
-        }
-      } catch (e) {
-        console.warn(`  - Gemini Attempt [${name}] failed:`, e.message.substring(0, 80));
+    try {
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim().replace(/\*\*/g, '');
+      if (text && text.length > 10) {
+        console.log(`  - Gemini Success: gemini-1.5-flash for ${item.originalTitle}`);
+        return text;
       }
+    } catch (e) {
+      console.warn(`  - Gemini failed:`, e.message.substring(0, 80));
     }
     return "";
   }
@@ -116,9 +106,10 @@ class TrendUpdater {
       console.log(`Updating ${code}...`);
       const docRef = db.collection("trends").doc(code);
       const oldDoc = await docRef.get();
-      const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
+      const previousData = oldDoc.exists ? oldDoc.data() : { items: [] };
+      const previousItems = previousData.items || [];
 
-      // 1. Simple Fetch (Reverting complex filtering)
+      // 1. Simple Fetch
       let itemsPortal = [];
       let url = code === "KR" ? "https://signal.bz/" : (code === "JP" ? "https://search.yahoo.co.jp/realtime/term" : "");
       if (url) {
@@ -151,11 +142,15 @@ class TrendUpdater {
         if (unique.length >= 10) break;
       }
 
-      // 2. Parallel Processing (Keep this for speed)
-      await Promise.all(unique.map(async (item) => {
+      // 2. Sequential Processing to avoid Rate Limits
+      for (const item of unique) {
         [item.newsLinks, item.videoLinks] = await Promise.all([this.getSupplementaryNews(item.originalTitle, code), this.getYouTubeVideos(item.originalTitle, code)]);
-        item.aiReports.ko = await this.generateBaseAIReport(item, item.newsLinks.map(l => l.title), item.snippets, code);
-      }));
+        item.aiReports.ko = await this.generateBaseAIReport(item, item.newsLinks.map(l => l.title), item.snippets, code, previousItems);
+        // Small delay between AI calls to stay safe
+        if (!previousItems.find(p => p.originalTitle === item.originalTitle)) {
+           await new Promise(r => setTimeout(r, 2000));
+        }
+      }
 
       // 3. Simple Translation
       for (let lang of langs) {
@@ -177,7 +172,7 @@ class TrendUpdater {
 }
 
 export const scheduledTrendUpdate = onSchedule({
-  schedule: "every 10 minutes", 
+  schedule: "every 1 hours", 
   secrets: ["GEMINI_API_KEY"],
   timeoutSeconds: 540
 }, async (event) => {

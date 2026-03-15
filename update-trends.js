@@ -44,13 +44,20 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
-  async generateBaseAIReport(item, news, country) {
+  async generateBaseAIReport(item, news, country, previousItems = []) {
     if (!this.genAI) return "";
+    
+    // Deduplication: Reuse existing report if title matches
+    const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
+    if (existing && existing.aiReports && existing.aiReports.ko) {
+      return existing.aiReports.ko;
+    }
+
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
     const countryName = countryNames[country] || country;
     const prompt = `'${item.originalTitle}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘. 참고 정보: ${news.join(' / ')}. 분석 내용만 2문장 내외 한국어로 작성.`;
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
       return (await result.response).text().trim().replace(/\*\*/g, '');
     } catch (e) { return ""; }
@@ -114,8 +121,8 @@ class TrendUpdater {
 
   executeDeploy(ver) {
     try {
-      execSync("git add . && git commit -m 'auto: Data update & Translation fix' && git push origin main", { stdio: 'inherit' });
-      execSync("npx firebase-tools deploy --only hosting", { stdio: 'inherit' });
+      execSync("git add . && git commit -m 'chore: API optimization for Free Tier' && git push origin main", { stdio: 'inherit' });
+      execSync("npx firebase-tools deploy --only hosting,functions", { stdio: 'inherit' });
     } catch (e) {}
   }
 
@@ -131,11 +138,15 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
       
-      // 1. Generate Base AI Reports (Korean) first
-      await Promise.all(items.map(async (item) => {
+      // 1. Generate Base AI Reports (Korean) sequentially with delay
+      for (const item of items) {
         allKeywords.push(item.originalTitle);
-        item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code) || `${code} Hot Trend: ${item.originalTitle}`;
-      }));
+        item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code, previousItems) || `${code} Hot Trend: ${item.originalTitle}`;
+        // Add safety delay only if it's a new call
+        if (!previousItems.find(p => p.originalTitle === item.originalTitle)) {
+           await new Promise(r => setTimeout(r, 2000));
+        }
+      }
 
       // 2. Batch Translation for Titles and Reports
       for (const lang of langs) {
