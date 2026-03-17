@@ -50,7 +50,7 @@ let i18n = {
           <p style="margin-bottom:1rem; line-height:1.6;">본 사이트는 서비스 이용 분석을 위해 Google Analytics 등을 활용할 수 있으며, 이 과정에서 익명화된 데이터가 타사 플랫폼으로 전송될 수 있습니다. 이는 오직 더 나은 사용자 경험을 제공하기 위한 목적으로만 사용됩니다.</p>
 
           <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">4. 문의처</h3>
-          <p style="margin-bottom:1rem; line-height:1.6;">개인정보 보호와 관련하여 궁금한 사항은 <a href="mailto:help@trendup.ai" style="color:var(--primary);">help@trendup.ai</a>로 문의해 주시기 바랍니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">개인정보 보호와 관련하여 궁금한 사항은 <a href="mailto:help@globaltrendup.com" style="color:var(--primary);">help@globaltrendup.com</a>로 문의해 주시기 바랍니다.</p>
           <p style="font-size:0.85rem; color:var(--text-muted);">최종 업데이트: 2026년 3월 4일</p>
         ` 
       },
@@ -82,7 +82,7 @@ let i18n = {
           
           <div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border);">
             <p style="margin-bottom:0.8rem;"><strong>이메일 문의:</strong></p>
-            <p style="font-size:1.1rem;"><a href="mailto:help@trendup.ai" style="color:var(--primary); font-weight:700;">help@trendup.ai</a></p>
+            <p style="font-size:1.1rem;"><a href="mailto:help@globaltrendup.com" style="color:var(--primary); font-weight:700;">help@globaltrendup.com</a></p>
           </div>
           
           <ul style="margin-top:1.5rem; font-size:0.9rem; color:var(--text-muted); line-height:1.6;">
@@ -157,7 +157,7 @@ let i18n = {
         content: `
           <h2 style="margin-bottom:1.5rem;">カスタマーサポート</h2>
           <p style="margin-bottom:1rem;">TrendUpに関するご意見、ご要望、ビジネスに関するお問い合わせは、以下のメールアドレスまでご連絡ください。</p>
-          <p><strong>Email:</strong> <a href="mailto:help@trendup.ai" style="color:var(--primary);">help@trendup.ai</a></p>
+          <p><strong>Email:</strong> <a href="mailto:help@globaltrendup.com" style="color:var(--primary);">help@globaltrendup.com</a></p>
           <p style="margin-top:1rem; font-size:0.85rem; color:var(--text-muted);">※ お問い合わせ内容によっては、回答にお時間をいただく場合や回答を差し控えさせていただく場合がございます。</p>
         ` 
       },
@@ -210,7 +210,7 @@ let i18n = {
         content: `
           <h2 style="margin-bottom:1.5rem;">Contact Us</h2>
           <p style="margin-bottom:1rem;">If you have any questions or feedback, please contact us via email.</p>
-          <p><strong>Email:</strong> help@trendup.ai</p>
+          <p><strong>Email:</strong> help@globaltrendup.com</p>
         ` 
       },
       cookie: {

@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-User-agent: Mediapartners-Google
-Allow: /
+# Directories
+Disallow: /node_modules/
 
-Sitemap: https://trendup.ai/sitemap.xml
+Sitemap: https://globaltrendup.com/sitemap.xml
