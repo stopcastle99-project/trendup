@@ -100,8 +100,32 @@ class TrendUpdater {
       s += `  <url><loc>${baseUrl}/?q=${encodeURIComponent(kw)}</loc><lastmod>${lastMod}</lastmod><priority>0.8</priority></url>\n`;
     });
     s += `</urlset>`;
-    fs.writeFileSync("public/sitemap.xml", s);
     fs.writeFileSync("sitemap.xml", s);
+  }
+
+  generateRSS(allTrends) {
+    const baseUrl = "https://globaltrendup.com";
+    const now = new Date().toUTCString();
+    let r = `<?xml version="1.0" encoding="UTF-8" ?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n<channel>\n`;
+    r += `  <title>GlobalTrendUp | Real-time Global Trends</title>\n`;
+    r += `  <link>${baseUrl}</link>\n`;
+    r += `  <description>Real-time global trending keywords (KR, JP, US) and AI-powered context summaries.</description>\n`;
+    r += `  <language>ko</language>\n`;
+    r += `  <lastBuildDate>${now}</lastBuildDate>\n`;
+    r += `  <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />\n`;
+
+    [...new Set(allTrends)].slice(0, 20).forEach(kw => {
+      r += `  <item>\n`;
+      r += `    <title>${kw}</title>\n`;
+      r += `    <link>${baseUrl}/?q=${encodeURIComponent(kw)}</link>\n`;
+      r += `    <description>AI-powered analysis for trend: ${kw}</description>\n`;
+      r += `    <pubDate>${now}</pubDate>\n`;
+      r += `    <guid>${baseUrl}/?q=${encodeURIComponent(kw)}</guid>\n`;
+      r += `  </item>\n`;
+    });
+
+    r += `</channel>\n</rss>`;
+    fs.writeFileSync("rss.xml", r);
   }
 
   bumpVersion() {
@@ -177,6 +201,7 @@ class TrendUpdater {
       await docRef.set({ items, previousItems, lastUpdated: admin.firestore.Timestamp.now() });
     }
     this.generateSitemap(allKeywords);
+    this.generateRSS(allKeywords);
     const ver = this.bumpVersion();
     this.executeDeploy(ver);
     console.log("Update Complete.");

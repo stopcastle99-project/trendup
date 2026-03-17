@@ -5,7 +5,8 @@
     "predeploy": [
       "cp naver1141b796dc8b921333cb22d8a36d78d6.html public/",
       "cp ads.txt public/",
-      "cp sitemap.xml public/"
+      "cp sitemap.xml public/",
+      "cp rss.xml public/"
     ],
     "headers": [
       {
@@ -19,6 +20,15 @@
       },
       {
         "source": "/sitemap.xml",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml"
+          }
+        ]
+      },
+      {
+        "source": "/rss.xml",
         "headers": [
           {
             "key": "Content-Type",
