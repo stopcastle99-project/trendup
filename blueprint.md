@@ -29,7 +29,17 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Character Filtering:** Enhanced `main.js` to filter out invalid characters (CJK in EN mode) to ensure UI cleanliness.
 - **Version Upgrade:** Bumped application version to **v2.8.4**.
 
+## Phase 35: News Link Restoration & Logic Sync (Done)
+- **Logic Sync:** Synchronized `update-trends.js` with `firebase-functions/index.js` by adding `getSupplementaryNews` method.
+- **News Fetching:** Restored news link collection from Google News RSS in the manual update script.
+- **Dependency:** Added `jsdom` import to `update-trends.js`.
+- **Version Bump:** Synchronized application version to **v2.8.8** across all files.
+
 ## Execution Steps
+- [x] Restore news link fetching in `update-trends.js` (v2.8.8).
+- [x] Synchronize logic between manual script and Cloud Functions.
+- [x] Update all version strings to v2.8.8.
+
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features.
 - [x] Implement `main.js` with Web Components and `TrendService`.

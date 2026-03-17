@@ -14,7 +14,7 @@
         "headers": [
           {
             "key": "Content-Type",
-            "value": "text/plain"
+            "value": "text/plain; charset=utf-8"
           }
         ]
       },
@@ -23,7 +23,7 @@
         "headers": [
           {
             "key": "Content-Type",
-            "value": "application/xml"
+            "value": "application/xml; charset=utf-8"
           }
         ]
       },
@@ -32,7 +32,7 @@
         "headers": [
           {
             "key": "Content-Type",
-            "value": "application/xml"
+            "value": "application/xml; charset=utf-8"
           }
         ]
       },
@@ -41,7 +41,7 @@
         "headers": [
           {
             "key": "Content-Type",
-            "value": "text/plain"
+            "value": "text/plain; charset=utf-8"
           }
         ]
       }
@@ -53,7 +53,7 @@
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "!/@(sitemap.xml|rss.xml|robots.txt|ads.txt|naver1141b796dc8b921333cb22d8a36d78d6.html|*.js|*.css|*.png|*.jpg|*.ico|*.svg)",
         "destination": "/index.html"
       }
     ]

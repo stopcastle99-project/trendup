@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>GlobalTrendUp | Real-time Global Trends</title>
+  <link>https://globaltrendup.com</link>
+  <description>Real-time global trending keywords (KR, JP, US) and AI-powered context summaries.</description>
+  <language>ko</language>
+  <lastBuildDate>Tue, 17 Mar 2026 05:40:00 GMT</lastBuildDate>
+  <atom:link href="https://globaltrendup.com/rss.xml" rel="self" type="application/rss+xml" />
+  <item>
+    <title>GlobalTrendUp Launch</title>
+    <link>https://globaltrendup.com</link>
+    <description>Welcome to GlobalTrendUp! Check out real-time trends with AI summaries.</description>
+    <pubDate>Tue, 17 Mar 2026 05:40:00 GMT</pubDate>
+    <guid>https://globaltrendup.com/launch</guid>
+  </item>
+</channel>
+</rss>

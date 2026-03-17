@@ -1,6 +1,7 @@
 
 import admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { JSDOM } from "jsdom";
 import fs from "fs";
 import { execSync } from "child_process";
 
@@ -76,6 +77,21 @@ class TrendUpdater {
     } catch (e) { return []; }
   }
 
+  async getSupplementaryNews(keyword, countryCode) {
+    const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
+    const gl = countryCode;
+    const query = `${keyword}${ { 'KR': ' 뉴스', 'JP': ' ニュース', 'US': ' News' }[countryCode] || ' News'}`;
+    try {
+      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
+      const text = await res.text();
+      const dom = new JSDOM(text, { contentType: "text/xml" });
+      return Array.from(dom.window.document.querySelectorAll("item")).slice(0, 3).map(item => {
+        const title = item.querySelector("title")?.textContent || "";
+        return { title: title.split(" - ")[0], url: item.querySelector("link")?.textContent || "", source: title.split(" - ").pop() || "News" };
+      });
+    } catch (e) { return []; }
+  }
+
   async getYouTubeVideos(keyword, countryCode) {
     const hl = countryCode === "KR" ? "ko" : countryCode === "JP" ? "ja" : "en";
     try {
@@ -140,7 +156,7 @@ class TrendUpdater {
         return newVer;
       }
     } catch (e) {}
-    return "v2.8.6";
+    return "v2.8.8";
   }
 
   executeDeploy(ver) {
@@ -193,9 +209,12 @@ class TrendUpdater {
         }
       }
 
-      // 3. Fetch YouTube Videos
+      // 3. Fetch Supplementary News & YouTube Videos
       await Promise.all(items.map(async (item) => {
-        item.videoLinks = await this.getYouTubeVideos(item.originalTitle, code);
+        [item.newsLinks, item.videoLinks] = await Promise.all([
+          this.getSupplementaryNews(item.originalTitle, code),
+          this.getYouTubeVideos(item.originalTitle, code)
+        ]);
       }));
 
       await docRef.set({ items, previousItems, lastUpdated: admin.firestore.Timestamp.now() });

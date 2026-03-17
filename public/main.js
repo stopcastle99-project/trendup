@@ -257,13 +257,13 @@ class TrendList extends HTMLElement {
     };
     this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translated-subtitle { font-size: 0.75rem; color: var(--primary); opacity: 0.85; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
-        const mainTitle = item.originalTitle || item.title;
+        const originalTitle = item.originalTitle || item.title;
         const translatedTitle = (item.translations && item.translations[lang]) ? item.translations[lang] : "";
 
-        // Show translation if language setting is different from trend source language
-        const showSub = translatedTitle && (translatedTitle.toLowerCase() !== mainTitle.toLowerCase());
+        // UI Requirement: Original title large, Translation small with previous style
+        const hasTranslation = translatedTitle && (translatedTitle.toLowerCase() !== originalTitle.toLowerCase());
 
-        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${mainTitle}</span>${showSub ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
+        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${originalTitle}</span>${hasTranslation ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = () => {
@@ -307,7 +307,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.5.2");
+    console.log("App Init: v2.8.8");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -351,9 +351,10 @@ class App {
   refreshUIText() {
     try {
       const t = i18n[this.currentLang] || i18n.en;
+      document.documentElement.setAttribute('lang', this.currentLang); // Update HTML lang attribute
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 TrendUp. All rights reserved. (v2.8.4)`;
+      if (footerText) footerText.textContent = `© 2026 GlobalTrendUp. All rights reserved. (v2.8.8)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
@@ -375,6 +376,29 @@ class App {
       if (cookieBtn && t.pages.cookie) cookieBtn.textContent = t.pages.cookie.btn;
     } catch (e) { console.error("UI refresh error:", e); }
   }
+
+  updateSEOMeta(firstTrend) {
+    if (!firstTrend) return;
+    const t = i18n[this.currentLang] || i18n.en;
+    const trendTitle = firstTrend.originalTitle || firstTrend.title;
+    const translatedTitle = (firstTrend.translations && firstTrend.translations[this.currentLang]) ? firstTrend.translations[this.currentLang] : trendTitle;
+    
+    // 1. Update Document Title
+    const newTitle = `GlobalTrendUp | ${this.currentCountry} #1: ${translatedTitle}`;
+    document.title = newTitle;
+
+    // 2. Update Meta Description
+    const description = `${this.currentCountry} Real-time Trend #1: "${translatedTitle}". ${t.summary}. | Check out the latest global trends with AI summaries on GlobalTrendUp.`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', description);
+
+    // 3. Update Open Graph Meta
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', newTitle);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', description);
+  }
+
   initThemeIcons() {
     try {
       const sunIcons = document.querySelectorAll('.sun-svg');
@@ -474,7 +498,13 @@ class App {
         const dbData = trendDoc.data();
         const trends = this.service.calculateRankChanges(dbData.items, dbData.previousItems);
         const trendListEl = document.getElementById('top-trends');
-        if (trendListEl) trendListEl.data = { trends, lang: this.currentLang, country: this.currentCountry };
+        if (trendListEl) {
+          trendListEl.data = { trends, lang: this.currentLang, country: this.currentCountry };
+          // Update SEO Meta with the #1 trending topic
+          if (trends && trends.length > 0) {
+            this.updateSEOMeta(trends[0]);
+          }
+        }
         const date = dbData.lastUpdated.toDate();
         const lastUpdatedEl = document.getElementById('last-updated');
         if (lastUpdatedEl) lastUpdatedEl.textContent = `${t.update}: ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}`;
