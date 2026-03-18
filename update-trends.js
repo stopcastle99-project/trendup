@@ -171,7 +171,7 @@ class TrendUpdater {
         return newVer;
       }
     } catch (e) {}
-    return "v2.8.8";
+    return "v2.9.1";
   }
 
   executeDeploy(ver) {
@@ -197,9 +197,9 @@ class TrendUpdater {
       for (const item of items) {
         allKeywords.push(item.originalTitle);
         item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code, previousItems) || `${code} Hot Trend: ${item.originalTitle}`;
-        // Add safety delay only if it's a new call
+        // Add safety delay only if it's a new call (4 seconds for Free Tier safety)
         if (!previousItems.find(p => p.originalTitle === item.originalTitle)) {
-           await new Promise(r => setTimeout(r, 2000));
+           await new Promise(r => setTimeout(r, 4000));
         }
       }
 

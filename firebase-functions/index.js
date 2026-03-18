@@ -162,9 +162,9 @@ class TrendUpdater {
       for (const item of unique) {
         [item.newsLinks, item.videoLinks] = await Promise.all([this.getSupplementaryNews(item.originalTitle, code), this.getYouTubeVideos(item.originalTitle, code)]);
         item.aiReports.ko = await this.generateBaseAIReport(item, item.newsLinks.map(l => l.title), item.snippets, code, previousItems);
-        // Small delay between AI calls to stay safe
+        // Small delay between AI calls to stay safe (4 seconds for Free Tier)
         if (!previousItems.find(p => p.originalTitle === item.originalTitle)) {
-           await new Promise(r => setTimeout(r, 2000));
+           await new Promise(r => setTimeout(r, 4000));
         }
       }
 

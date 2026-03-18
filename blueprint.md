@@ -46,7 +46,7 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Gemini 2.5 Flash:** Standardized all Gemini calls to use **`gemini-2.5-flash`**, which is currently the only supported model for this project's API key.
 - **Logging:** Enhanced error logging in `update-trends.js` and `firebase-functions/index.js` to provide better visibility into AI generation failures.
 - **Consistency:** Synchronized model configuration across local scripts and Cloud Functions.
-- **Version Bump:** Application version updated to **v2.9.0**.
+- **Version Bump:** Application version updated to **v2.9.1**.
 
 ## Execution Steps
 - [x] Identify `jsdom` dependency error as the cause of the crawl failure.
