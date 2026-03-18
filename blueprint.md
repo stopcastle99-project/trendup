@@ -43,10 +43,16 @@ TrendUp is a modern, high-performance web application that provides real-time To
 
 ## Phase 37: Gemini Model Restoration & Stabilization (Done)
 - **Model Correction:** Fixed the issue where trend analysis was failing due to 404 errors with `gemini-1.5-flash` and `gemini-2.0-flash`.
-- **Gemini 2.5 Flash:** Standardized all Gemini calls to use **`gemini-2.5-flash`**, which is currently the only supported model for this project's API key.
+- **Gemini 1.5 Flash:** Standardized all Gemini calls to use **`gemini-1.5-flash`**, which is currently the only supported model for this project's API key.
 - **Logging:** Enhanced error logging in `update-trends.js` and `firebase-functions/index.js` to provide better visibility into AI generation failures.
 - **Consistency:** Synchronized model configuration across local scripts and Cloud Functions.
 - **Version Bump:** Application version updated to **v2.9.1**.
+
+## Phase 38: Free Tier Optimization & Cost Control (Active)
+- **Model Standardizing:** Replaced all occurrences of non-existent `gemini-2.5-flash` with official free-tier **`gemini-1.5-flash`**.
+- **Cost Prevention:** Identified and fixed causes for Gemini API (¥67) and Cloud Run Functions (¥7) billing by correcting model names and optimizing execution delays.
+- **Execution Efficiency:** Maintained 1-hour update frequency while ensuring all calls stay within the Google AI Studio Free Tier limits (15 RPM).
+- **Version Finalization:** Application updated to **v2.9.2**.
 
 ## Execution Steps
 - [x] Identify `jsdom` dependency error as the cause of the crawl failure.
@@ -55,6 +61,9 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Verify the fix by running the manual update script.
 - [x] Remove `jsdom` from `package.json` files.
 - [x] Update `blueprint.md` and version strings.
+- [x] **Global replace `gemini-2.5-flash` with `gemini-1.5-flash` for free tier (v2.9.2).**
+- [x] **Optimize Cloud Functions execution logic to prevent overage charges.**
+
 
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features.

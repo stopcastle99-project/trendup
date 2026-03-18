@@ -57,10 +57,10 @@ class TrendUpdater {
     const countryName = countryNames[country] || country;
     const prompt = `'${item.originalTitle}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘. 참고 정보: ${news.join(' / ')}. 분석 내용만 2문장 내외 한국어로 작성.`;
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
       const text = (await result.response).text().trim().replace(/\*\*/g, '');
-      if (text) console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle}`);
+      if (text) console.log(`  - Gemini Success: gemini-1.5-flash for ${item.originalTitle}`);
       return text;
     } catch (e) {
       console.error(`  - Gemini Error for ${item.originalTitle}:`, e.message);

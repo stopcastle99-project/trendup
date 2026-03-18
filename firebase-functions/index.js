@@ -54,11 +54,11 @@ class TrendUpdater {
     const prompt = `대상 키워드: '${item.originalTitle}' (${countryName})\n참고 정보: ${context}\n\n위 정보를 분석하여 이 키워드가 왜 지금 트렌드인지 한국어로 2문장 요약해줘. 마크다운(**) 금지.`;
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim().replace(/\*\*/g, '');
       if (text && text.length > 10) {
-        console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle}`);
+        console.log(`  - Gemini Success: gemini-1.5-flash for ${item.originalTitle}`);
         return text;
       }
     } catch (e) {
