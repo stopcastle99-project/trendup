@@ -9,16 +9,20 @@ async function testGemini() {
   }
   
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"];
   
-  const prompt = "Translate: 'Apple' into Korean.";
-  
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    console.log("Gemini Response:", response.text());
-  } catch (e) {
-    console.error("Gemini API Error:", e.message);
+  for (const modelName of models) {
+    console.log(`Testing model: ${modelName}...`);
+    const model = genAI.getGenerativeModel({ model: modelName });
+    const prompt = "Translate: 'Apple' into Korean.";
+    
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      console.log(`[${modelName}] Success:`, response.text().trim());
+    } catch (e) {
+      console.error(`[${modelName}] Error:`, e.message);
+    }
   }
 }
 
