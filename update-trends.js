@@ -1,7 +1,6 @@
 
 import admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { JSDOM } from "jsdom";
 import fs from "fs";
 import { execSync } from "child_process";
 
@@ -82,13 +81,24 @@ class TrendUpdater {
     const gl = countryCode;
     const query = `${keyword}${ { 'KR': ' 뉴스', 'JP': ' ニュース', 'US': ' News' }[countryCode] || ' News'}`;
     try {
-      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
-      const text = await res.text();
-      const dom = new JSDOM(text, { contentType: "text/xml" });
-      return Array.from(dom.window.document.querySelectorAll("item")).slice(0, 3).map(item => {
-        const title = item.querySelector("title")?.textContent || "";
-        return { title: title.split(" - ")[0], url: item.querySelector("link")?.textContent || "", source: title.split(" - ").pop() || "News" };
+      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`, {
+        headers: { "User-Agent": "Mozilla/5.0" }
       });
+      const text = await res.text();
+      const items = [];
+      const itemRegex = /<item>(.*?)<\/item>/gs;
+      let m;
+      while ((m = itemRegex.exec(text)) !== null && items.length < 3) {
+        const content = m[1];
+        const title = (content.match(/<title>(.*?)<\/title>/)?.[1] || "").replace("<![CDATA[", "").replace("]]>", "").trim();
+        const link = (content.match(/<link>(.*?)<\/link>/)?.[1] || "").trim();
+        items.push({ 
+          title: title.split(" - ")[0], 
+          url: link, 
+          source: title.split(" - ").pop() || "News" 
+        });
+      }
+      return items;
     } catch (e) { return []; }
   }
 

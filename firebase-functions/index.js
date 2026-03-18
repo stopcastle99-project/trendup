@@ -1,6 +1,6 @@
+
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import admin from "firebase-admin";
-import { JSDOM } from "jsdom";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 admin.initializeApp();
@@ -41,7 +41,7 @@ class TrendUpdater {
 
   async generateBaseAIReport(item, newsTitles, snippets, country, previousItems = []) {
     if (!this.genAI) return "";
-    
+
     // Check if report already exists for this title in previous items
     const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
     if (existing && existing.aiReports && existing.aiReports.ko) {
@@ -52,7 +52,7 @@ class TrendUpdater {
     const countryName = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' }[country] || country;
     const context = [...newsTitles, ...snippets].join(' / ').slice(0, 1500);
     const prompt = `대상 키워드: '${item.originalTitle}' (${countryName})\n참고 정보: ${context}\n\n위 정보를 분석하여 이 키워드가 왜 지금 트렌드인지 한국어로 2문장 요약해줘. 마크다운(**) 금지.`;
-    
+
     try {
       const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
@@ -72,13 +72,24 @@ class TrendUpdater {
     const gl = countryCode;
     const query = `${keyword}${ { 'KR': ' 뉴스', 'JP': ' ニュース', 'US': ' News' }[countryCode] || ' News'}`;
     try {
-      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`);
-      const text = await res.text();
-      const dom = new JSDOM(text, { contentType: "text/xml" });
-      return Array.from(dom.window.document.querySelectorAll("item")).slice(0, 3).map(item => {
-        const title = item.querySelector("title")?.textContent || "";
-        return { title: title.split(" - ")[0], url: item.querySelector("link")?.textContent || "", source: title.split(" - ").pop() || "News" };
+      const res = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${gl}:${hl}`, {
+        headers: { "User-Agent": "Mozilla/5.0" }
       });
+      const text = await res.text();
+      const items = [];
+      const itemRegex = /<item>(.*?)<\/item>/gs;
+      let m;
+      while ((m = itemRegex.exec(text)) !== null && items.length < 3) {
+        const content = m[1];
+        const title = (content.match(/<title>(.*?)<\/title>/)?.[1] || "").replace("<![CDATA[", "").replace("]]>", "").trim();
+        const link = (content.match(/<link>(.*?)<\/link>/)?.[1] || "").trim();
+        items.push({ 
+          title: title.split(" - ")[0], 
+          url: link, 
+          source: title.split(" - ").pop() || "News" 
+        });
+      }
+      return items;
     } catch (e) { return []; }
   }
 
@@ -115,17 +126,22 @@ class TrendUpdater {
       if (url) {
         try {
           const resP = await fetch(url).then(r => r.text());
-          const domP = new JSDOM(resP);
-          itemsPortal = Array.from(domP.window.document.querySelectorAll(".rank-item .text, .rank-text, .Trend_Trend__item__name")).map(el => el.textContent.trim()).filter(t => t);
+          const portalRegex = /<span[^>]*class="[^"]*(?:rank-text|text|Trend_Trend__item__name)[^"]*"[^>]*>(.*?)<\/span>/g;
+          let m;
+          while ((m = portalRegex.exec(resP)) !== null) {
+            const cleanText = m[1].replace(/<[^>]*>?/gm, "").trim();
+            if (cleanText) itemsPortal.push(cleanText);
+          }
         } catch (e) {}
       }
-      
+
       const rssGT = await fetch(`https://trends.google.com/trending/rss?geo=${code}`).then(r => r.text()).catch(() => "");
-      const domGT = new JSDOM(rssGT, { contentType: "text/xml" });
-      const itemsGT = Array.from(domGT.window.document.querySelectorAll("item")).map(item => {
-        const title = item.querySelector("title")?.textContent || "";
-        const getNodes = (tag) => Array.from(item.childNodes).filter(n => n.localName === tag);
-        return { title, snippets: getNodes("news_item_snippet").map(s => s.textContent.replace(/<[^>]*>?/gm, "").trim()), news: getNodes("news_item_title").map(t => t.textContent) };
+      const itemsGT = [...rssGT.matchAll(/<item>(.*?)<\/item>/gs)].map(match => {
+        const content = match[1];
+        const title = content.match(/<title>(.*?)<\/title>/)?.[1].replace("<![CDATA[", "").replace("]]>", "").trim() || "";
+        const news = [...content.matchAll(/<ht:news_item_title>(.*?)<\/ht:news_item_title>/g)].map(m => m[1].replace("<![CDATA[", "").replace("]]>", "").trim());
+        const snippets = [...content.matchAll(/<ht:news_item_snippet>(.*?)<\/ht:news_item_snippet>/g)].map(m => m[1].replace("<![CDATA[", "").replace("]]>", "").replace(/<[^>]*>?/gm, "").trim());
+        return { title, snippets, news };
       });
 
       const unique = [];
@@ -178,3 +194,4 @@ export const scheduledTrendUpdate = onSchedule({
 }, async (event) => {
   await new TrendUpdater().updateAll();
 });
+

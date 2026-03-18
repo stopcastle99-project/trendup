@@ -35,10 +35,19 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Dependency:** Added `jsdom` import to `update-trends.js`.
 - **Version Bump:** Synchronized application version to **v2.8.8** across all files.
 
+## Phase 36: JSDOM Removal & Regex Parsing Optimization (Done)
+- **Dependency Removal:** Completely removed `jsdom` from both the root and `firebase-functions` directories to fix `ERR_REQUIRE_ESM` errors in Node.js environments.
+- **Robust Parsing:** Replaced all XML/HTML parsing logic (Google News RSS, Trends RSS, and Portal Scraping) with robust regular expressions.
+- **Stability:** Fixed the issue where crawling stopped due to internal package dependency conflicts.
+- **Version Bump:** Application version updated to **v2.8.9**.
+
 ## Execution Steps
-- [x] Restore news link fetching in `update-trends.js` (v2.8.8).
-- [x] Synchronize logic between manual script and Cloud Functions.
-- [x] Update all version strings to v2.8.8.
+- [x] Identify `jsdom` dependency error as the cause of the crawl failure.
+- [x] Replace `jsdom` with regex-based parsing in `update-trends.js`.
+- [x] Replace `jsdom` with regex-based parsing in `firebase-functions/index.js`.
+- [x] Verify the fix by running the manual update script.
+- [x] Remove `jsdom` from `package.json` files.
+- [x] Update `blueprint.md` and version strings.
 
 - [x] Initialize `index.html` with SEO tags and layout structure.
 - [x] Create `style.css` with modern CSS features.
