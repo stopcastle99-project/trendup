@@ -489,10 +489,32 @@ class App {
   async switchCountry(code) { this.currentCountry = code; localStorage.setItem('country', code); this.loadLocalCache(); this.renderNavs(); await this.update(); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.refreshUIText(); this.loadLocalCache(); await this.update(); }
   
+  async updateGeminiUsage() {
+    if (!this.db) return;
+    try {
+      const usageDoc = await getDoc(doc(this.db, 'stats', 'gemini_usage'));
+      const usageEl = document.getElementById('ai-usage');
+      if (usageDoc.exists() && usageEl) {
+        const data = usageDoc.data();
+        const count = data.count || 0;
+        usageEl.textContent = `(${count}/1500)`;
+        
+        // Optional: Change color based on usage
+        if (count > 1400) usageEl.style.color = 'var(--error)';
+        else if (count > 1000) usageEl.style.color = 'var(--warning)';
+        else usageEl.style.color = 'var(--text-muted)';
+      }
+    } catch (e) { console.warn("Failed to fetch AI usage:", e.message); }
+  }
+
   async update() {
     if (!this.db) return;
     try {
       const t = i18n[this.currentLang] || i18n.en;
+      
+      // Fetch Gemini usage count
+      await this.updateGeminiUsage();
+
       const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();

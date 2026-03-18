@@ -44,6 +44,32 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
+  async incrementGeminiUsage() {
+    const statsRef = db.collection("stats").doc("gemini_usage");
+    const now = new Date();
+    
+    // KST is UTC+9. 4 PM KST is 7 AM UTC.
+    // If it's before 7 AM UTC, the quota reset happened yesterday at 7 AM UTC.
+    // If it's after 7 AM UTC, the quota reset happened today at 7 AM UTC.
+    const resetTimeUTC = new Date(now);
+    resetTimeUTC.setUTCHours(7, 0, 0, 0);
+    
+    if (now < resetTimeUTC) {
+      resetTimeUTC.setUTCDate(resetTimeUTC.getUTCDate() - 1);
+    }
+    
+    const resetDateStr = resetTimeUTC.toISOString().split('T')[0];
+
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(statsRef);
+      if (!doc.exists || doc.data().last_reset !== resetDateStr) {
+        transaction.set(statsRef, { count: 1, last_reset: resetDateStr });
+      } else {
+        transaction.update(statsRef, { count: admin.firestore.FieldValue.increment(1) });
+      }
+    });
+  }
+
   async generateBaseAIReport(item, news, country, previousItems = []) {
     if (!this.genAI) return "";
     
@@ -60,7 +86,10 @@ class TrendUpdater {
       const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
       const text = (await result.response).text().trim().replace(/\*\*/g, '');
-      if (text) console.log(`  - Gemini Success: gemini-1.5-flash for ${item.originalTitle}`);
+      if (text) {
+        console.log(`  - Gemini Success: gemini-1.5-flash for ${item.originalTitle}`);
+        await this.incrementGeminiUsage(); // Increment usage on success
+      }
       return text;
     } catch (e) {
       console.error(`  - Gemini Error for ${item.originalTitle}:`, e.message);
