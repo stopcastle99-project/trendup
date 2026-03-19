@@ -105,13 +105,13 @@ let i18n = {
       about: { 
         title: "TrendUpについて", 
         content: `
-          <h2 style="margin-bottom:1.5rem;">世界を読む、最速のインテリジェンス TrendUp</h2>
-          <p style="margin-bottom:1rem; line-height:1.8;">TrendUpは、高度なビッグデータ処理技術と最新のAIエンジンを融合させ、日本、米国、韓国などの主要国における検索トレンドをリアルタイムで分析・可視化する次世代のデータインテリジェンスプラットフォームです。</p>
+          <h2 style="margin-bottom:1.5rem;">世界を読む、最速의 인텔리전스 TrendUp</h2>
+          <p style="margin-bottom:1rem; line-height:1.8;">TrendUpは、高度なビッグデータ処理技術と最新のAIエンジンを融合させ、日本、米国、韓国などの主要国における検索トレンドをリアルタイムで分析・可視화하는次世代の데이터 인텔리전스 플랫폼입니다.</p>
           <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">主な特徴</h3>
           <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
-            <li><strong>リアルタイム・データパイプライン：</strong>世界中の信頼性の高いトレンドデータを10分間隔で収集・正規化し、常に最新の情報を提供します。</li>
-            <li><strong>AIによる文脈分析：</strong>単なるキーワードの羅列を超え、AIがトレンドの背景と文脈を把握して、ユーザーの言語で最適化された要約レポートを生成します。</li>
-            <li><strong>グローバルインサイト：</strong>国別のトレンド比較を通じて、地域的な特色や世界共通の関心事を一目で把握し、世の中の動向を先読みできます。</li>
+            <li><strong>リアルタイム・데이터 파이프라인：</strong>世界中の信頼性の高いトレンドデータを10分間隔で収集・정규화하여常に最新の情報を提供します。</li>
+            <li><strong>AIによる문맥 분석：</strong>単なるキーワードの羅列を超え、AIがトレンドの背景と文脈を把握して、ユーザーの言語で最適化された要約レポートを生成します。</li>
+            <li><strong>글로벌 인사이트：</strong>国別のトレンド比較を通じて、지역적인 특색이나世界共通の関心事を一目で把握し、世の中の動向を先読みできます.</li>
           </ul>
         ` 
       }, 
@@ -119,37 +119,37 @@ let i18n = {
         title: "プライバシーポリシー (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">プライバシーポリシー</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.8.4)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.9.5)</p>
           <h3 style="margin:1.2rem 0 0.5rem;">1. 個人情報の収集および収集方法</h3>
           <p>当サービスは、会員登録なしで全ての機能を利用可能です。ただし、サービスの利用過程で、IPアドレス、クッキー（Cookie）、ブラウザの種類、アクセス日時などの情報がアクセスログとして自動的に収集される場合があります。</p>
-          <h3 style="margin:1.2rem 0 0.5rem;">2. 広告の配信について（Googleアドセンス）</h3>
-          <p>当サイトは、第三者配信の広告サービス「Googleアドセンス」を利用しています。Googleなどの広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、クッキー（Cookie）を使用することがあります。これには、ユーザーが当サイトや他のサイトに過去にアクセスした際の情報が含まれますが、氏名、住所、メールアドレス、電話番号など個人を特定する情報は含まれません。</p>
-          <p>ユーザーは、Googleの<a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--primary);">広告設定</a>でパーソナライズ広告を無効にできます。また、<a href="https://www.aboutads.info/" target="_blank" style="color:var(--primary);">www.aboutads.info</a>にアクセスすることで、第三者配信事業者のクッキーを無効にすることもできます。</p>
+          <h3 style="margin:1.2rem 0 0.5rem;">2. 広告의 配信について（Googleアドセンス）</h3>
+          <p>当サイトは、第三者配信의 広告サービス「Googleアドセンス」を利用しています。Googleなどの広告配信事業者は、ユーザーの興味に応じた商品やサービス의 広告を表示するため、クッキー（Cookie）を使用することがあります。これには、ユーザーが当サイトや他의 サイトに過去にアクセスした際の情報が含まれますが、氏名、住所、メールアドレス、電話番号など個人を特定する情報は含まれません。</p>
+          <p>ユーザーは、Google의 <a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--primary);">広告設定</a>でパーソナライズ広告を無効にできます。また、<a href="https://www.aboutads.info/" target="_blank" style="color:var(--primary);">www.aboutads.info</a>にアクセスすることで、第三者配信事業者의 クッキーを無効にすることもできます。</p>
           <h3 style="margin:1.2rem 0 0.5rem;">3. アクセス解析ツールについて</h3>
-          <p>当サイトでは、Googleによるアクセス解析ツール「Googleアナリティクス」を利用しています。このGoogleアナリティクスはトラフィックデータの収集のためにクッキーを使用しています。このトラフィックデータは匿名で収集されており、個人を特定するものではありません。</p>
+          <p>当サイトでは、Googleによるアクセス解析ツール「Googleアナリティクス」を利用しています。このGoogleアナリティクスはトラフィック데이터의 収集のためにクッキーを使用しています。このトラフィック데이터は匿名で収集されており、個人を特定するものではありません。</p>
           <h3 style="margin:1.2rem 0 0.5rem;">4. 個人情報の利用目的</h3>
-          <p>収集した情報は、サービスの運営改善、利用状況の分析、および不正利用の防止のために利用されます。</p>
+          <p>収集した情報は、サービス의 運営改善、利用状況의 分析、および不正利用의 防止のために利用されます。</p>
         ` 
       }, 
       terms: { 
         title: "利用規約 (Terms of Service)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">利用規約</h2>
-          <p style="margin-bottom:1rem;">この規約（以下「本規約」）は、TrendUp（以下「当サービス」）が提供するコンテンツの利用条件を定めるものです。</p>
+          <p style="margin-bottom:1rem;">この規約（以下「本規約」）は、TrendUp（以下「当サービス」）が提供する콘텐츠의 利用条件を定めるものです。</p>
           <h3 style="margin:1.2rem 0 0.5rem;">1. 免責事項</h3>
-          <p>当サービスで提供される全てのトレンドデータおよびAIによる分析内容は、公開されている情報を基に自動生成されたものであり、その正確性、完全性、妥当性を保証するものではありません。情報の利用によって生じた損害や不利益について、当サービスは一切の責任を負いません。重要な意思決定の根拠として使用される際は、自己責任において行ってください。</p>
+          <p>当サービスで提供される全てのトレンド데이터およびAIによる分析内容は、公開されている情報を基に自動生成されたものであり、その正確性、完全性、妥当性を保証するものではありません。情報の利用によって生じた損害や不利益について、当サービスは一切의 責任を負いません。重要な意思決定의 根拠として使用される際は、自己責任において行ってください。</p>
           <h3 style="margin:1.2rem 0 0.5rem;">2. 禁止事項</h3>
-          <p>ユーザーは、以下の行為を行ってはなりません。</p>
+          <p>ユーザーは、以下의 行為を行ってはなりません。</p>
           <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc;">
             <li>サーバーへの過度な負荷をかける行為</li>
-            <li>スクレイピングやクローラー、自動化ツールを用いたデータの無断取得</li>
-            <li>当サービスの運営を妨害する行為</li>
+            <li>스크레이핑이나 크롤러, 자동화 툴을 이용한 데이터 무단 취득</li>
+            <li>当サービス의 運営を妨害する行為</li>
             <li>その他、法令または公序良俗に反する行為</li>
           </ul>
           <h3 style="margin:1.2rem 0 0.5rem;">3. 知的財産権</h3>
-          <p>当サービスに含まれるロゴ、デザイン、プログラム等の知的財産権は、当サービスまたは正当な権利者に帰属します。</p>
-          <h3 style="margin:1.2rem 0 0.5rem;">4. 規約の変更</h3>
-          <p>当サービスは、必要に応じて本規約を変更することがあります。変更後の規約は、本サイト上に掲示した時点から効力を生じるものとします。</p>
+          <p>当サービスに含まれる로고, 디자인, 프로그램 등의 지적 재산권은 当서비스 또는 정당한 권리자에게 귀속됩니다.</p>
+          <h3 style="margin:1.2rem 0 0.5rem;">4. 規約의 変更</h3>
+          <p>当サービスは、必要に応じて本規約を変更することがあります。変更後의 規約は、本サイト上に掲示した時点から効力を生じるものとします。</p>
         ` 
       }, 
       contact: { 
@@ -162,7 +162,7 @@ let i18n = {
         ` 
       },
       cookie: {
-        text: "TrendUpはサービス品質向上およびパーソナライズされたコンテンツ提供のためにCookieを使用します。",
+        text: "TrendUpはサービス品質向上およびパーソナライズされた콘텐츠提供のためにCookieを使用します。",
         btn: "同意する"
       }
     }
@@ -189,7 +189,7 @@ let i18n = {
         title: "Privacy Policy", 
         content: `
           <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
-          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.8.4)</p>
+          <p style="margin-bottom:1rem;">TrendUp ("Service") values users' personal information and complies with relevant laws and regulations. (v2.9.5)</p>
           <h3>1. Information Collection</h3>
           <p>Users can use the service without registration. However, access IP, cookies, and browser information may be automatically collected for analytics and advertising purposes.</p>
           <h3>2. Advertising and Cookies (Google AdSense)</h3>
@@ -246,9 +246,6 @@ class TrendList extends HTMLElement {
   set data({ trends, lang, country }) { this.render(trends, lang, country); }
   render(trends, lang, country) {
     const t = i18n[lang] || i18n.en;
-    const countryToLang = { 'KR': 'ko', 'JP': 'ja', 'US': 'en' };
-    const nativeLang = countryToLang[country];
-
     const getTrendIcon = (dir) => {
       if (dir === 'up') return '<span style="color: #ff4d4d; font-weight: 900; font-size: 0.9rem;">↑</span>';
       if (dir === 'down') return '<span style="color: #4d79ff; font-weight: 900; font-size: 0.9rem;">↓</span>';
@@ -259,10 +256,7 @@ class TrendList extends HTMLElement {
       <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
         const originalTitle = item.originalTitle || item.title;
         const translatedTitle = (item.translations && item.translations[lang]) ? item.translations[lang] : "";
-
-        // UI Requirement: Original title large, Translation small with previous style
         const hasTranslation = translatedTitle && (translatedTitle.toLowerCase() !== originalTitle.toLowerCase());
-
         return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${originalTitle}</span>${hasTranslation ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
       }).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
@@ -307,7 +301,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.9.2");
+    console.log("App Init: v2.9.5");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -351,16 +345,18 @@ class App {
   refreshUIText() {
     try {
       const t = i18n[this.currentLang] || i18n.en;
-      document.documentElement.setAttribute('lang', this.currentLang); // Update HTML lang attribute
+      document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
-      const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 GlobalTrendUp. All rights reserved. (v2.9.2)`;
+      
+      const footerContent = document.querySelector('.footer-content p');
+      if (footerContent) {
+        footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v2.9.5) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      }
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
 
-      // Translate 'Trends:' and 'Language:' labels in side menu
       const navLabels = document.querySelectorAll('.nav-label');
       if (navLabels[0]) navLabels[0].textContent = t.labels?.trends || "Country:";
       if (navLabels[1]) navLabels[1].textContent = t.labels?.language || "Language:";
@@ -374,6 +370,8 @@ class App {
       if (cookieText && t.pages.cookie) cookieText.textContent = t.pages.cookie.text;
       const cookieBtn = document.getElementById('accept-cookies');
       if (cookieBtn && t.pages.cookie) cookieBtn.textContent = t.pages.cookie.btn;
+      
+      this.updateGeminiUsage();
     } catch (e) { console.error("UI refresh error:", e); }
   }
 
@@ -382,17 +380,11 @@ class App {
     const t = i18n[this.currentLang] || i18n.en;
     const trendTitle = firstTrend.originalTitle || firstTrend.title;
     const translatedTitle = (firstTrend.translations && firstTrend.translations[this.currentLang]) ? firstTrend.translations[this.currentLang] : trendTitle;
-    
-    // 1. Update Document Title
     const newTitle = `GlobalTrendUp | ${this.currentCountry} #1: ${translatedTitle}`;
     document.title = newTitle;
-
-    // 2. Update Meta Description
     const description = `${this.currentCountry} Real-time Trend #1: "${translatedTitle}". ${t.summary}. | Check out the latest global trends with AI summaries on GlobalTrendUp.`;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', description);
-
-    // 3. Update Open Graph Meta
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) ogTitle.setAttribute('content', newTitle);
     const ogDesc = document.querySelector('meta[property="og:description"]');
@@ -498,11 +490,9 @@ class App {
         const data = usageDoc.data();
         const count = data.count || 0;
         usageEl.textContent = `(${count}/1500)`;
-        
-        // Optional: Change color based on usage
         if (count > 1400) usageEl.style.color = 'var(--error)';
         else if (count > 1000) usageEl.style.color = 'var(--warning)';
-        else usageEl.style.color = 'var(--text-muted)';
+        else usageEl.style.color = 'inherit';
       }
     } catch (e) { console.warn("Failed to fetch AI usage:", e.message); }
   }
@@ -511,10 +501,7 @@ class App {
     if (!this.db) return;
     try {
       const t = i18n[this.currentLang] || i18n.en;
-      
-      // Fetch Gemini usage count
       await this.updateGeminiUsage();
-
       const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();
@@ -522,10 +509,7 @@ class App {
         const trendListEl = document.getElementById('top-trends');
         if (trendListEl) {
           trendListEl.data = { trends, lang: this.currentLang, country: this.currentCountry };
-          // Update SEO Meta with the #1 trending topic
-          if (trends && trends.length > 0) {
-            this.updateSEOMeta(trends[0]);
-          }
+          if (trends && trends.length > 0) this.updateSEOMeta(trends[0]);
         }
         const date = dbData.lastUpdated.toDate();
         const lastUpdatedEl = document.getElementById('last-updated');
