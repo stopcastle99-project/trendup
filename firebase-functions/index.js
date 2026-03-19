@@ -43,13 +43,18 @@ class TrendUpdater {
     try {
       const metaRef = db.collection("trends").doc("metadata");
       const doc = await metaRef.get();
-      if (!doc.exists) return 0;
-      const data = doc.data();
       const now = new Date();
       const resetTimeUTC = new Date(now);
-      resetTimeUTC.setUTCHours(7, 0, 0, 0); // Reset at 7:00 AM UTC (4:00 PM KST)
+      resetTimeUTC.setUTCHours(7, 0, 0, 0); 
       if (now < resetTimeUTC) resetTimeUTC.setUTCDate(resetTimeUTC.getUTCDate() - 1);
       const resetDateStr = resetTimeUTC.toISOString().split('T')[0];
+
+      if (!doc.exists) {
+        console.log("Creating metadata document for the first time...");
+        await metaRef.set({ gemini_count: 0, gemini_last_reset: resetDateStr });
+        return 0;
+      }
+      const data = doc.data();
       if (data.gemini_last_reset !== resetDateStr) return 0;
       return data.gemini_count || 0;
     } catch (e) { return 0; }
