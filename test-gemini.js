@@ -4,8 +4,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 async function testGemini() {
   // 접두사 models/ 를 포함한 완전한 경로로 시도
   const modelsToTry = [
-    "gemini-1.5-flash",
-    "models/gemini-1.5-flash",
+    "gemini-2.5-flash",
+    "models/gemini-2.5-flash",
     "models/gemini-1.5-pro",
     "models/gemini-pro"
   ];

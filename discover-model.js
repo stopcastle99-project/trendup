@@ -11,7 +11,7 @@ async function findWorkingModel() {
   try {
     // Note: The JS SDK doesn't have a direct listModels, so we test known aliases
     const commonNames = [
-      "gemini-1.5-flash",
+      "gemini-2.5-flash",
       "gemini-1.5-pro",
       "gemini-pro"
     ];

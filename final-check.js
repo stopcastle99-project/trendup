@@ -12,7 +12,7 @@ async function runSurgicalTest() {
 
   const genAI = new GoogleGenerativeAI(apiKey);
   // 구글 공식 문서에서 현재 가장 권장하는 모델 ID들입니다.
-  const testModels = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+  const testModels = ["gemini-2.5-flash", "gemini-1.5-pro", "gemini-pro"];
 
   console.log("🛠️  STRICT INTERNAL TESTING START...");
 

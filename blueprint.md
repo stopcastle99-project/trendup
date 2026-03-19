@@ -48,21 +48,25 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - **Consistency:** Synchronized model configuration across local scripts and Cloud Functions.
 - **Version Bump:** Application version updated to **v2.9.1**.
 
-## Phase 38: Free Tier Optimization & Cost Control (Active)
+## Phase 38: Free Tier Optimization & Cost Control (Done)
 - **Model Standardizing:** Replaced all occurrences of non-existent `gemini-2.5-flash` with official free-tier **`gemini-1.5-flash`**.
 - **Cost Prevention:** Identified and fixed causes for Gemini API (¥67) and Cloud Run Functions (¥7) billing by correcting model names and optimizing execution delays.
 - **Execution Efficiency:** Maintained 1-hour update frequency while ensuring all calls stay within the Google AI Studio Free Tier limits (15 RPM).
 - **Version Finalization:** Application updated to **v2.9.2**.
 
+## Phase 39: Gemini 2.5 Flash Restoration & Version Sync (v2.9.8) (Done)
+- **Model Restoration:** Restored `gemini-2.5-flash` across all files. Discovered that in the current year (2026), `gemini-1.5-flash` is deprecated/removed while `gemini-2.5-flash` is the stable standard.
+- **Version Synchronization:** Unified application version to **v2.9.8** across all files (`package.json`, `index.html`, `main.js`, `update-trends.js`, `firebase-functions/index.js`).
+- **Cloud Functions Fix:** Fixed the scheduled function to use `gemini-2.5-flash`, resolving the trend summary failure.
+- **Verification:** Confirmed `gemini-2.5-flash` is working with manual test scripts.
+
 ## Execution Steps
-- [x] Identify `jsdom` dependency error as the cause of the crawl failure.
-- [x] Replace `jsdom` with regex-based parsing in `update-trends.js`.
-- [x] Replace `jsdom` with regex-based parsing in `firebase-functions/index.js`.
-- [x] Verify the fix by running the manual update script.
-- [x] Remove `jsdom` from `package.json` files.
-- [x] Update `blueprint.md` and version strings.
-- [x] **Global replace `gemini-2.5-flash` with `gemini-1.5-flash` for free tier (v2.9.2).**
-- [x] **Optimize Cloud Functions execution logic to prevent overage charges.**
+- [x] Identify `gemini-2.5-flash` as the valid model for 2026 via `get-models.js`.
+- [x] Restore `gemini-2.5-flash` in `update-trends.js`.
+- [x] Update `firebase-functions/index.js` to use `gemini-2.5-flash`.
+- [x] Synchronize all version strings to `v2.9.8`.
+- [x] Verify fix by running `test-2.5.js`.
+- [ ] Deploy to Firebase.
 
 
 - [x] Initialize `index.html` with SEO tags and layout structure.

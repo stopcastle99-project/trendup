@@ -4,7 +4,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
 import { execSync } from "child_process";
 
-// Firebase Initialization
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
@@ -46,8 +45,8 @@ class TrendUpdater {
 
   async getGeminiUsageCount() {
     try {
-      const statsRef = db.collection("stats").doc("gemini_usage");
-      const doc = await statsRef.get();
+      const metaRef = db.collection("trends").doc("metadata");
+      const doc = await metaRef.get();
       if (!doc.exists) return 0;
       
       const data = doc.data();
@@ -57,13 +56,13 @@ class TrendUpdater {
       if (now < resetTimeUTC) resetTimeUTC.setUTCDate(resetTimeUTC.getUTCDate() - 1);
       const resetDateStr = resetTimeUTC.toISOString().split('T')[0];
 
-      if (data.last_reset !== resetDateStr) return 0;
-      return data.count || 0;
+      if (data.gemini_last_reset !== resetDateStr) return 0;
+      return data.gemini_count || 0;
     } catch (e) { return 0; }
   }
 
   async incrementGeminiUsage() {
-    const statsRef = db.collection("stats").doc("gemini_usage");
+    const metaRef = db.collection("trends").doc("metadata");
     const now = new Date();
     const resetTimeUTC = new Date(now);
     resetTimeUTC.setUTCHours(7, 0, 0, 0);
@@ -71,25 +70,20 @@ class TrendUpdater {
     const resetDateStr = resetTimeUTC.toISOString().split('T')[0];
 
     await db.runTransaction(async (transaction) => {
-      const doc = await transaction.get(statsRef);
-      if (!doc.exists || doc.data().last_reset !== resetDateStr) {
-        transaction.set(statsRef, { count: 1, last_reset: resetDateStr });
+      const doc = await transaction.get(metaRef);
+      if (!doc.exists || doc.data().gemini_last_reset !== resetDateStr) {
+        transaction.set(metaRef, { gemini_count: 1, gemini_last_reset: resetDateStr }, { merge: true });
       } else {
-        transaction.update(statsRef, { count: admin.firestore.FieldValue.increment(1) });
+        transaction.update(metaRef, { gemini_count: admin.firestore.FieldValue.increment(1) });
       }
     });
   }
 
   async generateBaseAIReport(item, news, country, previousItems = []) {
     if (!this.genAI) return "";
-    
-    // Deduplication
     const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
-    if (existing && existing.aiReports && existing.aiReports.ko) {
-      return existing.aiReports.ko;
-    }
+    if (existing && existing.aiReports && existing.aiReports.ko) return existing.aiReports.ko;
 
-    // Safety Limit Check (Read once per item to stay accurate)
     const currentUsage = await this.getGeminiUsageCount();
     if (currentUsage >= 1480) {
       console.warn(`  - Gemini Safety: Daily limit reached (${currentUsage}/1500).`);
@@ -205,12 +199,12 @@ class TrendUpdater {
         return newVer;
       }
     } catch (e) {}
-    return "v2.9.3";
+    return "v2.9.8";
   }
 
   executeDeploy(ver) {
     try {
-      execSync("git add . && git commit -m 'chore: API optimization and usage protection (v2.9.4)' && git push origin main", { stdio: 'inherit' });
+      execSync("git add . && git commit -m 'fix: restore gemini-2.5-flash and sync version (v2.9.8)' && git push origin main", { stdio: 'inherit' });
       execSync("npx firebase-tools deploy --only hosting,functions", { stdio: 'inherit' });
     } catch (e) {}
   }
@@ -219,42 +213,30 @@ class TrendUpdater {
     const countries = ["KR", "JP", "US"];
     const langs = ["ko", "ja", "en"];
     let allKeywords = [];
-    
     for (const code of countries) {
       console.log(`Updating ${code}...`);
       const items = await this.fetchTrends(code);
       const docRef = db.collection("trends").doc(code);
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
-      
       for (const item of items) {
         allKeywords.push(item.originalTitle);
         item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code, previousItems) || `${code} Hot Trend: ${item.originalTitle}`;
-        if (!previousItems.find(p => p.originalTitle === item.originalTitle)) {
-           await new Promise(r => setTimeout(r, 4000));
-        }
+        if (!previousItems.find(p => p.originalTitle === item.originalTitle)) await new Promise(r => setTimeout(r, 4000));
       }
-
       for (const lang of langs) {
-        console.log(`  - Translating into ${lang}...`);
         const titlesToTranslate = items.map(i => i.originalTitle);
         const translatedTitles = await this.translateBatch(titlesToTranslate, lang);
         items.forEach((item, idx) => { item.translations[lang] = translatedTitles[idx] || item.originalTitle; });
-
         if (lang !== 'ko') {
           const reportsToTranslate = items.map(i => i.aiReports.ko);
           const translatedReports = await this.translateBatch(reportsToTranslate, lang);
           items.forEach((item, idx) => { item.aiReports[lang] = translatedReports[idx] || item.aiReports.ko; });
         }
       }
-
       await Promise.all(items.map(async (item) => {
-        [item.newsLinks, item.videoLinks] = await Promise.all([
-          this.getSupplementaryNews(item.originalTitle, code),
-          this.getYouTubeVideos(item.originalTitle, code)
-        ]);
+        [item.newsLinks, item.videoLinks] = await Promise.all([this.getSupplementaryNews(item.originalTitle, code), this.getYouTubeVideos(item.originalTitle, code)]);
       }));
-
       await docRef.set({ items, previousItems, lastUpdated: admin.firestore.Timestamp.now() });
     }
     this.generateSitemap(allKeywords);

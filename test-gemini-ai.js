@@ -13,7 +13,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 
 async function testGeminiReport() {
   console.log("🚀 Starting Gemini AI Report Test (Forced v1 API)...");
-  const models = ["models/gemini-1.5-flash", "models/gemini-1.5-pro", "models/gemini-2.0-flash"];
+  const models = ["models/gemini-2.5-flash", "models/gemini-1.5-pro", "models/gemini-2.0-flash"];
   
   const prompt = "대한민국 트렌드 '뉴진스'에 대해 한국어로 1문장 요약해줘.";
 

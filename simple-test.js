@@ -4,7 +4,7 @@ import 'dotenv/config';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function test() {
-  const modelName = "gemini-1.5-flash";
+  const modelName = "gemini-2.5-flash";
   console.log(`Testing with model: ${modelName}`);
   try {
     const model = genAI.getGenerativeModel({ model: modelName });
