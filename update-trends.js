@@ -196,6 +196,9 @@ class TrendUpdater {
         const updated = indexHtml.replace(/v(\d+)\.(\d+)\.(\d+)/g, newVer);
         fs.writeFileSync("index.html", updated);
         fs.writeFileSync("public/index.html", updated);
+        // Sync main assets
+        fs.writeFileSync("public/main.js", fs.readFileSync("main.js", "utf8"));
+        fs.writeFileSync("public/style.css", fs.readFileSync("style.css", "utf8"));
         return newVer;
       }
     } catch (e) {}
