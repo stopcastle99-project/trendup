@@ -44,20 +44,30 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
+  async getGeminiUsageCount() {
+    try {
+      const statsRef = db.collection("stats").doc("gemini_usage");
+      const doc = await statsRef.get();
+      if (!doc.exists) return 0;
+      
+      const data = doc.data();
+      const now = new Date();
+      const resetTimeUTC = new Date(now);
+      resetTimeUTC.setUTCHours(7, 0, 0, 0);
+      if (now < resetTimeUTC) resetTimeUTC.setUTCDate(resetTimeUTC.getUTCDate() - 1);
+      const resetDateStr = resetTimeUTC.toISOString().split('T')[0];
+
+      if (data.last_reset !== resetDateStr) return 0;
+      return data.count || 0;
+    } catch (e) { return 0; }
+  }
+
   async incrementGeminiUsage() {
     const statsRef = db.collection("stats").doc("gemini_usage");
     const now = new Date();
-    
-    // KST is UTC+9. 4 PM KST is 7 AM UTC.
-    // If it's before 7 AM UTC, the quota reset happened yesterday at 7 AM UTC.
-    // If it's after 7 AM UTC, the quota reset happened today at 7 AM UTC.
     const resetTimeUTC = new Date(now);
     resetTimeUTC.setUTCHours(7, 0, 0, 0);
-    
-    if (now < resetTimeUTC) {
-      resetTimeUTC.setUTCDate(resetTimeUTC.getUTCDate() - 1);
-    }
-    
+    if (now < resetTimeUTC) resetTimeUTC.setUTCDate(resetTimeUTC.getUTCDate() - 1);
     const resetDateStr = resetTimeUTC.toISOString().split('T')[0];
 
     await db.runTransaction(async (transaction) => {
@@ -73,10 +83,17 @@ class TrendUpdater {
   async generateBaseAIReport(item, news, country, previousItems = []) {
     if (!this.genAI) return "";
     
-    // Deduplication: Reuse existing report if title matches
+    // Deduplication
     const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
     if (existing && existing.aiReports && existing.aiReports.ko) {
       return existing.aiReports.ko;
+    }
+
+    // Safety Limit Check (Read once per item to stay accurate)
+    const currentUsage = await this.getGeminiUsageCount();
+    if (currentUsage >= 1480) {
+      console.warn(`  - Gemini Safety: Daily limit reached (${currentUsage}/1500).`);
+      return "오늘의 AI 분석 할당량이 소진되었습니다.";
     }
 
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
@@ -87,8 +104,8 @@ class TrendUpdater {
       const result = await model.generateContent(prompt);
       const text = (await result.response).text().trim().replace(/\*\*/g, '');
       if (text) {
-        console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle}`);
-        await this.incrementGeminiUsage(); // Increment usage on success
+        console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
+        await this.incrementGeminiUsage();
       }
       return text;
     } catch (e) {
@@ -126,11 +143,7 @@ class TrendUpdater {
         const content = m[1];
         const title = (content.match(/<title>(.*?)<\/title>/)?.[1] || "").replace("<![CDATA[", "").replace("]]>", "").trim();
         const link = (content.match(/<link>(.*?)<\/link>/)?.[1] || "").trim();
-        items.push({ 
-          title: title.split(" - ")[0], 
-          url: link, 
-          source: title.split(" - ").pop() || "News" 
-        });
+        items.push({ title: title.split(" - ")[0], url: link, source: title.split(" - ").pop() || "News" });
       }
       return items;
     } catch (e) { return []; }
@@ -173,17 +186,9 @@ class TrendUpdater {
     r += `  <language>ko</language>\n`;
     r += `  <lastBuildDate>${now}</lastBuildDate>\n`;
     r += `  <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />\n`;
-
     [...new Set(allTrends)].slice(0, 20).forEach(kw => {
-      r += `  <item>\n`;
-      r += `    <title>${kw}</title>\n`;
-      r += `    <link>${baseUrl}/?q=${encodeURIComponent(kw)}</link>\n`;
-      r += `    <description>AI-powered analysis for trend: ${kw}</description>\n`;
-      r += `    <pubDate>${now}</pubDate>\n`;
-      r += `    <guid>${baseUrl}/?q=${encodeURIComponent(kw)}</guid>\n`;
-      r += `  </item>\n`;
+      r += `  <item>\n    <title>${kw}</title>\n    <link>${baseUrl}/?q=${encodeURIComponent(kw)}</link>\n    <pubDate>${now}</pubDate>\n    <guid>${baseUrl}/?q=${encodeURIComponent(kw)}</guid>\n  </item>\n`;
     });
-
     r += `</channel>\n</rss>`;
     fs.writeFileSync("rss.xml", r);
   }
@@ -200,12 +205,12 @@ class TrendUpdater {
         return newVer;
       }
     } catch (e) {}
-    return "v2.9.1";
+    return "v2.9.3";
   }
 
   executeDeploy(ver) {
     try {
-      execSync("git add . && git commit -m 'chore: API optimization for Free Tier' && git push origin main", { stdio: 'inherit' });
+      execSync("git add . && git commit -m 'chore: API optimization and usage protection (v2.9.4)' && git push origin main", { stdio: 'inherit' });
       execSync("npx firebase-tools deploy --only hosting,functions", { stdio: 'inherit' });
     } catch (e) {}
   }
@@ -222,38 +227,27 @@ class TrendUpdater {
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
       
-      // 1. Generate Base AI Reports (Korean) sequentially with delay
       for (const item of items) {
         allKeywords.push(item.originalTitle);
         item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code, previousItems) || `${code} Hot Trend: ${item.originalTitle}`;
-        // Add safety delay only if it's a new call (4 seconds for Free Tier safety)
         if (!previousItems.find(p => p.originalTitle === item.originalTitle)) {
            await new Promise(r => setTimeout(r, 4000));
         }
       }
 
-      // 2. Batch Translation for Titles and Reports
       for (const lang of langs) {
         console.log(`  - Translating into ${lang}...`);
-        
-        // Translate Titles
         const titlesToTranslate = items.map(i => i.originalTitle);
         const translatedTitles = await this.translateBatch(titlesToTranslate, lang);
-        items.forEach((item, idx) => {
-          item.translations[lang] = translatedTitles[idx] || item.originalTitle;
-        });
+        items.forEach((item, idx) => { item.translations[lang] = translatedTitles[idx] || item.originalTitle; });
 
-        // Translate AI Reports (skip if lang is ko)
         if (lang !== 'ko') {
           const reportsToTranslate = items.map(i => i.aiReports.ko);
           const translatedReports = await this.translateBatch(reportsToTranslate, lang);
-          items.forEach((item, idx) => {
-            item.aiReports[lang] = translatedReports[idx] || item.aiReports.ko;
-          });
+          items.forEach((item, idx) => { item.aiReports[lang] = translatedReports[idx] || item.aiReports.ko; });
         }
       }
 
-      // 3. Fetch Supplementary News & YouTube Videos
       await Promise.all(items.map(async (item) => {
         [item.newsLinks, item.videoLinks] = await Promise.all([
           this.getSupplementaryNews(item.originalTitle, code),
