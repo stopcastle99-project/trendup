@@ -307,7 +307,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.9.1");
+    console.log("App Init: v2.9.2");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -354,7 +354,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang); // Update HTML lang attribute
       document.getElementById('current-country-title').textContent = t.title;
       const footerText = document.querySelector('.footer-content p');
-      if (footerText) footerText.textContent = `© 2026 GlobalTrendUp. All rights reserved. (v2.9.1)`;
+      if (footerText) footerText.textContent = `© 2026 GlobalTrendUp. All rights reserved. (v2.9.2)`;
       
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
