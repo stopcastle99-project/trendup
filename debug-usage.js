@@ -1,29 +1,44 @@
 
-import admin from "firebase-admin";
+import 'dotenv/config';
+import admin from 'firebase-admin';
 
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+const rawSecret = process.env.FIREBASE_SERVICE_ACCOUNT;
+if (!rawSecret) {
+  console.error("FIREBASE_SERVICE_ACCOUNT is missing.");
+  process.exit(1);
+}
+const serviceAccount = JSON.parse(rawSecret.trim());
+
+try {
   admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-} else {
-  admin.initializeApp();
+} catch (e) {
+  console.error("Firebase init failed:", e.message);
+  process.exit(1);
 }
 
 const db = admin.firestore();
 
-async function checkUsage() {
-  console.log("🔍 Checking Gemini usage data in Firestore...");
+async function checkMetadata() {
   try {
-    const doc = await db.collection("stats").doc("gemini_usage").get();
+    const metaRef = db.collection("trends").doc("metadata");
+    const doc = await metaRef.get();
     if (doc.exists) {
-      console.log("✅ Data Found:");
+      console.log("--- Metadata Found in 'trends/metadata' ---");
       console.log(JSON.stringify(doc.data(), null, 2));
     } else {
-      console.log("❌ Document 'stats/gemini_usage' does not exist.");
+      console.log("--- Metadata Not Found in 'trends/metadata' ---");
+      const statsRef = db.collection("stats").doc("gemini_usage");
+      const statsDoc = await statsRef.get();
+      if (statsDoc.exists) {
+        console.log("--- Metadata Found in 'stats/gemini_usage' ---");
+        console.log(JSON.stringify(statsDoc.data(), null, 2));
+      } else {
+        console.log("--- No Metadata Found ---");
+      }
     }
   } catch (e) {
-    console.error("❌ Error reading Firestore:", e.message);
+    console.error("Error:", e.message);
   }
-  process.exit(0);
 }
 
-checkUsage();
+checkMetadata().then(() => process.exit(0));

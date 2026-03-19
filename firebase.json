@@ -11,39 +11,19 @@
     "headers": [
       {
         "source": "/ads.txt",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "text/plain; charset=utf-8"
-          }
-        ]
+        "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
       },
       {
         "source": "/sitemap.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
-          }
-        ]
+        "headers": [{ "key": "Content-Type", "value": "application/xml; charset=utf-8" }]
       },
       {
         "source": "/rss.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
-          }
-        ]
+        "headers": [{ "key": "Content-Type", "value": "application/xml; charset=utf-8" }]
       },
       {
         "source": "/robots.txt",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "text/plain; charset=utf-8"
-          }
-        ]
+        "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
       }
     ],
     "ignore": [
@@ -57,6 +37,9 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   },
   "functions": [
     {

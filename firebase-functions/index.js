@@ -39,6 +39,39 @@ class TrendUpdater {
     } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
   }
 
+  async getGeminiUsageCount() {
+    try {
+      const metaRef = db.collection("trends").doc("metadata");
+      const doc = await metaRef.get();
+      if (!doc.exists) return 0;
+      const data = doc.data();
+      const now = new Date();
+      const resetTimeUTC = new Date(now);
+      resetTimeUTC.setUTCHours(7, 0, 0, 0); // Reset at 7:00 AM UTC (4:00 PM KST)
+      if (now < resetTimeUTC) resetTimeUTC.setUTCDate(resetTimeUTC.getUTCDate() - 1);
+      const resetDateStr = resetTimeUTC.toISOString().split('T')[0];
+      if (data.gemini_last_reset !== resetDateStr) return 0;
+      return data.gemini_count || 0;
+    } catch (e) { return 0; }
+  }
+
+  async incrementGeminiUsage() {
+    const metaRef = db.collection("trends").doc("metadata");
+    const now = new Date();
+    const resetTimeUTC = new Date(now);
+    resetTimeUTC.setUTCHours(7, 0, 0, 0);
+    if (now < resetTimeUTC) resetTimeUTC.setUTCDate(resetTimeUTC.getUTCDate() - 1);
+    const resetDateStr = resetTimeUTC.toISOString().split('T')[0];
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(metaRef);
+      if (!doc.exists || doc.data().gemini_last_reset !== resetDateStr) {
+        transaction.set(metaRef, { gemini_count: 1, gemini_last_reset: resetDateStr }, { merge: true });
+      } else {
+        transaction.update(metaRef, { gemini_count: admin.firestore.FieldValue.increment(1) });
+      }
+    });
+  }
+
   async generateBaseAIReport(item, newsTitles, snippets, country, previousItems = []) {
     if (!this.genAI) return "";
 
@@ -47,6 +80,12 @@ class TrendUpdater {
     if (existing && existing.aiReports && existing.aiReports.ko) {
       console.log(`  - Reusing existing AI report for: ${item.originalTitle}`);
       return existing.aiReports.ko;
+    }
+
+    const currentUsage = await this.getGeminiUsageCount();
+    if (currentUsage >= 1480) {
+      console.warn(`  - Gemini Safety: Daily limit reached (${currentUsage}/1500).`);
+      return "오늘의 AI 분석 할당량이 소진되었습니다.";
     }
 
     const countryName = { 'KR': '대한민국', 'JP': '일본', 'US': '미국' }[country] || country;
@@ -58,7 +97,8 @@ class TrendUpdater {
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim().replace(/\*\*/g, '');
       if (text && text.length > 10) {
-        console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle}`);
+        console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
+        await this.incrementGeminiUsage();
         return text;
       }
     } catch (e) {
