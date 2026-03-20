@@ -108,7 +108,7 @@ let i18n = {
         title: "プライバシーポリシー (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">プライバシーポリシー</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.9.8)</p>
+          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v3.0.0)</p>
         ` 
       }, 
       terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスはAIが生成した情報を提供します。情報の正確性を保証するものではありません。</p>` }, 
@@ -122,7 +122,7 @@ let i18n = {
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
       about: { title: "About TrendUp", content: `<h2>TrendUp: Global Trend Intelligence</h2><p>Real-time trend analysis platform using advanced AI.</p>` }, 
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>This site complies with relevant laws. (v2.9.8)</p>` }, 
+      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>This site complies with relevant laws. (v3.0.0)</p>` }, 
       terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><p>All AI-generated data is for reference only.</p>` }, 
       contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>Email: help@globaltrendup.com</p>` },
       cookie: { text: "TrendUp uses cookies to improve service quality and provide personalized content.", btn: "Accept" }
@@ -204,7 +204,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.9.8");
+    console.log("App Init: v3.0.0");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -251,7 +251,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v2.9.8) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.0.0) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;

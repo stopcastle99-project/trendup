@@ -202,13 +202,13 @@ class TrendUpdater {
         return newVer;
       }
     } catch (e) {}
-    return "v2.9.8";
+    return "v3.0.0";
   }
 
   executeDeploy(ver) {
     try {
-      execSync("git add . && git commit -m 'fix: restore gemini-2.5-flash and sync version (v2.9.8)' && git push origin main", { stdio: 'inherit' });
-      execSync("npx firebase-tools deploy --only hosting,functions", { stdio: 'inherit' });
+      execSync(`git add . && git commit -m 'chore: schedule trend update (${ver})' && git push origin main`, { stdio: 'inherit' });
+      execSync("npx firebase-tools deploy --only hosting", { stdio: 'inherit' });
     } catch (e) {}
   }
 

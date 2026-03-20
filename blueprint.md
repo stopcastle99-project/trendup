@@ -127,3 +127,9 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Upgrade Gemini API to **Gemini 2.5 Flash** for enhanced analysis (v2.8.4).
 - [x] Update core dependencies (`firebase-admin`, `jsdom`, `@google/generative-ai`) to latest versions (v2.8.4).
 - [x] Increment version to **v2.8.4**.
+
+## Phase 40: Migrate Crawler to GitHub Actions (v3.0.0)
+- **Functions Removal:** Removed `firebase-functions` and its configuration from `firebase.json` to eliminate the need for the Firebase Blaze plan.
+- **GitHub Actions Migration:** Enabled cron schedule (`0 * * * *`) in `.github/workflows/update.yml` to run the hourly update script for free.
+- **Deploy Optimization:** Modified `update-trends.js` to only deploy `hosting`, removing `functions` deployment.
+- **Version Bump:** Application version updated to **v3.0.0**.

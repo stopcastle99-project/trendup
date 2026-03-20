@@ -1,7 +1,9 @@
-name: Scheduled Trend Update (Manual Only)
+name: Scheduled Trend Update
 
 on:
-  workflow_dispatch: # 수동 실행 버튼만 유지
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *' # 매시간 정각마다 실행
 
 jobs:
   update-trends:
