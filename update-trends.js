@@ -208,7 +208,8 @@ class TrendUpdater {
   executeDeploy(ver) {
     try {
       execSync(`git add . && git commit -m 'chore: schedule trend update (${ver})' && git push origin main`, { stdio: 'inherit' });
-      execSync("npx firebase-tools deploy --only hosting", { stdio: 'inherit' });
+      const tokenArg = process.env.FIREBASE_TOKEN ? `--token ${process.env.FIREBASE_TOKEN}` : '';
+      execSync(`npx firebase-tools deploy --only hosting ${tokenArg}`, { stdio: 'inherit' });
     } catch (e) {}
   }
 
