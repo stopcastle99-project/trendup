@@ -1,6 +1,8 @@
 # **TrendUp: Real-time Global Trends Dashboard**
 
-## **Overview**
+## Phase 43: Comprehensive Terms of Service Expansion (v3.0.3)
+- Substantially enriched the Terms of Service content for Korean, Japanese, and English individually to strictly comply with AdSense requirements.
+- Standardized the clauses including Purpose, Disclaimer, User Obligations, and Service Suspensions across all supported languages.
 TrendUp is a modern, high-performance web application that provides real-time Top 10 trends for various countries.
 
 ## Phase 42: Hotfix for Rendering Bug (v3.0.2)
