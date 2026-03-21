@@ -3,6 +3,11 @@
 ## **Overview**
 TrendUp is a modern, high-performance web application that provides real-time Top 10 trends for various countries.
 
+## Phase 41: Fixed i18n Translation Bug & Added AdSense Policies (v3.0.1)
+- Fixed translation bug where UI elements (last-updated) did not dynamically switch translations.
+- Corrected corrupted `i18n` dictionary syntax.
+- Enhanced "About", "Privacy Policy", "Terms of Service", and "Contact" contents for English and Japanese natively for Google AdSense compliance.
+
 ## Phase 31: Gemini 2.5 Upgrade & Package Optimization (Done)
 - **Model Upgrade:** Migrated from Gemini 2.0 Flash to the latest stable **Gemini 2.5 Flash** due to 404 errors with older model names.
 - **Improved Robustness:** Updated model lists in both local scripts and Cloud Functions to ensure continuous operation despite future model deprecations.

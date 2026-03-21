@@ -202,7 +202,7 @@ class TrendUpdater {
         return newVer;
       }
     } catch (e) {}
-    return "v3.0.0";
+    return "v3.0.1";
   }
 
   executeDeploy(ver) {
