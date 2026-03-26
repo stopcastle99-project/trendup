@@ -10,81 +10,61 @@ const ICONS = {
 // --- Localization ---
 let i18n = {
   ko: { 
-    title: "실시간 인기 트렌드", update: "최근 업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문",
+    title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
     labels: { trends: "국가:", language: "언어:" },
-    menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 안내" },
-    pages: {
+    menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" }, 
+    pages: { 
       about: { 
-        title: "TrendUp: 글로벌 트렌드 인텔리전스", 
+        title: "TrendUp 소개", 
         content: `
           <h2 style="margin-bottom:1.5rem;">세상을 읽는 가장 빠른 인텔리전스, TrendUp</h2>
-          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUp은 고도의 빅데이터 처리 기술과 최신 AI 엔진(Google Gemini 2.0)을 융합하여 한국, 일본, 미국 등 주요 국가의 실시간 검색 트렌드를 분석하고 시각화하는 차세대 데이터 인텔리전스 플랫폼입니다.</p>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUp은 고도의 빅데이터 처리 기술과 최신 AI 엔진(Google Gemini 2.5)을 융합하여 한국, 일본, 미국 등 주요 국가의 실시간 검색 트렌드를 분석하고 시각화하는 차세대 데이터 인텔리전스 플랫폼입니다.</p>
           <h3 style="margin:1.5rem 0 0.8rem; border-left:4px solid var(--primary); padding-left:0.8rem; font-size:1.1rem;">우리의 미션</h3>
-          <p style="margin-bottom:1.2rem; line-height:1.8;">정보의 홍수 속에서 가장 가치 있는 '맥락'을 찾아내는 것이 우리의 목표입니다. 단순한 키워드 나열이 아닌, 왜 이 키워드가 지금 뜨고 있는지, 어떤 사회적 배경이 있는지 AI를 통해 심층 분석하여 사용자에게 전달합니다.</p>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">정보의 홍수 속에서 가장 가치 있는 '맥락'을 찾아내는 것이 우리의 목표입니다. 단순한 키워드 나열이 아닌, 왜 이 키워드가 지금 뜨고 있는지, 어떤 사회적 배경이 있는지 심층 분석하여 사용자에게 전달합니다.</p>
           <h3 style="margin:1.5rem 0 0.8rem; border-left:4px solid var(--primary); padding-left:0.8rem; font-size:1.1rem;">주요 기술력</h3>
           <ul style="margin-bottom:1.2rem; padding-left:1.5rem; list-style:disc; line-height:1.8;">
-            <li><strong>실시간 글로벌 파이프라인:</strong> 전 세계의 신뢰도 높은 트렌드 소스로부터 10분 단위로 데이터를 수집하여 정규화합니다.</li>
-            <li><strong>문맥 기반 AI 요약:</strong> 수집된 뉴스 조각들과 소셜 반응을 종합하여, AI가 인간이 읽기 편한 형태의 리포트로 재구성합니다.</li>
-            <li><strong>다국어 인사이트:</strong> 언어의 장벽을 넘어 각국의 트렌드를 모국어로 이해할 수 있도록 정교한 번역 및 로컬라이징을 지원합니다.</li>
-          </ul>
-        ` 
+            <li><strong>실시간 글로벌 파이프라인:</strong> 신뢰도 높은 소스로부터 10분 단위로 데이터를 수집·정규화합니다.</li>
+            <li><strong>문맥 기반 AI 요약:</strong> 뉴스 조각들과 소셜 반응을 종합하여 리포트 형태로 재구성합니다.</li>
+            <li><strong>다국어 인사이트:</strong> 언어의 장벽을 넘어 각국의 트렌드를 모국어로 이해할 수 있도록 정교한 번역을 지원합니다.</li>
+          </ul>` 
       },
       privacy: { 
         title: "개인정보 처리방침 (Privacy Policy)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">개인정보 처리방침</h2>
-          <p style="margin-bottom:1rem; line-height:1.6;">TrendUp(이하 '본 사이트')은 방문자의 개인정보 보호를 중요하게 생각하며, 관련 법령을 준수합니다. 본 방침은 수집되는 정보의 종류와 사용 목적, 그리고 구글 애드센스 광고 게재와 관련된 사항을 안내합니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">TrendUp(이하 '본 사이트')은 방문자의 개인정보 보호를 중요하게 생각하며, 관련 법령을 준수합니다. 본 방침은 수집되는 정보의 종류와 사용 목적, 그리고 구글 애드센스 게재 사항을 안내합니다.</p>
           <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">1. 개인정보 수집 및 목적</h3>
-          <p style="margin-bottom:1rem; line-height:1.6;">본 사이트는 별도의 회원가입이나 개인 식별 정보(성명, 연락처 등)를 수집하지 않습니다. 다만, 서비스 품질 개선 및 통계 분석, 광고 게재를 위해 다음과 같은 정보가 자동으로 생성 및 수집될 수 있습니다: IP 주소, 브라우저 종류, 방문 시간, 서비스 이용 기록 등.</p>
-          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">2. 구글 애드센스 및 쿠키(Cookie) 사용</h3>
-          <p style="margin-bottom:0.8rem; line-height:1.6;">본 사이트는 광고 수익을 통해 서비스를 무료로 운영하며, 이를 위해 <strong>구글 애드센스(Google AdSense)</strong>를 사용합니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">본 사이트는 가입이나 식별 정보를 요구하지 않습니다. 다만 통계 분석 및 광고 게재를 위해 기본 접속 로그(IP 주소, 브라우저 종류 등)가 자동 수집될 수 있습니다.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">2. 구글 애드센스 사용</h3>
+          <p style="margin-bottom:0.8rem; line-height:1.6;">본 사이트는 광고 수익으로 무료 운영되며, 이를 위해 <strong>구글 애드센스(Google AdSense)</strong>를 사용합니다.</p>
           <ul style="margin-bottom:1rem; padding-left:1.5rem; list-style:circle; line-height:1.6;">
-            <li>구글을 포함한 타사 공급업체는 사용자의 이전 방문 기록을 바탕으로 광고를 게재하기 위해 쿠키를 사용합니다.</li>
-            <li>구글의 광고 쿠키(DART 쿠키)를 사용하면 본 사이트 및 인터넷상의 다른 사이트에 대한 방문 기록을 기반으로 사용자에게 맞춤형 광고를 제공할 수 있습니다.</li>
-            <li>사용자는 <a href="https://adssettings.google.com" target="_blank" style="color:var(--primary);">구글 광고 설정</a>을 방문하여 맞춤 설정된 광고를 해제할 수 있습니다.</li>
+            <li>구글은 이전 방문 기록을 바탕으로 광고를 게재하기 위해 쿠키를 사용합니다.</li>
+            <li>사용자는 <a href="https://adssettings.google.com" target="_blank" style="color:var(--primary);">구글 광고 설정</a>에서 맞춤 광고를 해제할 수 있습니다.</li>
           </ul>
-          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">3. 데이터 분석 및 타사 도구</h3>
-          <p style="margin-bottom:1rem; line-height:1.6;">본 사이트는 서비스 이용 분석을 위해 Google Analytics 등을 활용할 수 있으며, 이 과정에서 익명화된 데이터가 타사 플랫폼으로 전송될 수 있습니다. 이는 오직 더 나은 사용자 경험을 제공하기 위한 목적으로만 사용됩니다.</p>
-          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">4. 문의처</h3>
-          <p style="margin-bottom:1rem; line-height:1.6;">개인정보 보호와 관련하여 궁금한 사항은 <a href="mailto:help@globaltrendup.com" style="color:var(--primary);">help@globaltrendup.com</a>로 문의해 주시기 바랍니다.</p>
-          <p style="font-size:0.85rem; color:var(--text-muted);">최종 업데이트: 2026년 3월 4일</p>
-        ` 
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">3. 문의처</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">문의: <a href="mailto:help@globaltrendup.com" style="color:var(--primary);">help@globaltrendup.com</a></p>` 
       },
       terms: { 
         title: "서비스 이용약관 (Terms of Service)", 
         content: `
           <h2 style="margin-bottom:1.5rem;">서비스 이용약관</h2>
-          <p style="margin-bottom:1rem; line-height:1.6;">본 약관은 TrendUp 서비스(이하 '서비스') 이용과 관련하여 제공자와 이용자 간의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.</p>
-          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">1. 서비스의 목적 및 면책 고지</h3>
-          <p style="margin-bottom:0.8rem; line-height:1.6;">서비스는 공개된 데이터를 바탕으로 AI가 자동 생성한 분석 정보를 제공합니다. 제공되는 데이터와 분석 결과는 기술적 한계나 원천 데이터의 오류로 인해 실제와 다를 수 있습니다.</p>
-          <p style="margin-bottom:1rem; line-height:1.6; color:var(--text-muted);">* 본 서비스에서 제공하는 모든 정보는 참고용이며, 이를 바탕으로 행해진 투자나 결정에 따른 결과에 대해 본 사이트는 어떠한 법적 책임도 지지 않습니다.</p>
-          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">2. 저작권 및 콘텐츠 이용</h3>
-          <p style="margin-bottom:1rem; line-height:1.6;">서비스가 제공하는 로고, 디자인, AI 분석 텍스트 등에 대한 권리는 TrendUp에 있습니다. 이용자는 서비스를 개인적 용도로만 이용해야 하며, 사전 동의 없는 상업적 이용이나 무단 크롤링, 대량 복제 행위를 금합니다.</p>
-          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">3. 서비스의 변경 및 중단</h3>
-          <p style="margin-bottom:1rem; line-height:1.6;">서비스는 운영상 또는 기술상의 필요에 따라 제공하는 기능의 전부 또는 일부를 예고 없이 수정하거나 중단할 수 있습니다.</p>
-          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">4. 약관의 개정</h3>
-          <p style="margin-bottom:1rem; line-height:1.6;">본 사이트는 필요 시 약관을 개정할 수 있으며, 변경된 내용은 사이트 내 공지를 통해 효력이 발생합니다.</p>
-        ` 
+          <p style="margin-bottom:1rem; line-height:1.6;">본 약관은 TrendUp 서비스(이하 '서비스') 이용과 관련하여 제공자와 이용자 간의 제반 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다. 서비스를 이용함으로써 귀하는 본 약관에 동의하는 것으로 간주됩니다.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">1. 서비스의 목적 및 제공 내용</h3>
+          <p style="margin-bottom:0.8rem; line-height:1.6;">본 서비스는 공개된 웹 데이터를 바탕으로 인공지능(AI)이 자동 생성한 트렌드 분석 정보를 제공합니다. 제공되는 데이터, 분석 결과, 번역 등은 기술적 한계나 원본 데이터의 오류 등으로 인해 실제 사실과 다를 수 있습니다.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">2. 면책 고지 (중요)</h3>
+          <p style="margin-bottom:1rem; line-height:1.6; color:var(--text-muted);">* 본 서비스에서 제공하는 모든 정보는 단순 참고용일 뿐이며, 어떠한 형태의 투자 조언이나 법적, 의학적, 전문적 조언을 대신하지 않습니다. 이용자가 본 서비스의 정보를 바탕으로 내린 결정이나 취한 조치로 인해 발생하는 직간접적인 손실 및 피해에 대해, 당사는 어떠한 법적 책임도 지지 않습니다.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">3. 지적재산권 및 서비스 이용 제한</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">본 서비스가 제공하는 로고, 디자인, UI, AI 분석 텍스트 등 제반 콘텐츠에 대한 권리는 TrendUp 운영진에 귀속됩니다. 이용자는 본 서비스를 비상업적인 개인적 목적으로만 이용해야 하며, 사전 서면 동의 없는 상업적 이용, 무단 크롤링(웹 스크래핑), 데이터 복제 및 재배포, 그리고 시스템의 정상적 운영을 방해하는 해킹 등 모든 불법적 행위를 엄격히 금지합니다.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">4. 서비스의 변경 및 중단</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">운영상 또는 기술상의 필요(예: API 정책 변화, 서버 점검 등)에 따라 사전 공지 없이 본 서비스의 전부 또는 일부 기능이 예고 없이 변경되거나 중단될 수 있습니다. 이로 인해 발생하는 불편에 대해 당사는 책임지지 않습니다.</p>` 
       },
       contact: { 
-        title: "문의하기 (Contact)", 
+        title: "문의하기", 
         content: `
-          <h2 style="margin-bottom:1.5rem;">고객 지원 및 비즈니스 문의</h2>
-          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUp에 관심을 가져주셔서 감사합니다. 서비스 개선을 위한 제안, 오류 제보, 광고 및 비즈니스 협력 문의는 아래 채널을 통해 전달해 주시기 바랍니다.</p>
-          <div style="background:var(--surface); padding:1.5rem; border-radius:12px; border:1px solid var(--border);">
-            <p style="margin-bottom:0.8rem;"><strong>이메일 문의:</strong></p>
-            <p style="font-size:1.1rem;"><a href="mailto:help@globaltrendup.com" style="color:var(--primary); font-weight:700;">help@globaltrendup.com</a></p>
-          </div>
-          <ul style="margin-top:1.5rem; font-size:0.9rem; color:var(--text-muted); line-height:1.6;">
-            <li>* 모든 문의는 영업일 기준 48시간 이내에 검토 후 답변드리기 위해 노력하고 있습니다.</li>
-            <li>* 무분별한 스팸이나 비방 목적의 메일은 답변이 제한될 수 있습니다.</li>
-          </ul>
-        ` 
+          <h2 style="margin-bottom:1.5rem;">문의하기</h2>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">버그 리포트, 제휴 문의는 <a href="mailto:help@globaltrendup.com" style="color:var(--primary);">help@globaltrendup.com</a>을 이용해 주세요. 최대 48시간 이내에 회신해 드립니다.</p>` 
       },
-      cookie: {
-        text: "TrendUp은 서비스 품질 향상 및 맞춤형 콘텐츠 제공을 위해 쿠키를 사용합니다.",
-        btn: "확인 및 동의"
-      }
+      cookie: { text: "TrendUp은 원활한 서비스 및 맞춤형 콘텐츠 제공을 위해 쿠키를 활용합니다.", btn: "동의 및 계속" }
     }
   },
   ja: { 
@@ -95,37 +75,88 @@ let i18n = {
       about: { 
         title: "TrendUpについて", 
         content: `
-          <h2 style="margin-bottom:1.5rem;">世界を読む、最速의 인텔리전스 TrendUp</h2>
-          <p style="margin-bottom:1rem; line-height:1.8;">TrendUpは、高度なビッグデータ処理技術と最新のAIエンジンを融合させ、日本、米国、韓国などの主要国における検索トレンドをリアルタイムで分析・可視화하는次世代の데이터 인텔리전스 플랫폼입니다.</p>
-          <h3 style="margin:1.5rem 0 0.5rem; border-left:4px solid var(--primary); padding-left:0.8rem;">主な特徴</h3>
-          <ul style="margin-bottom:1rem; padding-left:1.2rem; list-style:disc; line-height:1.8;">
-            <li><strong>リアルタイム・데이터 파이프라인：</strong>世界中の信頼性の高いトレンドデータを10分間隔で収集・정규화하여常に最新の情報を提供します.</li>
-            <li><strong>AIによる문맥 분석：</strong>単なるキーワードの羅列を超え、AI가 트렌드 배경과 문맥을 파악하여 사용자 언어에 맞게 최적화된 리포트를 생성합니다.</li>
-          </ul>
-        ` 
+          <h2 style="margin-bottom:1.5rem;">TrendUp: 次世代のデータインテリジェンス</h2>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUpは、日本、米国、韓国などの検索トレンドをリアルタイムで分析するプラットフォームです。AI(Google Gemini 2.5)を活用し、文脈を見つけ出します。</p>
+          <ul style="margin-bottom:1.2rem; padding-left:1.5rem; list-style:disc; line-height:1.8;">
+            <li><strong>リアルタイム収集：</strong>10分間隔でデータを収集・正規化。</li>
+            <li><strong>AI文脈分析：</strong>キーワードの背景にあるストーリーをAIが解説。</li>
+            <li><strong>多言語サポート：</strong>母国語で世界の最新動向にアクセス可能。</li>
+          </ul>` 
       }, 
       privacy: { 
-        title: "プライバシーポリシー (Privacy Policy)", 
+        title: "プライバシーポリシー", 
         content: `
           <h2 style="margin-bottom:1.5rem;">プライバシーポリシー</h2>
-          <p style="margin-bottom:1rem;">TrendUp（以下「当サービス」）は、ユーザーの個人情報の保護を重要な責務と認識し、以下の通りプライバシーポリシーを定めます。(v2.9.8)</p>
-        ` 
+          <p style="margin-bottom:1rem; line-height:1.6;">当サイトでは<strong>Google AdSense</strong>の広告を掲載しており、ユーザー状況に応じた広告配信のためCookieを利用します。ユーザーはアクセス制限設定に従うことができます。第三者配信事業者は過去のサイト訪問に基づきCookieを使用します。<a href="https://adssettings.google.com" target="_blank" style="color:var(--primary);">Google広告設定</a>からパーソナライズを無効にできます。</p>
+          <p>お問い合わせ: <a href="mailto:help@globaltrendup.com">help@globaltrendup.com</a></p>` 
       }, 
-      terms: { title: "利用規約", content: `<h2>利用規約</h2><p>本サービスはAIが生成した情報を提供します。情報の正確性を保証するものではありません。</p>` }, 
-      contact: { title: "お問い合わせ", content: `<h2>お問い合わせ</h2><p>help@globaltrendup.com までご連絡ください。</p>` },
-      cookie: { text: "TrendUpはサービス品質向上およびパーソナライズされた콘텐츠提供のためにCookieを使用します。", btn: "同意する" }
+      terms: { 
+        title: "利用規約", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">利用規約</h2>
+          <p style="margin-bottom:1rem; line-height:1.6;">本規約は、TrendUpサービス（以下「本サービス」）のご利用に関する規約を定めるものです。本サービスを利用することにより、ユーザーは本規約のすべての内容に同意したものとみなされます。</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">1. サービスの目的と内容</h3>
+          <p style="margin-bottom:0.8rem; line-height:1.6;">本サービスは、公開されたデータを基にAI（人工知能）が自動生成したトレンド分析情報を提供します。自動生成の特性上、またはデータ元のエラーにより、提供される情報が最新あるいは正確でない場合があります。</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">2. 免責事項（重要）</h3>
+          <p style="margin-bottom:1rem; line-height:1.6; color:var(--text-muted);">* 本サービスで提供するすべての情報は参考用に過ぎず、いかなる専門的、法的、または投資関連の助言を構成するものではありません。ユーザーが本情報に基づいて行った意思決定や投資などにより生じたいかなる損害・損失について、当サイトは一切の法的責任を負いません。</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">3. 知的財産権および禁止事項</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">本サービスのロゴ、デザイン、UI、AI分析テキスト等に関する諸権利はTrendUpに帰属します。当サイトの許可を得ない商業利用、無断でのスクレイピング、クローラを利用したデータ収集、大量複製、またはシステムの正常な運用を妨害する行為は固く禁じられます。</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">4. サービスの変更および終了</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">運営上、または技術上の理由（サーバーメンテナンスやAPIの仕様変更等）により、事前の予告なくサービスの全部または一部の内容を変更、追加、または終了する場合があります。これによってユーザーに生じる不便・不利益について当サイトは責任を負いません。</p>` 
+      }, 
+      contact: { 
+        title: "お問い合わせ", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">お問い合わせ</h2>
+          <p>サービスに関する報告や提案は <a href="mailto:help@globaltrendup.com">help@globaltrendup.com</a> へお願いいたします。</p>` 
+      },
+      cookie: { text: "TrendUpはサービス向上のためにCookieを使用します。", btn: "同意して続ける" }
     }
   },
   en: { 
-    title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trends", L: "Language", original: "Original",
+    title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
     labels: { trends: "Country:", language: "Language:" },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
-      about: { title: "About TrendUp", content: `<h2>TrendUp: Global Trend Intelligence</h2><p>Real-time trend analysis platform using advanced AI.</p>` }, 
-      privacy: { title: "Privacy Policy", content: `<h2>Privacy Policy</h2><p>This site complies with relevant laws. (v2.9.8)</p>` }, 
-      terms: { title: "Terms of Service", content: `<h2>Terms of Service</h2><p>All AI-generated data is for reference only.</p>` }, 
-      contact: { title: "Contact Us", content: `<h2>Contact Us</h2><p>Email: help@globaltrendup.com</p>` },
-      cookie: { text: "TrendUp uses cookies to improve service quality and provide personalized content.", btn: "Accept" }
+      about: { 
+        title: "About TrendUp", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">TrendUp: Global Trend Intelligence</h2>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUp is a next-generation platform utilizing advanced Big Data workflows and AI (Google Gemini 2.5) to analyze real-time search trends from major countries, including the US, Japan, and South Korea.</p>
+          <ul style="margin-bottom:1.2rem; padding-left:1.5rem; list-style:disc; line-height:1.8;">
+            <li><strong>Real-time Global Pipeline:</strong> Trends updated every 10 minutes.</li>
+            <li><strong>Contextual AI Summaries:</strong> Synthesizing news and reactions into intelligent reports.</li>
+            <li><strong>Multilingual Insights:</strong> Localization enabling dynamic understanding of global issues.</li>
+          </ul>` 
+      }, 
+      privacy: { 
+        title: "Privacy Policy", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">Privacy Policy</h2>
+          <p style="margin-bottom:1rem; line-height:1.6;">TrendUp operates for free through advertising and uses <strong>Google AdSense</strong>. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits. You may opt out of personalized advertising by visiting <a href="https://adssettings.google.com" target="_blank" style="color:var(--primary);">Google Ads Settings</a>. We value user privacy and primarily use anonymous analytics data to improve our services.</p>
+          <p>Contact: <a href="mailto:help@globaltrendup.com">help@globaltrendup.com</a></p>` 
+      }, 
+      terms: { 
+        title: "Terms of Service", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">Terms of Service</h2>
+          <p style="margin-bottom:1rem; line-height:1.6;">These Terms of Service (hereinafter referred to as the "Terms") govern the access to and use of the TrendUp service (the "Service"). By accessing or using the Service, you signify your agreement to these Terms.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">1. Purpose and Nature of the Service</h3>
+          <p style="margin-bottom:0.8rem; line-height:1.6;">The Service provides trend analysis information that is automatically generated by AI (Artificial Intelligence) based on publicly available web data. Due to technological limitations or reliance on underlying third-party data, the generated summaries and translations may occasionally contain inaccuracies, errors, or outdated information.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">2. Disclaimer of Warranties and Liability</h3>
+          <p style="margin-bottom:1rem; line-height:1.6; color:var(--text-muted);">* All information and data provided by the Service are for general reference and educational purposes only. They do not constitute professional, legal, or financial advice. We shall not assume any legal responsibility or liability for any direct or indirect damages, losses, or consequences arising out of the use of, or inability to use, our Service or any reliance placed upon its content.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">3. Intellectual Property Rights and Acceptable Use</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">All content, logos, designs, UI elements, and AI-generated analytical texts available on the Service are the exclusive property of TrendUp. You agree to use the Service solely for personal, non-commercial purposes. Unauthorized commercial use, web scraping, automated crawls, mass duplication, network disruption, or any illicit activities without our prior written consent are strictly prohibited.</p>
+          <h3 style="margin:1.2rem 0 0.5rem; font-size:1rem;">4. Modification and Stoppage of Service</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">We reserve the right to modify, suspend, or discontinue all or part of the Service's features at any time, with or without notice, based on operational or technical needs (such as server maintenance or third-party API changes). We will not be liable to you or any third party for any such modifications or discontinuance.</p>` 
+      }, 
+      contact: { 
+        title: "Contact Us", 
+        content: `
+          <h2 style="margin-bottom:1.5rem;">Contact Us</h2>
+          <p>For inquiries, bug reports, and features, please email <a href="mailto:help@globaltrendup.com">help@globaltrendup.com</a>.</p>` 
+      },
+      cookie: { text: "TrendUp uses cookies to improve service quality and serve optimized content.", btn: "Accept & Continue" }
     } 
   }
 };
@@ -204,7 +235,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v2.9.8");
+    console.log("App Init: v3.0.3");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -251,7 +282,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v2.9.8) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.0.3) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -266,6 +297,15 @@ class App {
       if (cookieText && t.pages.cookie) cookieText.textContent = t.pages.cookie.text;
       const cookieBtn = document.getElementById('accept-cookies');
       if (cookieBtn && t.pages.cookie) cookieBtn.textContent = t.pages.cookie.btn;
+
+      const lastUpdatedEl = document.getElementById('last-updated');
+      if (lastUpdatedEl && lastUpdatedEl.textContent.includes(':')) {
+        const parts = lastUpdatedEl.textContent.split(':');
+        const timePart = parts[1] || parts.slice(1).join(':').trim();
+        if (timePart) {
+           lastUpdatedEl.textContent = `${t.update}: ${timePart.trim()}`;
+        }
+      }
       this.updateGeminiUsage();
     } catch (e) { console.error("UI refresh error:", e); }
   }
