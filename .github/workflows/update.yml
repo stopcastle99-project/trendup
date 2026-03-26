@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 * * * *' # 매시간 정각마다 실행
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
