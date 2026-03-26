@@ -99,11 +99,11 @@ class TrendUpdater {
     3. 읽기 쉬운 한국어 경어체(~입니다)를 사용할 것.
     4. 분석 내용만 출력할 것.`;
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
       const result = await model.generateContent(prompt);
       const text = (await result.response).text().trim().replace(/\*\*/g, '');
       if (text) {
-        console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
+        console.log(`  - Gemini Success: gemini-1.5-flash-latest for ${item.originalTitle} (${currentUsage + 1}/1500)`);
         await this.incrementGeminiUsage();
       }
       return text;
