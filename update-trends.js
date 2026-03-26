@@ -5,8 +5,17 @@ import fs from "fs";
 import { execSync } from "child_process";
 
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+  try {
+    const saStr = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+    console.log(`- Debug: FIREBASE_SERVICE_ACCOUNT length = ${saStr.length}`);
+    if (saStr.length < 10) throw new Error("Service account length is too short (empty or malformed)");
+    const serviceAccount = JSON.parse(saStr);
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    console.log("- Firebase initialized with service account.");
+  } catch (e) {
+    console.error("- Firebase Init Error:", e.message);
+    process.exit(1); 
+  }
 } else {
   admin.initializeApp();
 }
