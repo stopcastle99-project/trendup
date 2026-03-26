@@ -92,7 +92,12 @@ class TrendUpdater {
 
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
     const countryName = countryNames[country] || country;
-    const prompt = `'${item.originalTitle}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘. 참고 정보: ${news.join(' / ')}. 분석 내용만 2문장 내외 한국어로 작성.`;
+    const prompt = `당신은 글로벌 트렌드 분석 전문가입니다. '${item.originalTitle}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 뉴스 정보(${news.join(' / ')})를 바탕으로 심층 분석해줘. 
+    다음 조건을 반드시 지켜줘:
+    1. 분석 내용은 최소 5~6문장 이상의 풍부한 분량으로 작성할 것.
+    2. 단순 현상 나열이 아닌, 발생 배경, 사회적 영향, 그리고 향후 전망을 포함할 것.
+    3. 읽기 쉬운 한국어 경어체(~입니다)를 사용할 것.
+    4. 분석 내용만 출력할 것.`;
     try {
       const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
