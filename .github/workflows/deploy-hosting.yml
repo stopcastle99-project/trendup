@@ -1,18 +1,19 @@
-name: Scheduled Trend Update
+name: Hosting Deployment
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '45 * * * *' # 매시간 45분에 실행 (AdSense 등을 고려한 분산)
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/update.yml'
+      - 'update-trends.js'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  update-trends:
+  deploy:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -23,21 +24,14 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Install Dependencies
         run: npm install
 
-      - name: Run Update Script
+      - name: Deploy to Firebase
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
-          node update-trends.js
+          npx firebase-tools deploy --only hosting --project test-76cdd
           rm gcp-key.json
-
