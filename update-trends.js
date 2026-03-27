@@ -12,7 +12,10 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 }
 
 const db = admin.firestore();
-console.log(">>> UPDATE SCRIPT VERSION: v3.1.11 (Gemini 2.0 Mode) <<<");
+console.log("====================================================");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.12 <<<");
+console.log(">>> TARGET MODEL: gemini-2.0-flash <<<");
+console.log("====================================================");
 
 class TrendUpdater {
   constructor() {
@@ -111,7 +114,7 @@ class TrendUpdater {
       }
       return text;
     } catch (e) {
-      console.error(`  - Gemini Error for ${item.originalTitle}:`, e.message);
+      console.error(`🚨 [v3.1.12 ERROR] Gemini Error for ${item.originalTitle}:`, e.message);
       if (e.response) console.error(`  - Gemini Error Details:`, JSON.stringify(e.response));
       return "";
     }
