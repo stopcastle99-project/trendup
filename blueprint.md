@@ -1,5 +1,11 @@
 # **TrendUp: Real-time Global Trends Dashboard**
 
+## Phase 44: Fix Scheduled Crawling & Gemini Model (v3.1.13)
+- **GitHub Actions Fix:** Corrected invalid action versions (`v6` -> `v4`) and Node.js version (`24` -> `22`) in `.github/workflows/update.yml`.
+- **Environment Update:** Added `FIREBASE_TOKEN` to the workflow environment for secure deployment.
+- **Gemini Upgrade:** Updated `update-trends.js` to use **`gemini-2.5-flash`**, the stable standard for 2026.
+- **Version Bump:** Synchronized application version to **v3.1.13**.
+
 ## Phase 43: Comprehensive Terms of Service Expansion (v3.0.3)
 - Substantially enriched the Terms of Service content for Korean, Japanese, and English individually to strictly comply with AdSense requirements.
 - Standardized the clauses including Purpose, Disclaimer, User Obligations, and Service Suspensions across all supported languages.

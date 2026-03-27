@@ -13,8 +13,8 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.12 <<<");
-console.log(">>> TARGET MODEL: gemini-2.0-flash <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.13 <<<");
+console.log(">>> TARGET MODEL: gemini-2.5-flash <<<");
 console.log("====================================================");
 
 class TrendUpdater {
@@ -103,7 +103,7 @@ class TrendUpdater {
     3. 읽기 쉬운 한국어 경어체(~입니다)를 사용할 것.
     4. 분석 내용만 출력할 것.`;
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text().trim().replace(/\*\*/g, '');
