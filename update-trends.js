@@ -12,6 +12,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 }
 
 const db = admin.firestore();
+console.log(">>> UPDATE SCRIPT VERSION: v3.1.11 (Gemini 2.0 Mode) <<<");
 
 class TrendUpdater {
   constructor() {
