@@ -109,7 +109,7 @@ class TrendUpdater {
       const text = response.text().trim().replace(/\*\*/g, '');
       console.log(`  - Gemini Raw Response Length: ${text.length}`);
       if (text) {
-        console.log(`  - Gemini Success: gemini-2.0-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
+        console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
         await this.incrementGeminiUsage();
       }
       return text;
