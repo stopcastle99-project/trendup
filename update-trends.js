@@ -101,7 +101,9 @@ class TrendUpdater {
     try {
       const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       const result = await model.generateContent(prompt);
-      const text = (await result.response).text().trim().replace(/\*\*/g, '');
+      const response = await result.response;
+      const text = response.text().trim().replace(/\*\*/g, '');
+      console.log(`  - Gemini Raw Response Length: ${text.length}`);
       if (text) {
         console.log(`  - Gemini Success: gemini-2.0-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
         await this.incrementGeminiUsage();
@@ -109,6 +111,7 @@ class TrendUpdater {
       return text;
     } catch (e) {
       console.error(`  - Gemini Error for ${item.originalTitle}:`, e.message);
+      if (e.response) console.error(`  - Gemini Error Details:`, JSON.stringify(e.response));
       return "";
     }
   }
