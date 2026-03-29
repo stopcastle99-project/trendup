@@ -298,15 +298,16 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 
     // Weekly: Live update hourly, Archive on Sundays
     const isSundayFinal = (dayOfWeek === 0);
-    await this.generatePeriodReport(country, 'weekly', 7, isSundayFinal || force);
+    const forceWeekly = force || process.argv.includes('--force-weekly');
+    await this.generatePeriodReport(country, 'weekly', 7, isSundayFinal || forceWeekly);
     
-    // Monthly: Live update hourly, Archive on 1st of month
+    // Monthly/Yearly: Live update hourly, Archive on boundary
+    const forceOther = force;
     const isMonthlyFinal = (dayOfMonth === 1);
-    await this.generatePeriodReport(country, 'monthly', 30, isMonthlyFinal || force);
+    await this.generatePeriodReport(country, 'monthly', 30, isMonthlyFinal || forceOther);
     
-    // Yearly: Live update hourly, Archive on Jan 1st
     const isYearlyFinal = (now.getMonth() === 0 && dayOfMonth === 1);
-    await this.generatePeriodReport(country, 'yearly', 365, isYearlyFinal || force);
+    await this.generatePeriodReport(country, 'yearly', 365, isYearlyFinal || forceOther);
   }
 
   getDateRange(days) {
