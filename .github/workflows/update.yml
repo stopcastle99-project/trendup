@@ -1,6 +1,9 @@
 name: Scheduled Trend Update
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
   schedule:
     - cron: '45 * * * *' # 매시간 45분에 실행 (AdSense 등을 고려한 분산)
