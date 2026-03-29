@@ -71,7 +71,7 @@ let i18n = {
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
     labels: { trends: "国:", language: "言語:" },
-    reports: { title: "深層分析レポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中..." },
+    reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中..." },
 
     menu: { about: "TrendUpについて", privacy: "プライバシーポリシー", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト情報" }, 
     pages: { 
@@ -119,7 +119,7 @@ let i18n = {
   en: { 
     title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
     labels: { trends: "Country:", language: "Language:" },
-    reports: { title: "In-depth Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data..." },
+    reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data..." },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
       about: { 
