@@ -4,7 +4,10 @@ service cloud.firestore {
     match /trends/{document=**} {
       allow read: if true;
     }
-    match /reports/{document=**} {
+    match /reports/{type}/{country}/{reportId} {
+      allow read: if true;
+    }
+    match /reports/{type}/{country}/latest {
       allow read: if true;
     }
     match /trend_history/{document=**} {

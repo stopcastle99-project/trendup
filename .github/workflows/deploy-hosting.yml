@@ -35,5 +35,5 @@ jobs:
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
-          npx firebase-tools deploy --only hosting --project test-76cdd
+          npx firebase-tools deploy --only hosting,firestore:rules --project test-76cdd
           rm gcp-key.json
