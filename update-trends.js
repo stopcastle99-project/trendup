@@ -321,7 +321,6 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 
   async generateAIReportAnalysis(top5, country, type) {
     if (!this.genAI) throw new Error("GEMINI_API_KEY NOT FOUND");
-    const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const langNames = { KR: "Korean", JP: "Japanese", US: "English" };
     const lang = langNames[country] || "English";
     
@@ -344,12 +343,31 @@ Strictly follow this JSON format:
 }
 No Markdown, just JSON.`;
 
+    const modelsToTry = ["gemma-3-27b-it", "gemma-2-27b-it", "gemini-2.0-flash"];
+    let text = "";
+    let usedModel = "";
+
     try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text().replace(/```json|```/g, "").trim();
-      return JSON.parse(text);
+      for (const m of modelsToTry) {
+        try {
+          const model = this.genAI.getGenerativeModel({ model: m });
+          const result = await model.generateContent(prompt);
+          text = result.response.text().replace(/```json|```/g, "").trim();
+          usedModel = m;
+          break;
+        } catch (err) {
+          console.warn(`  - Report Analysis Fallback: ${m} failed. Trying next...`);
+        }
+      }
+
+      if (!text) throw new Error("All models failed for report analysis");
+      
+      const parsed = JSON.parse(text);
+      console.log(`  - AI Report Success: ${usedModel} analyzed ${country} ${type} report.`);
+      await this.incrementGeminiUsage();
+      return parsed;
     } catch (e) {
-      console.error(`AI Analysis failed for ${type} ${country}:`, e.message);
+      console.error(`🚨 AI Analysis failed for ${type} ${country}:`, e.message);
       return { 
         reportTitle: `${type.toUpperCase()} Trend Report`,
         analyses: top5.map(t => ({ keyword: t.keyword, depth: "Analysis pending aggregation..." }))
