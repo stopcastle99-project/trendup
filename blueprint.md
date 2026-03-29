@@ -1,5 +1,11 @@
 # **TrendUp: Real-time Global Trends Dashboard**
 
+## Phase 46: Analytical Reports & Premium UI (v3.1.50)
+- **Feature Addition:** Created `/report` directory and implemented automated trend history archiving.
+- **Data Aggregation:** Deployed Top 5 scoring logic for Weekly, Monthly, and Yearly reports based on rank intensity.
+- **Premium Mobile UI:** Implemented staggered "waterfall" animations, #1 rank highlights, and tactile noise textures.
+- **Version Bump:** Synchronized application version to **v3.1.50**.
+
 ## Phase 45: Migrate to Gemma 3 & Sync Version (v3.1.48)
 - **GitHub Actions Fix:** Corrected invalid action versions (`v6` -> `v4`) and Node.js version (`24` -> `22`) in `.github/workflows/update.yml`.
 - **Environment Update:** Added `FIREBASE_TOKEN` to the workflow environment for secure deployment.

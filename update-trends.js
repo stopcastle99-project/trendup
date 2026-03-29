@@ -244,7 +244,7 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
         return newVer;
       }
     } catch (e) {}
-    return "v3.1.48";
+    return "v3.1.50";
   }
 
 
