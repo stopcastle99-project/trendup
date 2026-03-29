@@ -14,7 +14,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 const db = admin.firestore();
 console.log("====================================================");
 console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.13 <<<");
-console.log(">>> TARGET MODEL: gemini-2.5-flash <<<");
+console.log(">>> TARGET MODEL: gemini-1.5-flash <<<");
 console.log("====================================================");
 
 class TrendUpdater {
@@ -104,13 +104,13 @@ class TrendUpdater {
     const countryName = countryNames[country] || country;
     const prompt = `'${item.originalTitle}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘. 참고 정보: ${news.join(' / ')}. 분석 내용만 2문장 내외 한국어로 명료하게 작성.`;
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text().trim().replace(/\*\*/g, '');
       console.log(`  - Gemini Raw Response Length: ${text.length}`);
       if (text) {
-        console.log(`  - Gemini Success: gemini-2.5-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
+        console.log(`  - Gemini Success: gemini-1.5-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
         await this.incrementGeminiUsage();
       }
       return text;
