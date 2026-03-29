@@ -12,7 +12,7 @@ let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
     labels: { trends: "국가:", language: "언어:" },
-    reports: { title: "심층 분석 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "준비 중..." },
+    reports: { title: "심층 분석 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중..." },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" }, 
     pages: { 
       about: { 
@@ -71,7 +71,7 @@ let i18n = {
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
     labels: { trends: "国:", language: "言語:" },
-    reports: { title: "深層分析レポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "準備中..." },
+    reports: { title: "深層分析レポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中..." },
 
     menu: { about: "TrendUpについて", privacy: "プライバシーポリシー", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト情報" }, 
     pages: { 
@@ -119,7 +119,7 @@ let i18n = {
   en: { 
     title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
     labels: { trends: "Country:", language: "Language:" },
-    reports: { title: "In-depth Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Coming Soon" },
+    reports: { title: "In-depth Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data..." },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
       about: { 
