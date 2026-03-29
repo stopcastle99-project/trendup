@@ -13,8 +13,8 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.13 <<<");
-console.log(">>> TARGET MODEL: gemini-1.5-flash <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.14 <<<");
+console.log(">>> TARGET MODEL: gemini-2.5-flash (Batch Mode) <<<");
 console.log("====================================================");
 
 class TrendUpdater {
@@ -87,37 +87,50 @@ class TrendUpdater {
     });
   }
 
-  async generateBaseAIReport(item, news, country, previousItems = []) {
-    if (!this.genAI) return "";
-    const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
-    if (existing && existing.aiReports && existing.aiReports.ko && !existing.aiReports.ko.includes("Hot Trend:")) {
-      return existing.aiReports.ko;
-    }
-
+  async generateBatchAIReports(itemsToProcess, country, previousItems) {
+    if (!this.genAI || itemsToProcess.length === 0) return {};
     const currentUsage = await this.getGeminiUsageCount();
     if (currentUsage >= 1480) {
-      console.warn(`  - Gemini Safety: Daily limit reached (${currentUsage}/1500).`);
-      return "오늘의 AI 분석 할당량이 소진되었습니다.";
+      console.warn(`  - Gemini Safety: Daily limit reached.`);
+      return {};
     }
 
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
     const countryName = countryNames[country] || country;
-    const prompt = `'${item.originalTitle}' 키워드가 현재 ${countryName}에서 왜 트렌드인지 분석해줘. 참고 정보: ${news.join(' / ')}. 분석 내용만 2문장 내외 한국어로 명료하게 작성.`;
+    
+    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 2문장 내외의 한국어로 명료하게 요약해주세요.
+반드시 아래의 JSON 배열 형식으로만 응답해야 하며, JSON 외의 다른 부연 설명은 절대 덧붙이지 마세요.
+[
+  { "keyword": "키워드1", "summary": "요약 내용..." },
+  { "keyword": "키워드2", "summary": "요약 내용..." }
+]
+
+분석할 키워드 리스트:
+${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i.newsTitles.join(' / ')}`).join('\n\n')}
+`;
+
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      const text = response.text().trim().replace(/\*\*/g, '');
-      console.log(`  - Gemini Raw Response Length: ${text.length}`);
-      if (text) {
-        console.log(`  - Gemini Success: gemini-1.5-flash for ${item.originalTitle} (${currentUsage + 1}/1500)`);
+      let text = response.text().trim();
+      
+      if (text.startsWith("\`\`\`json")) text = text.replace(/^\`\`\`json/g, "").replace(/\`\`\`$/g, "").trim();
+      else if (text.startsWith("\`\`\`")) text = text.replace(/^\`\`\`/g, "").replace(/\`\`\`$/g, "").trim();
+      
+      const parsed = JSON.parse(text);
+      if (parsed) {
+        console.log(`  - Gemini Batch Success: gemini-2.5-flash processed ${itemsToProcess.length} items (${currentUsage + 1}/1500)`);
         await this.incrementGeminiUsage();
       }
-      return text;
+      
+      const reportMap = {};
+      parsed.forEach(p => { reportMap[p.keyword] = p.summary; });
+      return reportMap;
     } catch (e) {
-      console.error(`🚨 [v3.1.12 ERROR] Gemini Error for ${item.originalTitle}:`, e.message);
-      if (e.response) console.error(`  - Gemini Error Details:`, JSON.stringify(e.response));
-      return "";
+      console.error(`🚨 [v3.1.14 ERROR] Gemini Batch Error for ${country}:`, e.message);
+      if (e.response) console.error(`  - Error Details:`, JSON.stringify(e.response));
+      return {};
     }
   }
 
@@ -229,6 +242,17 @@ class TrendUpdater {
       const docRef = db.collection("trends").doc(code);
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
+      const itemsToProcess = items.filter(item => {
+        const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
+        const hasValidReport = existing && existing.aiReports && existing.aiReports.ko && !existing.aiReports.ko.includes("Hot Trend:");
+        return !hasValidReport;
+      });
+
+      let newReportsMap = {};
+      if (itemsToProcess.length > 0) {
+        newReportsMap = await this.generateBatchAIReports(itemsToProcess, code, previousItems);
+      }
+
       for (const item of items) {
         allKeywords.push(item.originalTitle);
         const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
@@ -237,8 +261,7 @@ class TrendUpdater {
         if (hasValidReport) {
           item.aiReports.ko = existing.aiReports.ko;
         } else {
-          item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code, previousItems) || `${code} Hot Trend: ${item.originalTitle}`;
-          await new Promise(r => setTimeout(r, 6000)); // Delay 6s to absolutely guarantee we never hit 15 RPM limit across countries
+          item.aiReports.ko = newReportsMap[item.originalTitle] || `${code} Hot Trend: ${item.originalTitle}`;
         }
       }
       for (const lang of langs) {
