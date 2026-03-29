@@ -319,7 +319,8 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
   }
 
   async generateAIReportAnalysis(top5, country, type) {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    if (!this.genAI) throw new Error("GEMINI_API_KEY NOT FOUND");
+    const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const langNames = { KR: "Korean", JP: "Japanese", US: "English" };
     const lang = langNames[country] || "English";
     
