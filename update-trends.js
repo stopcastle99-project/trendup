@@ -217,15 +217,6 @@ class TrendUpdater {
     return "v3.1.8";
   }
 
-  executeDeploy(ver) {
-    try {
-      execSync(`git add . && git commit -m 'chore: schedule trend update (${ver}) [skip ci]' && git pull --rebase origin main && git push origin main`, { stdio: 'inherit' });
-      const tokenArg = process.env.FIREBASE_TOKEN ? `--token ${process.env.FIREBASE_TOKEN}` : '';
-      execSync(`npx firebase-tools deploy --only hosting ${tokenArg}`, { stdio: 'inherit' });
-    } catch (e) {
-      console.error("  - Deploy/Commit Error:", e.message);
-    }
-  }
 
   async updateAll() {
     const countries = ["KR", "JP", "US"];
@@ -260,8 +251,7 @@ class TrendUpdater {
     this.generateSitemap(allKeywords);
     this.generateRSS(allKeywords);
     const ver = this.bumpVersion();
-    this.executeDeploy(ver);
-    console.log("Update Complete.");
+    console.log(`Data crawling complete. Version bumped to ${ver}`);
     process.exit(0);
   }
 }

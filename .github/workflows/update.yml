@@ -40,5 +40,22 @@ jobs:
           echo "$FIREBASE_SERVICE_ACCOUNT" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           node update-trends.js
+
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
+          if [ -n "$FIREBASE_TOKEN" ]; then
+            npx firebase-tools deploy --only hosting --token "$FIREBASE_TOKEN"
+          else
+            npx firebase-tools deploy --only hosting
+          fi
           rm gcp-key.json
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: schedule trend update"
+          branch: main
 
