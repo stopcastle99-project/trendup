@@ -12,7 +12,7 @@ let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
     labels: { trends: "국가:", language: "언어:" },
-    reports: { title: "심층 분석 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중..." },
+    reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중..." },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" }, 
     pages: { 
       about: { 
