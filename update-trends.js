@@ -144,7 +144,7 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
       parsed.forEach(p => { reportMap[p.keyword] = p.summary; });
       return reportMap;
     } catch (e) {
-      console.error(`🚨 [v3.1.14 ERROR] Gemini Batch Error for ${country}:`, e.message);
+      console.error(`🚨 [v3.1.48 ERROR] AI Batch Error for ${country}:`, e.message);
       if (e.response) console.error(`  - Error Details:`, JSON.stringify(e.response));
       return {};
     }
@@ -244,7 +244,7 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
         return newVer;
       }
     } catch (e) {}
-    return "v3.1.8";
+    return "v3.1.48";
   }
 
 
