@@ -406,9 +406,9 @@ class App {
       if (usageDoc.exists() && usageEl) {
         const data = usageDoc.data();
         const count = data.gemini_count || 0;
-        usageEl.textContent = `(${count}/1500)`;
-        if (count > 1400) usageEl.style.color = 'var(--error)';
-        else if (count > 1000) usageEl.style.color = 'var(--warning)';
+        usageEl.textContent = `(${count}/14400)`;
+        if (count > 14000) usageEl.style.color = 'var(--error)';
+        else if (count > 12000) usageEl.style.color = 'var(--warning)';
         else usageEl.style.color = 'inherit';
       }
     } catch (e) { console.warn("Failed to fetch AI usage:", e.message); }
