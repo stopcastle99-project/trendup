@@ -2,6 +2,7 @@
 import admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
+import path from "path";
 import { execSync } from "child_process";
 
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
