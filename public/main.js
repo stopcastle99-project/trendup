@@ -196,12 +196,74 @@ class TrendList extends HTMLElement {
       if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; font-weight: 800; border: 1px solid #ffaa00; padding: 1px 4px; border-radius: 4px; letter-spacing: -0.02em;">NEW</span>';
       return '<span style="color: var(--text-muted); opacity: 0.3; font-size: 0.8rem;">-</span>';
     };
-    this.shadowRoot.innerHTML = `<style>:host { display: block; } .list { display: flex; flex-direction: column; gap: 0.75rem; } .item { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; background: var(--surface); padding: 1.2rem; border-radius: 16px; border: 1px solid var(--border); transition: 0.2s; color: var(--text); cursor: pointer; user-select: none; position: relative; z-index: 1; } .item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-hover); } .rank { font-size: 1.2rem; font-weight: 900; color: var(--primary); opacity: 0.8; } .title-group { display: flex; flex-direction: column; overflow: hidden; } .display-title { font-size: 1.05rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.4; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .translated-subtitle { font-size: 0.75rem; color: var(--primary); opacity: 0.85; margin-top: 0.2rem; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; } .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }</style>
-      <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
+    this.shadowRoot.innerHTML = `<style>
+      :host { display: block; }
+      .list { display: flex; flex-direction: column; gap: 0.75rem; perspective: 1000px; }
+      .item { 
+        display: grid; 
+        grid-template-columns: 46px 1fr auto; 
+        align-items: center; 
+        background: var(--surface); 
+        padding: 1.25rem; 
+        border-radius: 20px; 
+        border: 1px solid var(--border); 
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); 
+        color: var(--text); 
+        cursor: pointer; 
+        user-select: none; 
+        position: relative; 
+        z-index: 1;
+        opacity: 0;
+        animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .item:hover { 
+        border-color: var(--primary); 
+        transform: translateY(-4px) scale(1.01); 
+        box-shadow: var(--shadow-hover); 
+      }
+      .item:active { transform: scale(0.98); }
+      
+      .item.top-rank {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, var(--surface), oklch(0.6 0.2 20 / 0.03));
+        box-shadow: 0 10px 30px oklch(0.6 0.2 20 / 0.08);
+      }
+      .item.top-rank .rank { color: var(--primary); transform: scale(1.2); }
+      
+      .rank { 
+        font-size: 1.3rem; 
+        font-weight: 900; 
+        color: var(--text-muted); 
+        opacity: 0.8; 
+        display: flex;
+        justify-content: center;
+        transition: transform 0.3s ease;
+      }
+      
+      .title-group { display: flex; flex-direction: column; overflow: hidden; gap: 2px; }
+      .display-title { font-size: 1.1rem; font-weight: 700; padding-right: 0.5rem; line-height: 1.3; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+      .translated-subtitle { font-size: 0.8rem; color: var(--primary); opacity: 0.9; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+      .growth { font-size: 1.1rem; display: flex; align-items: center; justify-content: center; min-width: 45px; }
+      .loading { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9rem; }
+      
+      @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(30px) rotateX(-10deg); }
+        to { opacity: 1; transform: translateY(0) rotateX(0); }
+      }
+    </style>
+    <div class="list">${(!trends || trends.length === 0) ? `<div class="loading">${t.loading}</div>` : trends.map((item, index) => {
         const originalTitle = item.originalTitle || item.title;
         const translatedTitle = (item.translations && item.translations[lang]) ? item.translations[lang] : "";
         const hasTranslation = translatedTitle && (translatedTitle.toLowerCase() !== originalTitle.toLowerCase());
-        return `<div class="item" data-index="${index}"><span class="rank">${index + 1}</span><div class="title-group"><span class="display-title">${originalTitle}</span>${hasTranslation ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}</div><span class="growth">${getTrendIcon(item.trendDir)}</span></div>`;
+        const isTop = index === 0;
+        return `<div class="item ${isTop ? 'top-rank' : ''}" data-index="${index}" style="animation-delay: ${index * 0.06}s">
+          <span class="rank">${index + 1}</span>
+          <div class="title-group">
+            <span class="display-title">${originalTitle}</span>
+            ${hasTranslation ? `<span class="translated-subtitle">✨ ${translatedTitle}</span>` : ''}
+          </div>
+          <span class="growth">${getTrendIcon(item.trendDir)}</span>
+        </div>`;
       }).join('')}</div>`;
     this.shadowRoot.querySelectorAll('.item').forEach(el => { 
       el.onclick = () => { window.dispatchEvent(new CustomEvent('open-trend-modal', { detail: trends[parseInt(el.dataset.index)] })); };
