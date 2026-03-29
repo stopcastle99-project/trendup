@@ -522,5 +522,23 @@ No Markdown, just JSON.`;
     console.log(`Data crawling complete. Version bumped to ${ver}`);
     process.exit(0);
   }
+  async runReportOnly() {
+    console.log(">>> RUNNING IN REPORT-ONLY MODE (NO CRAWLING) <<<");
+    const countries = ["KR", "JP", "US"];
+    const forceReports = process.argv.includes('--force-reports');
+    const forceWeekly = process.argv.includes('--force-weekly');
+    
+    for (const code of countries) {
+      await this.aggregateReports(code, forceReports || forceWeekly);
+    }
+    console.log("Periodic report aggregation complete.");
+    process.exit(0);
+  }
 }
-new TrendUpdater().updateAll();
+
+const updater = new TrendUpdater();
+if (process.argv.includes('--force-reports') || process.argv.includes('--force-weekly')) {
+  updater.runReportOnly();
+} else {
+  updater.updateAll();
+}
