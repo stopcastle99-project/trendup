@@ -424,6 +424,7 @@ No Markdown, just JSON.`;
           dateRange,
           slug: reportSlug,
           reportTitle: analysis.reportTitle,
+          keywords: top5.map(t => t.keyword),
           items: await Promise.all(top5.map(async (t, i) => {
             const extra = analysis.analyses.find(a => a.keyword === t.keyword) || { depth: "Context coming soon." };
             return {

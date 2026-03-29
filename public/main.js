@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit } from 'firebase/firestore';
 
 const ICONS = {
   sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
@@ -11,7 +11,7 @@ const ICONS = {
 let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
-    labels: { trends: "국가:", language: "언어:" },
+    labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록" },
     reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중..." },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" }, 
     pages: { 
@@ -70,7 +70,7 @@ let i18n = {
   },
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
-    labels: { trends: "国:", language: "言語:" },
+    labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リ포트 분석" },
     reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中..." },
 
     menu: { about: "TrendUpについて", privacy: "プライバシーポリシー", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト情報" }, 
@@ -118,7 +118,7 @@ let i18n = {
   },
   en: { 
     title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
-    labels: { trends: "Country:", language: "Language:" },
+    labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports" },
     reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data..." },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
@@ -273,16 +273,18 @@ class TrendList extends HTMLElement {
 
 class TrendModal extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
-  show(trend, lang) {
+  show(trend, lang, matchedReports = []) {
     if (!trend) return;
     const analysis = trend.aiReports?.[lang] || trend.aiReports?.['ko'] || "AI Analysis Report Loading...";
-    this.render(trend, lang, analysis);
+    this.render(trend, lang, analysis, matchedReports);
   }
   hide() { this.shadowRoot.innerHTML = ''; }
-  render(trend, lang, analysis) {
+  render(trend, lang, analysis, matchedReports) {
     const t = i18n[lang] || i18n.en;
-    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; cursor: default; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); display: flex; align-items: center; justify-content: center; } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; flex-direction: column; } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; }</style>
-      <div class="overlay"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.originalTitle || trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p><span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('')}</div>${(trend.videoLinks && trend.videoLinks.length > 0) ? `<span class="section-title">🎬 ${t.videos}</span><div class="link-group">${trend.videoLinks.map(v => `<a href="${v.url}" target="_blank" class="link"><span class="link-meta">${v.source}</span><span>🎥 ${v.title}</span></a>`).join('')}</div>` : ''}</div></div>`;
+    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; cursor: default; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); display: flex; align-items: center; justify-content: center; } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; flex-direction: column; transition: all 0.2s; } .link:hover { border-color: var(--primary); background: oklch(0.6 0.2 20 / 0.03); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; } .report-link { border-left: 4px solid var(--primary); background: linear-gradient(to right, oklch(0.6 0.2 20 / 0.05), transparent); }</style>
+      <div class="overlay"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.originalTitle || trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p>
+      ${matchedReports.length > 0 ? `<span class="section-title">${t.labels.featuredReports}</span><div class="link-group">${matchedReports.map(r => `<a href="report/${r.slug}/" target="_blank" class="link report-link"><span class="link-meta">${r.type.toUpperCase()} ANALYSIS</span><span>📈 ${r.reportTitle}</span></a>`).join('')}</div>` : ''}
+      <span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('')}</div>${(trend.videoLinks && trend.videoLinks.length > 0) ? `<span class="section-title">🎬 ${t.videos}</span><div class="link-group">${trend.videoLinks.map(v => `<a href="${v.url}" target="_blank" class="link"><span class="link-meta">${v.source}</span><span>🎥 ${v.title}</span></a>`).join('')}</div>` : ''}</div></div>`;
     this.shadowRoot.querySelector('.close').onclick = () => this.hide();
     this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
   }
@@ -314,7 +316,12 @@ class App {
       this.renderNavs();
       this.refreshUIText();
       this.loadLocalCache();
-      window.addEventListener('open-trend-modal', (e) => { if (this.modal) this.modal.show(e.detail, this.currentLang); });
+      window.addEventListener('open-trend-modal', async (e) => { 
+        if (!this.modal) return;
+        const trend = e.detail;
+        const matchedReports = await this.findMatchedReports(trend.originalTitle || trend.title);
+        this.modal.show(trend, this.currentLang, matchedReports);
+      });
       window.addEventListener('click', () => { 
         document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded')); 
         document.getElementById('theme-dropdown')?.classList.add('hidden'); 
@@ -337,10 +344,31 @@ class App {
   async startAsyncTasks() {
     try {
       const app = initializeApp(firebaseConfig);
-      this.db = initializeFirestore(app, { experimentalForceLongPolling: true });
+      this.db = getFirestore(app);
       this.renderNavs();
       await this.update();
     } catch (e) { console.error("Firebase init failed:", e.message); }
+  }
+
+  async findMatchedReports(keyword) {
+    if (!this.db) return [];
+    try {
+      const types = ['weekly', 'monthly', 'yearly'];
+      let allMatches = [];
+      for (const type of types) {
+        const q = query(
+          collection(this.db, 'reports', type, this.currentCountry),
+          where('keywords', 'array-contains', keyword),
+          limit(2)
+        );
+        const snap = await getDocs(q);
+        snap.forEach(doc => {
+          const data = doc.data();
+          if (data.slug) allMatches.push({ type, slug: data.slug, reportTitle: data.reportTitle });
+        });
+      }
+      return allMatches;
+    } catch (e) { return []; }
   }
   refreshUIText() {
     try {
