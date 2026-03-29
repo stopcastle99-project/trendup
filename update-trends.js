@@ -90,7 +90,9 @@ class TrendUpdater {
   async generateBaseAIReport(item, news, country, previousItems = []) {
     if (!this.genAI) return "";
     const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
-    if (existing && existing.aiReports && existing.aiReports.ko) return existing.aiReports.ko;
+    if (existing && existing.aiReports && existing.aiReports.ko && !existing.aiReports.ko.includes("Hot Trend:")) {
+      return existing.aiReports.ko;
+    }
 
     const currentUsage = await this.getGeminiUsageCount();
     if (currentUsage >= 1480) {
@@ -229,8 +231,15 @@ class TrendUpdater {
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
       for (const item of items) {
         allKeywords.push(item.originalTitle);
-        item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code, previousItems) || `${code} Hot Trend: ${item.originalTitle}`;
-        if (!previousItems.find(p => p.originalTitle === item.originalTitle)) await new Promise(r => setTimeout(r, 4000));
+        const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
+        const hasValidReport = existing && existing.aiReports && existing.aiReports.ko && !existing.aiReports.ko.includes("Hot Trend:");
+        
+        if (hasValidReport) {
+          item.aiReports.ko = existing.aiReports.ko;
+        } else {
+          item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code, previousItems) || `${code} Hot Trend: ${item.originalTitle}`;
+          await new Promise(r => setTimeout(r, 4500)); // Delay only when generating a new report to respect 15 RPM
+        }
       }
       for (const lang of langs) {
         const titlesToTranslate = items.map(i => i.originalTitle);
