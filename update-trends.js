@@ -13,8 +13,8 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.14 <<<");
-console.log(">>> TARGET MODEL: gemini-2.5-flash (Batch Mode) <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.15 <<<");
+console.log(">>> TARGET MODEL: Gemma 3 / 2 (Batch Mode) <<<");
 console.log("====================================================");
 
 class TrendUpdater {
@@ -90,8 +90,8 @@ class TrendUpdater {
   async generateBatchAIReports(itemsToProcess, country, previousItems) {
     if (!this.genAI || itemsToProcess.length === 0) return {};
     const currentUsage = await this.getGeminiUsageCount();
-    if (currentUsage >= 1480) {
-      console.warn(`  - Gemini Safety: Daily limit reached.`);
+    if (currentUsage >= 14350) {
+      console.warn(`  - AI Safety: Daily limit reached (Gemma max 14400).`);
       return {};
     }
 
@@ -110,17 +110,33 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 `;
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      let text = response.text().trim();
+      let text = "";
+      let usedModel = "gemma-3-27b-it";
+      const modelsToTry = ["gemma-3-27b-it", "gemma-2-27b-it", "gemini-2.5-flash"];
+      
+      for (const m of modelsToTry) {
+        try {
+          const model = this.genAI.getGenerativeModel({ model: m });
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          text = response.text().trim();
+          usedModel = m;
+          break;
+        } catch (err) {
+          console.log(`  - Model fallback: ${m} failed (${err.message}). Trying next...`);
+        }
+      }
+      
+      if (!text) {
+        throw new Error("All AI models failed to generate content.");
+      }
       
       if (text.startsWith("\`\`\`json")) text = text.replace(/^\`\`\`json/g, "").replace(/\`\`\`$/g, "").trim();
       else if (text.startsWith("\`\`\`")) text = text.replace(/^\`\`\`/g, "").replace(/\`\`\`$/g, "").trim();
       
       const parsed = JSON.parse(text);
       if (parsed) {
-        console.log(`  - Gemini Batch Success: gemini-2.5-flash processed ${itemsToProcess.length} items (${currentUsage + 1}/1500)`);
+        console.log(`  - AI Batch Success: ${usedModel} processed ${itemsToProcess.length} items (${currentUsage + 1}/14400)`);
         await this.incrementGeminiUsage();
       }
       
