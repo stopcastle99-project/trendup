@@ -23,6 +23,7 @@ if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
 document.addEventListener('DOMContentLoaded', () => {
     initNav();
     loadReport();
+    loadSidebar();
 });
 
 function initNav() {
@@ -38,7 +39,7 @@ async function loadReport() {
     try {
         const doc = await db.collection("reports").doc(type).collection(country).doc(reportId).get();
         if (!doc.exists) {
-            document.body.innerHTML = '<div style="padding: 5rem; text-align:center;"><h2>Report Not Found</h2><a href="../">Back to Home</a></div>';
+            document.getElementById('report-main').innerHTML = '<div style="padding: 10rem 2rem; text-align:center;"><h2>Report Not Found</h2><p>This report might not have been generated yet.</p><br><a href="../" class="date-badge" style="text-decoration:none;">Back to Home</a></div>';
             return;
         }
 
@@ -47,11 +48,73 @@ async function loadReport() {
         renderChart(data.items);
         renderDepthAnalysis(data.items.slice(0, 2));
         renderSimpleAnalysis(data.items.slice(2, 5));
-        loadHistory();
     } catch (e) {
         console.error("Report load error:", e);
     }
 }
+
+async function loadSidebar() {
+    const types = ['weekly', 'monthly', 'yearly'];
+    for (const t of types) {
+        try {
+            const snapshot = await db.collection("reports").doc(t).collection(country)
+                .orderBy("lastUpdated", "desc")
+                .limit(20)
+                .get();
+            
+            const container = document.getElementById(`sidebar-${t}`);
+            if (!container) continue;
+
+            let html = '';
+            let count = 0;
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const isCurrent = doc.id === reportId;
+                const hiddenClass = count >= 3 ? 'hidden' : '';
+                const activeClass = isCurrent ? 'active' : '';
+                
+                // Format title based on type
+                let displayTitle = data.dateRange || data.reportTitle;
+                if (t === 'monthly' && data.lastUpdated) {
+                    const d = data.lastUpdated.toDate();
+                    displayTitle = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+                } else if (t === 'yearly' && data.lastUpdated) {
+                    displayTitle = `${data.lastUpdated.toDate().getFullYear()}`;
+                }
+
+                html += `<div class="history-sidebar-item ${activeClass} ${hiddenClass}" onclick="navigateTo('${t}', '${doc.id}')">
+                    ${displayTitle}
+                </div>`;
+                count++;
+            });
+            container.innerHTML = html || '<p style="font-size:0.8rem; color:var(--text-muted); padding:10px;">No reports yet</p>';
+            
+            // Hide "More" button if few items
+            const moreBtn = container.nextElementSibling;
+            if (count <= 3 && moreBtn) moreBtn.style.display = 'none';
+
+        } catch (e) { console.warn(`Sidebar load failed for ${t}`, e); }
+    }
+}
+
+window.navigateTo = (t, id) => {
+    window.location.href = `?type=${t}&country=${country}&id=${id}`;
+};
+
+window.toggleCategory = (t) => {
+    const container = document.getElementById(`sidebar-${t}`);
+    const items = container.querySelectorAll('.history-sidebar-item.hidden');
+    const btn = container.nextElementSibling;
+    
+    if (items.length > 0) {
+        items.forEach(el => el.classList.remove('hidden'));
+        btn.textContent = '-';
+    } else {
+        // If already expanded, we could collapse, but user asked for "show more"
+        // Let's just keep it simple: if button is '-', refresh sidebar to original state
+        loadSidebar();
+    }
+};
 
 function renderHero(data) {
     document.getElementById('report-title-text').textContent = data.reportTitle || `${data.type.toUpperCase()} Trend Report`;
@@ -87,7 +150,7 @@ function renderDepthAnalysis(items) {
         if (item.videoLinks) {
             videoGrid.innerHTML = item.videoLinks.slice(0, 2).map(v => `
                 <div class="video-item">
-                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe>
+                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id || v.url?.split('v=')[1]}" frameborder="0" allowfullscreen></iframe>
                 </div>
             `).join('');
         }
@@ -105,32 +168,4 @@ function renderSimpleAnalysis(items) {
             <p>${item.depth}</p>
         </div>
     `).join('');
-}
-
-async function loadHistory() {
-    const historyList = document.getElementById('history-list');
-    if (!historyList) return;
-    
-    try {
-        const snapshot = await db.collection("reports").doc(type).collection(country)
-            .orderBy("lastUpdated", "desc")
-            .limit(6)
-            .get();
-            
-        historyList.innerHTML = '';
-        snapshot.forEach(doc => {
-            if (doc.id === reportId) return;
-            const data = doc.data();
-            const item = document.createElement('div');
-            item.className = 'history-item';
-            item.innerHTML = `
-                <div style="font-size: 0.7rem; color:var(--primary); font-weight:800; margin-bottom:0.3rem;">${data.type.toUpperCase()}</div>
-                <div style="font-weight:700;">${data.dateRange || data.reportTitle}</div>
-            `;
-            item.onclick = () => {
-                window.location.href = `?type=${type}&country=${country}&id=${doc.id}`;
-            };
-            historyList.appendChild(item);
-        });
-    } catch (e) { console.warn("History load failed"); }
 }
