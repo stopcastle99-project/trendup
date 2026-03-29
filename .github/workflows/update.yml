@@ -47,9 +47,9 @@ jobs:
         run: |
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           if [ -n "$FIREBASE_TOKEN" ]; then
-            npx firebase-tools deploy --only hosting --token "$FIREBASE_TOKEN"
+            npx firebase-tools deploy --only hosting,firestore:rules --token "$FIREBASE_TOKEN"
           else
-            npx firebase-tools deploy --only hosting
+            npx firebase-tools deploy --only hosting,firestore:rules
           fi
           rm gcp-key.json
 
