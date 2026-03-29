@@ -289,20 +289,24 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     }
   }
 
-  async aggregateReports(country) {
+  async aggregateReports(country, force = false) {
     const now = new Date();
     const dayOfMonth = now.getDate();
     const dayOfWeek = now.getDay(); // 0 is Sunday
     
-    // Weekly: Always refresh "latest", but strictly speaking it aggregates last 7 days.
-    // We trigger a "Final" weekly report on Sundays.
-    await this.generatePeriodReport(country, 'weekly', 7);
+    console.log(`  - Running aggregation for ${country} (Day ${dayOfMonth}, WeekDay ${dayOfWeek})...`);
+
+    // Weekly: Live update hourly, Archive on Sundays
+    const isSundayFinal = (dayOfWeek === 0);
+    await this.generatePeriodReport(country, 'weekly', 7, isSundayFinal || force);
     
-    // Monthly: Trigger on 1st of month (aggregates last 30 days)
-    if (dayOfMonth === 1) await this.generatePeriodReport(country, 'monthly', 30);
+    // Monthly: Live update hourly, Archive on 1st of month
+    const isMonthlyFinal = (dayOfMonth === 1);
+    await this.generatePeriodReport(country, 'monthly', 30, isMonthlyFinal || force);
     
-    // Yearly: Trigger on Jan 1st (aggregates 365 days)
-    if (now.getMonth() === 0 && dayOfMonth === 1) await this.generatePeriodReport(country, 'yearly', 365);
+    // Yearly: Live update hourly, Archive on Jan 1st
+    const isYearlyFinal = (now.getMonth() === 0 && dayOfMonth === 1);
+    await this.generatePeriodReport(country, 'yearly', 365, isYearlyFinal || force);
   }
 
   getDateRange(days) {
@@ -384,7 +388,7 @@ No Markdown, just JSON.`;
     fs.writeFileSync(path.join(targetDir, "index.html"), html);
   }
 
-  async generatePeriodReport(country, type, days) {
+  async generatePeriodReport(country, type, days, isArchival = false) {
     const historyCol = db.collection("trend_history");
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
@@ -439,16 +443,17 @@ No Markdown, just JSON.`;
           lastUpdated: admin.firestore.Timestamp.now()
         };
 
-        // Save to 'latest'
+        // Always save to 'latest'
         await db.collection("reports").doc(type).collection(country).doc("latest").set(reportData);
         
-        // Save to History (ID format: kr-weekly-keyword-date)
-        await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
-        
-        // SEO Pre-rendering
-        await this.preRenderReport(reportData, reportSlug);
-        
-        console.log(`  - ${type.toUpperCase()} report generated & archived for ${country} (Slug: ${reportSlug})`);
+        // Only Archive and Pre-render if it's the period boundary OR forced
+        if (isArchival) {
+          await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
+          await this.preRenderReport(reportData, reportSlug);
+          console.log(`  - ${type.toUpperCase()} archival report snapshot created: ${reportSlug}`);
+        } else {
+          console.log(`  - ${type.toUpperCase()} live report updated (latest)`);
+        }
       }
     } catch (e) {
       console.error(`Error generating ${type} report for ${country}:`, e.message);
@@ -505,7 +510,8 @@ No Markdown, just JSON.`;
       
       // NEW: Archive and Aggregate
       await this.archiveHistory(items, code);
-      await this.aggregateReports(code);
+      const forceReports = process.argv.includes('--force-reports');
+      await this.aggregateReports(code, forceReports);
     }
     this.generateSitemap(allKeywords);
     this.generateRSS(allKeywords);
