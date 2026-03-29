@@ -492,15 +492,6 @@ class App {
             badge.classList.add('active-report');
           }
           
-          if (!card.querySelector('.report-expand-btn')) {
-            const btn = document.createElement('button');
-            btn.className = 'report-expand-btn';
-            btn.innerHTML = '+';
-            btn.title = "View Past Reports";
-            btn.onclick = (e) => { e.stopPropagation(); this.togglePastReports(type, card); };
-            card.appendChild(btn);
-          }
-          
           card.onclick = () => { 
             const url = data.slug ? `report/${data.slug}/` : `report/?type=${type}&country=${this.currentCountry}&id=latest`;
             window.location.href = url;
@@ -510,45 +501,6 @@ class App {
     }
   }
 
-  async togglePastReports(type, card) {
-    let list = card.querySelector('.past-reports-list');
-    if (list) {
-      list.remove();
-      card.querySelector('.report-expand-btn').innerHTML = '+';
-      return;
-    }
-    
-    card.querySelector('.report-expand-btn').innerHTML = '&times;';
-    list = document.createElement('div');
-    list.className = 'past-reports-list';
-    list.innerHTML = '<div class="loading-mini">...</div>';
-    card.appendChild(list);
-    
-    try {
-      const snapshot = await db.collection("reports").doc(type).collection(this.currentCountry)
-        .orderBy("lastUpdated", "desc")
-        .limit(3)
-        .get();
-        
-      list.innerHTML = '';
-      let count = 0;
-      snapshot.forEach(doc => {
-        if (doc.id === 'latest' || count >= 2) return;
-        const data = doc.data();
-        const item = document.createElement('div');
-        item.className = 'past-report-item';
-        item.textContent = data.dateRange || doc.id;
-        item.onclick = (e) => {
-          e.stopPropagation();
-          const url = data.slug ? `report/${data.slug}/` : `report/?type=${type}&country=${this.currentCountry}&id=${doc.id}`;
-          window.location.href = url;
-        };
-        list.appendChild(item);
-        count++;
-      });
-      if (count === 0) list.innerHTML = `<div class="no-past">No past data</div>`;
-    } catch (e) { console.error(e); list.innerHTML = 'Error'; }
-  }
 
   async updateGeminiUsage() {
     if (!this.db) return;
