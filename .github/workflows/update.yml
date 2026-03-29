@@ -39,7 +39,7 @@ jobs:
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
-          node update-trends.js
+          node update-trends.js --force-weekly
 
       - name: Deploy to Firebase Hosting
         env:
