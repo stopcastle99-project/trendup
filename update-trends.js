@@ -28,21 +28,21 @@ class TrendUpdater {
     if (!texts || texts.length === 0) return [];
     const translateSingle = async (text, tl) => {
       try {
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t`, {
-          method: 'POST',
-          headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "Mozilla/5.0" },
-          body: `q=${encodeURIComponent(text)}`
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`, {
+          headers: { "User-Agent": "Mozilla/5.0" }
         });
         const data = await res.json();
         return data[0].map(x => x[0]).join("").trim();
       } catch (e) { return text; }
     };
     try {
+      // Free translate API can block giant URLs, so for translations we just use single promises if it's too big, or rely on small chunks.
       const combinedText = texts.join(" ||| ");
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t`, {
-        method: 'POST',
-        headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "Mozilla/5.0" },
-        body: `q=${encodeURIComponent(combinedText)}`
+      if (combinedText.length > 1500) {
+        return await Promise.all(texts.map(t => translateSingle(t, targetLang)));
+      }
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`, {
+        headers: { "User-Agent": "Mozilla/5.0" }
       });
       const data = await res.json();
       const combinedResult = data[0].map(x => x[0]).join("");
@@ -238,7 +238,7 @@ class TrendUpdater {
           item.aiReports.ko = existing.aiReports.ko;
         } else {
           item.aiReports.ko = await this.generateBaseAIReport(item, item.newsTitles, code, previousItems) || `${code} Hot Trend: ${item.originalTitle}`;
-          await new Promise(r => setTimeout(r, 4500)); // Delay only when generating a new report to respect 15 RPM
+          await new Promise(r => setTimeout(r, 6000)); // Delay 6s to absolutely guarantee we never hit 15 RPM limit across countries
         }
       }
       for (const lang of langs) {
