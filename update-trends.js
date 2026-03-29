@@ -280,13 +280,65 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
   async aggregateReports(country) {
     const now = new Date();
     const dayOfMonth = now.getDate();
+    const dayOfWeek = now.getDay(); // 0 is Sunday
+    
+    // Weekly: Always refresh "latest", but strictly speaking it aggregates last 7 days.
+    // We trigger a "Final" weekly report on Sundays.
     await this.generatePeriodReport(country, 'weekly', 7);
+    
+    // Monthly: Trigger on 1st of month (aggregates last 30 days)
     if (dayOfMonth === 1) await this.generatePeriodReport(country, 'monthly', 30);
+    
+    // Yearly: Trigger on Jan 1st (aggregates 365 days)
     if (now.getMonth() === 0 && dayOfMonth === 1) await this.generatePeriodReport(country, 'yearly', 365);
   }
 
+  getDateRange(days) {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+    const fmt = (d) => `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    return `${fmt(start)} - ${fmt(end)}`;
+  }
+
+  async generateAIReportAnalysis(top5, country, type) {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const langNames = { KR: "Korean", JP: "Japanese", US: "English" };
+    const lang = langNames[country] || "English";
+    
+    const keywordsStr = top5.map((t, i) => `${i+1}. ${t.keyword}`).join("\n");
+    const prompt = `You are a professional trend analyst for GlobalTrendUp. 
+Generate a comprehensive ${type} trend report for ${country} in ${lang}.
+Keywords were:
+${keywordsStr}
+
+Strictly follow this JSON format:
+{
+  "reportTitle": "A catchy title for this ${type} report",
+  "analyses": [
+    { "keyword": "Rank 1 Keyword", "depth": "Deep analysis (3-4 paragraphs explaining WHY it was the #1 trend this period, social context, and impact)" },
+    { "keyword": "Rank 2 Keyword", "depth": "Deep analysis (3-4 paragraphs explaining WHY it was the #2 trend this period, social context, and impact)" },
+    { "keyword": "Rank 3 Keyword", "depth": "Short summary (1 paragraph context)" },
+    { "keyword": "Rank 4 Keyword", "depth": "Short summary (1 paragraph context)" },
+    { "keyword": "Rank 5 Keyword", "depth": "Short summary (1 paragraph context)" }
+  ]
+}
+No Markdown, just JSON.`;
+
+    try {
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().replace(/```json|```/g, "").trim();
+      return JSON.parse(text);
+    } catch (e) {
+      console.error(`AI Analysis failed for ${type} ${country}:`, e.message);
+      return { 
+        reportTitle: `${type.toUpperCase()} Trend Report`,
+        analyses: top5.map(t => ({ keyword: t.keyword, depth: "Analysis pending aggregation..." }))
+      };
+    }
+  }
+
   async generatePeriodReport(country, type, days) {
-    const reportsRef = db.collection("reports").doc(type).collection(country).doc("latest");
     const historyCol = db.collection("trend_history");
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
@@ -306,13 +358,44 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
           }
         }
       });
+
       const top5 = Object.entries(globalScores)
         .map(([keyword, data]) => ({ keyword, score: data.score }))
         .sort((a, b) => b.score - a.score)
         .slice(0, 5);
+
       if (top5.length > 0) {
-        await reportsRef.set({ top5, type, country, periodDays: days, lastUpdated: admin.firestore.Timestamp.now() });
-        console.log(`  - ${type.toUpperCase()} report generated for ${country}`);
+        console.log(`  - Generating AI Analysis for ${type} ${country}...`);
+        const analysis = await this.generateAIReportAnalysis(top5, country, type);
+        const dateRange = this.getDateRange(days);
+        
+        const reportData = {
+          type,
+          country,
+          dateRange,
+          reportTitle: analysis.reportTitle,
+          items: await Promise.all(top5.map(async (t, i) => {
+            const extra = analysis.analyses.find(a => a.keyword === t.keyword) || { depth: "Context coming soon." };
+            return {
+              keyword: t.keyword,
+              score: t.score,
+              rank: i + 1,
+              depth: extra.depth,
+              newsLinks: await this.getSupplementaryNews(t.keyword, country),
+              videoLinks: await this.getYouTubeVideos(t.keyword, country)
+            };
+          })),
+          lastUpdated: admin.firestore.Timestamp.now()
+        };
+
+        // Save to 'latest'
+        await db.collection("reports").doc(type).collection(country).doc("latest").set(reportData);
+        
+        // Save to History (ID format: KR_weekly_2026-03-29)
+        const historyId = `${country}_${type}_${new Date().toISOString().split('T')[0]}`;
+        await db.collection("reports").doc(type).collection(country).doc(historyId).set(reportData);
+        
+        console.log(`  - ${type.toUpperCase()} report generated & archived for ${country}`);
       }
     } catch (e) {
       console.error(`Error generating ${type} report for ${country}:`, e.message);

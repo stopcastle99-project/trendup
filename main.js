@@ -381,6 +381,7 @@ class App {
       document.querySelectorAll('.coming-soon-badge').forEach(el => {
         el.textContent = t.reports.comingSoon;
       });
+      this.refreshReportCards();
 
       this.updateGeminiUsage();
     } catch (e) { console.error("UI refresh error:", e); }
@@ -474,6 +475,77 @@ class App {
   async switchCountry(code) { this.currentCountry = code; localStorage.setItem('country', code); this.loadLocalCache(); this.renderNavs(); await this.update(); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.refreshUIText(); this.loadLocalCache(); await this.update(); }
   
+  async refreshReportCards() {
+    const types = ['weekly', 'monthly', 'yearly'];
+    for (const type of types) {
+      const card = document.querySelector(`.report-card[data-type="${type}"]`);
+      if (!card) continue;
+      
+      try {
+        const query = db.collection("reports").doc(type).collection(this.currentCountry).doc("latest");
+        const doc = await query.get();
+        if (doc.exists) {
+          const data = doc.data();
+          const badge = card.querySelector('.coming-soon-badge');
+          if (badge) {
+            badge.textContent = data.dateRange;
+            badge.classList.add('active-report');
+          }
+          
+          if (!card.querySelector('.report-expand-btn')) {
+            const btn = document.createElement('button');
+            btn.className = 'report-expand-btn';
+            btn.innerHTML = '+';
+            btn.title = "View Past Reports";
+            btn.onclick = (e) => { e.stopPropagation(); this.togglePastReports(type, card); };
+            card.appendChild(btn);
+          }
+          
+          card.onclick = () => { window.location.href = `report/?type=${type}&country=${this.currentCountry}&id=latest`; };
+        }
+      } catch (e) {}
+    }
+  }
+
+  async togglePastReports(type, card) {
+    let list = card.querySelector('.past-reports-list');
+    if (list) {
+      list.remove();
+      card.querySelector('.report-expand-btn').innerHTML = '+';
+      return;
+    }
+    
+    card.querySelector('.report-expand-btn').innerHTML = '&times;';
+    list = document.createElement('div');
+    list.className = 'past-reports-list';
+    list.innerHTML = '<div class="loading-mini">...</div>';
+    card.appendChild(list);
+    
+    try {
+      const snapshot = await db.collection("reports").doc(type).collection(this.currentCountry)
+        .orderBy("lastUpdated", "desc")
+        .limit(3)
+        .get();
+        
+      list.innerHTML = '';
+      let count = 0;
+      snapshot.forEach(doc => {
+        if (doc.id === 'latest' || count >= 2) return;
+        const data = doc.data();
+        const item = document.createElement('div');
+        item.className = 'past-report-item';
+        item.textContent = data.dateRange || doc.id;
+        item.onclick = (e) => {
+          e.stopPropagation();
+          window.location.href = `report/?type=${type}&country=${this.currentCountry}&id=${doc.id}`;
+        };
+        list.appendChild(item);
+        count++;
+      });
+      if (count === 0) list.innerHTML = `<div class="no-past">No past data</div>`;
+    } catch (e) { console.error(e); list.innerHTML = 'Error'; }
+  }
+
   async updateGeminiUsage() {
     if (!this.db) return;
     try {
