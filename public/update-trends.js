@@ -205,9 +205,21 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const lastMod = new Date().toISOString().split('T')[0];
     let s = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
     s += `  <url><loc>${baseUrl}/</loc><lastmod>${lastMod}</lastmod><priority>1.0</priority></url>\n`;
+    
+    // Trends by query
     [...new Set(allTrends)].slice(0, 50).forEach(kw => {
       s += `  <url><loc>${baseUrl}/?q=${encodeURIComponent(kw)}</loc><lastmod>${lastMod}</lastmod><priority>0.8</priority></url>\n`;
     });
+    
+    // Trend Reports (Static Pre-rendered Pages)
+    const reportDir = "public/report";
+    if (fs.existsSync(reportDir)) {
+      const slugs = fs.readdirSync(reportDir).filter(f => fs.statSync(path.join(reportDir, f)).isDirectory());
+      slugs.forEach(slug => {
+        s += `  <url><loc>${baseUrl}/report/${slug}/</loc><lastmod>${lastMod}</lastmod><priority>0.9</priority></url>\n`;
+      });
+    }
+    
     s += `</urlset>`;
     fs.writeFileSync("sitemap.xml", s);
   }
@@ -338,6 +350,40 @@ No Markdown, just JSON.`;
     }
   }
 
+  toSlug(text) {
+    if (!text) return "report";
+    // Convert many non-alphanumeric chars to hyphen
+    let slug = text.trim().toLowerCase()
+      .replace(/[^\uAC00-\uD7AF\u3040-\u30FF\u31F0-\u31FF\u4E00-\u9FFF\u4E00-\u9FA5a-z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    return slug || "report";
+  }
+
+  async preRenderReport(reportData, slug) {
+    const baseTemplate = "public/report/index.html";
+    if (!fs.existsSync(baseTemplate)) return;
+    
+    const targetDir = `public/report/${slug}`;
+    if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+    
+    let html = fs.readFileSync(baseTemplate, "utf8");
+    
+    // SEO Injection
+    const title = `${reportData.reportTitle} | GlobalTrendUp ${reportData.country}`;
+    const description = `Analyze the Top ${reportData.type} trends for ${reportData.country}: ${reportData.items.slice(0, 3).map(i => i.keyword).join(", ")}. ${reportData.items[0].depth.substring(0, 150)}...`;
+    
+    html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
+    html = html.replace(/<meta name="description" content=".*?">/, `<meta name="description" content="${description}">`);
+    
+    // Update relative paths since it's now in a subfolder
+    html = html.replace(/href="\.\.\/style\.css"/, 'href="../../style.css"');
+    html = html.replace(/href="style\.css"/, 'href="../style.css"');
+    html = html.replace(/src="report\.js"/, 'src="../report.js"');
+    
+    fs.writeFileSync(path.join(targetDir, "index.html"), html);
+  }
+
   async generatePeriodReport(country, type, days) {
     const historyCol = db.collection("trend_history");
     const cutoffDate = new Date();
@@ -369,10 +415,14 @@ No Markdown, just JSON.`;
         const analysis = await this.generateAIReportAnalysis(top5, country, type);
         const dateRange = this.getDateRange(days);
         
+        const top1Slug = this.toSlug(top5[0].keyword);
+        const reportSlug = `${country.toLowerCase()}-${type}-${top1Slug}-${new Date().toISOString().split('T')[0]}`;
+        
         const reportData = {
           type,
           country,
           dateRange,
+          slug: reportSlug,
           reportTitle: analysis.reportTitle,
           items: await Promise.all(top5.map(async (t, i) => {
             const extra = analysis.analyses.find(a => a.keyword === t.keyword) || { depth: "Context coming soon." };
@@ -391,11 +441,13 @@ No Markdown, just JSON.`;
         // Save to 'latest'
         await db.collection("reports").doc(type).collection(country).doc("latest").set(reportData);
         
-        // Save to History (ID format: KR_weekly_2026-03-29)
-        const historyId = `${country}_${type}_${new Date().toISOString().split('T')[0]}`;
-        await db.collection("reports").doc(type).collection(country).doc(historyId).set(reportData);
+        // Save to History (ID format: kr-weekly-keyword-date)
+        await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
         
-        console.log(`  - ${type.toUpperCase()} report generated & archived for ${country}`);
+        // SEO Pre-rendering
+        await this.preRenderReport(reportData, reportSlug);
+        
+        console.log(`  - ${type.toUpperCase()} report generated & archived for ${country} (Slug: ${reportSlug})`);
       }
     } catch (e) {
       console.error(`Error generating ${type} report for ${country}:`, e.message);

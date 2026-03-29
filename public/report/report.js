@@ -4,9 +4,21 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 const params = new URLSearchParams(window.location.search);
-const type = params.get('type') || 'weekly';
-const country = params.get('country') || 'KR';
-const reportId = params.get('id') || 'latest';
+let type = params.get('type') || 'weekly';
+let country = params.get('country') || 'KR';
+let reportId = params.get('id') || 'latest';
+
+// SEO Slug Detection (e.g., /report/kr-weekly-ai-agent-2026-03-29/)
+const pathParts = window.location.pathname.split('/').filter(p => p);
+const lastPart = pathParts[pathParts.length - 1];
+if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
+    reportId = lastPart;
+    const segments = lastPart.split('-');
+    if (segments.length >= 2) {
+        country = segments[0].toUpperCase();
+        type = segments[1].toLowerCase();
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     initNav();

@@ -501,7 +501,10 @@ class App {
             card.appendChild(btn);
           }
           
-          card.onclick = () => { window.location.href = `report/?type=${type}&country=${this.currentCountry}&id=latest`; };
+          card.onclick = () => { 
+            const url = data.slug ? `report/${data.slug}/` : `report/?type=${type}&country=${this.currentCountry}&id=latest`;
+            window.location.href = url;
+          };
         }
       } catch (e) {}
     }
@@ -537,7 +540,8 @@ class App {
         item.textContent = data.dateRange || doc.id;
         item.onclick = (e) => {
           e.stopPropagation();
-          window.location.href = `report/?type=${type}&country=${this.currentCountry}&id=${doc.id}`;
+          const url = data.slug ? `report/${data.slug}/` : `report/?type=${type}&country=${this.currentCountry}&id=${doc.id}`;
+          window.location.href = url;
         };
         list.appendChild(item);
         count++;
