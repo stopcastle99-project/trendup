@@ -482,4 +482,69 @@
   #info-modal-body p { margin-bottom: 1rem; line-height: 1.7; font-size: 0.95rem; color: var(--text); }
   #info-modal-body ul { margin-bottom: 1.5rem; padding-left: 1.2rem; list-style: disc; }
   #info-modal-body li { margin-bottom: 0.5rem; font-size: 0.95rem; }
+
+  /* Trend Reports Section */
+  #trend-reports {
+    margin: 4rem 0 2rem;
+  }
+  #reports-section-title {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--text);
+  }
+  .reports-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .report-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 2.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary);
+  }
+  .report-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .report-card h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .coming-soon-badge {
+    font-size: 0.7rem;
+    background: var(--border);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  @media (max-width: 768px) {
+    .reports-grid {
+      grid-template-columns: 1fr;
+    }
+    #trend-reports {
+      margin: 3rem 0 1rem;
+    }
+  }
+
 }
