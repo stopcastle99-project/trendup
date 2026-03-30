@@ -1,4 +1,9 @@
-# **TrendUp: Real-time Global Trends Dashboard**
+## Phase 48: Sidebar Navigation & Dark Mode for Reports (v3.1.81)
+- **UI Enhancement:** Moved "Recent History" from the main content to a persistent left sidebar on the Trend Report page.
+- **Categorization:** Implemented separate sidebar sections for Weekly, Monthly, and Yearly reports with expansion support.
+- **Dark Mode:** Added theme switching functionality (Light/Dark/System) to the report page, synchronized with the main page.
+- **Logic Refinement:** Updated `report.js` to dynamically populate sidebar categories and highlight the active report.
+- **Improved UX:** Added smooth transitions for expanding/collapsing history lists and refined the visual feedback for sidebar items.
 
 ## Phase 47: Synchronization & Local Preview Fix (v3.1.80)
 - **Bug Fix:** Resolved the "blank screen" issue by ensuring versioned JS files (`main_v*.js`) are synced across all environments.

@@ -1,4 +1,15 @@
 // Trend Report Detail Logic
+const ICONS = {
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
+  moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
+  system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20" opacity="0.5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"></path></svg>`
+};
+
+function injectIcons() {
+    document.querySelectorAll('.sun-svg').forEach(el => el.innerHTML = ICONS.sun);
+    document.querySelectorAll('.moon-svg').forEach(el => el.innerHTML = ICONS.moon);
+    document.querySelectorAll('.system-svg').forEach(el => el.innerHTML = ICONS.system);
+}
 const firebaseConfig = { projectId: "test-76cdd" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -21,9 +32,53 @@ if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    injectIcons();
     initNav();
+    initTheme();
     loadReport();
 });
+
+function initTheme() {
+    const toggle = document.getElementById('theme-menu-toggle');
+    const dropdown = document.getElementById('theme-dropdown');
+    const opts = document.querySelectorAll('.theme-opt');
+    const triggerIcon = toggle.querySelector('.theme-trigger-icon');
+
+    const updateTriggerIcon = (mode) => {
+        const activeOpt = document.querySelector(`.theme-opt[data-theme="${mode}"]`);
+        if (activeOpt && triggerIcon) {
+            const iconClone = activeOpt.querySelector('.opt-icon').cloneNode(true);
+            triggerIcon.innerHTML = '';
+            triggerIcon.appendChild(iconClone);
+        }
+    };
+
+    const setTheme = (mode) => {
+        let theme = mode;
+        if (mode === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme-mode', mode);
+        updateTriggerIcon(mode);
+        opts.forEach(btn => btn.classList.toggle('active', btn.dataset.theme === mode));
+    };
+
+    toggle.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('hidden');
+    };
+
+    opts.forEach(opt => {
+        opt.onclick = () => {
+            setTheme(opt.dataset.theme);
+            dropdown.classList.add('hidden');
+        };
+    });
+
+    document.addEventListener('click', () => dropdown.classList.add('hidden'));
+    
+    const currentMode = localStorage.getItem('theme-mode') || 'system';
+    setTheme(currentMode);
+}
 
 function initNav() {
     document.querySelectorAll('#report-type-nav .nav-btn').forEach(btn => {
@@ -108,29 +163,60 @@ function renderSimpleAnalysis(items) {
 }
 
 async function loadHistory() {
-    const historyList = document.getElementById('history-list');
-    if (!historyList) return;
+    const types = ['weekly', 'monthly', 'yearly'];
     
-    try {
-        const snapshot = await db.collection("reports").doc(type).collection(country)
-            .orderBy("lastUpdated", "desc")
-            .limit(6)
-            .get();
+    for (const t of types) {
+        const container = document.getElementById(`sidebar-${t}`);
+        if (!container) continue;
+        
+        try {
+            const snapshot = await db.collection("reports").doc(t).collection(country)
+                .orderBy("lastUpdated", "desc")
+                .limit(10)
+                .get();
+                
+            container.innerHTML = '';
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const isActive = doc.id === reportId && t === type;
+                
+                const item = document.createElement('div');
+                item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
+                item.innerHTML = `
+                    <div class="item-date">${data.dateRange || data.reportTitle}</div>
+                    <div class="item-meta">${t.toUpperCase()}</div>
+                `;
+                item.onclick = () => {
+                    window.location.href = `?type=${t}&country=${country}&id=${doc.id}`;
+                };
+                container.appendChild(item);
+            });
             
-        historyList.innerHTML = '';
-        snapshot.forEach(doc => {
-            if (doc.id === reportId) return;
-            const data = doc.data();
-            const item = document.createElement('div');
-            item.className = 'history-item';
-            item.innerHTML = `
-                <div style="font-size: 0.7rem; color:var(--primary); font-weight:800; margin-bottom:0.3rem;">${data.type.toUpperCase()}</div>
-                <div style="font-weight:700;">${data.dateRange || data.reportTitle}</div>
-            `;
-            item.onclick = () => {
-                window.location.href = `?type=${type}&country=${country}&id=${doc.id}`;
-            };
-            historyList.appendChild(item);
-        });
-    } catch (e) { console.warn("History load failed"); }
+            if (snapshot.empty) {
+                container.innerHTML = '<div class="history-sidebar-item pending">Coming Soon...</div>';
+            }
+        } catch (e) {
+            console.warn(`History load failed for ${t}:`, e);
+        }
+    }
 }
+
+function toggleCategory(cat) {
+    const container = document.getElementById(`sidebar-${cat}`);
+    if (!container) return;
+    
+    const isExpanded = container.classList.toggle('expanded');
+    const btn = container.parentElement.querySelector('.more-btn span');
+    if (btn) btn.textContent = isExpanded ? '-' : '+';
+}
+
+// Add CSS for expansion
+const style = document.createElement('style');
+style.textContent = `
+    .history-list { max-height: 220px; overflow: hidden; transition: max-height 0.5s ease; }
+    .history-list.expanded { max-height: 1000px; }
+    .history-sidebar-item { margin-bottom: 0.5rem; }
+    .item-date { font-weight: 700; font-size: 0.85rem; }
+    .item-meta { font-size: 0.65rem; opacity: 0.7; text-transform: uppercase; margin-top: 0.2rem; }
+`;
+document.head.appendChild(style);

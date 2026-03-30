@@ -1,4 +1,15 @@
 // Trend Report Detail Logic
+const ICONS = {
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
+  moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
+  system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20" opacity="0.5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"></path></svg>`
+};
+
+function injectIcons() {
+    document.querySelectorAll('.sun-svg').forEach(el => el.innerHTML = ICONS.sun);
+    document.querySelectorAll('.moon-svg').forEach(el => el.innerHTML = ICONS.moon);
+    document.querySelectorAll('.system-svg').forEach(el => el.innerHTML = ICONS.system);
+}
 const firebaseConfig = { projectId: "test-76cdd" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -21,10 +32,53 @@ if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    injectIcons();
     initNav();
+    initTheme();
     loadReport();
-    loadSidebar();
 });
+
+function initTheme() {
+    const toggle = document.getElementById('theme-menu-toggle');
+    const dropdown = document.getElementById('theme-dropdown');
+    const opts = document.querySelectorAll('.theme-opt');
+    const triggerIcon = toggle.querySelector('.theme-trigger-icon');
+
+    const updateTriggerIcon = (mode) => {
+        const activeOpt = document.querySelector(`.theme-opt[data-theme="${mode}"]`);
+        if (activeOpt && triggerIcon) {
+            const iconClone = activeOpt.querySelector('.opt-icon').cloneNode(true);
+            triggerIcon.innerHTML = '';
+            triggerIcon.appendChild(iconClone);
+        }
+    };
+
+    const setTheme = (mode) => {
+        let theme = mode;
+        if (mode === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme-mode', mode);
+        updateTriggerIcon(mode);
+        opts.forEach(btn => btn.classList.toggle('active', btn.dataset.theme === mode));
+    };
+
+    toggle.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('hidden');
+    };
+
+    opts.forEach(opt => {
+        opt.onclick = () => {
+            setTheme(opt.dataset.theme);
+            dropdown.classList.add('hidden');
+        };
+    });
+
+    document.addEventListener('click', () => dropdown.classList.add('hidden'));
+    
+    const currentMode = localStorage.getItem('theme-mode') || 'system';
+    setTheme(currentMode);
+}
 
 function initNav() {
     document.querySelectorAll('#report-type-nav .nav-btn').forEach(btn => {
@@ -39,133 +93,20 @@ async function loadReport() {
     try {
         const doc = await db.collection("reports").doc(type).collection(country).doc(reportId).get();
         if (!doc.exists) {
-            document.getElementById('report-main').innerHTML = '<div style="padding: 10rem 2rem; text-align:center;"><h2>Report Not Found</h2><p>This report might not have been generated yet.</p><br><a href="../" class="date-badge" style="text-decoration:none;">Back to Home</a></div>';
+            document.body.innerHTML = '<div style="padding: 5rem; text-align:center;"><h2>Report Not Found</h2><a href="../">Back to Home</a></div>';
             return;
         }
 
         const data = doc.data();
         renderHero(data);
-        renderLeadSummary(data.leadSummary);
         renderChart(data.items);
         renderDepthAnalysis(data.items.slice(0, 2));
         renderSimpleAnalysis(data.items.slice(2, 5));
+        loadHistory();
     } catch (e) {
         console.error("Report load error:", e);
     }
 }
-
-function renderLeadSummary(summary) {
-    const container = document.getElementById('lead-summary');
-    if (!container || !summary) {
-        if (container) container.style.display = 'none';
-        return;
-    }
-    container.style.display = 'block';
-    container.innerHTML = summary.split('\n\n').map(p => `<p>${p}</p>`).join('');
-}
-
-async function loadSidebar() {
-    const types = ['weekly', 'monthly', 'yearly'];
-    const now = new Date();
-    
-    for (const t of types) {
-        try {
-            const snapshot = await db.collection("reports").doc(t).collection(country)
-                .orderBy("lastUpdated", "desc")
-                .limit(20)
-                .get();
-            
-            const container = document.getElementById(`sidebar-${t}`);
-            if (!container) continue;
-
-            let html = '';
-            let count = 0;
-            const existingIds = new Set();
-            
-            // Calculate current period ID
-            let currentPeriodId = '';
-            let currentDisplayTitle = '';
-            if (t === 'weekly') {
-                const start = new Date(now);
-                start.setDate(now.getDate() - now.getDay());
-                const end = new Date(start);
-                end.setDate(start.getDate() + 6);
-                currentPeriodId = `${start.toISOString().split('T')[0]}_${end.toISOString().split('T')[0]}`;
-                currentDisplayTitle = `${start.getMonth()+1}/${start.getDate()} - ${end.getMonth()+1}/${end.getDate()}`;
-            } else if (t === 'monthly') {
-                currentPeriodId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                currentDisplayTitle = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}`;
-            } else if (t === 'yearly') {
-                currentPeriodId = `${now.getFullYear()}`;
-                currentDisplayTitle = `${now.getFullYear()}`;
-            }
-
-            // Check if current exists
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                existingIds.add(doc.id);
-                if (data.periodId) existingIds.add(data.periodId);
-            });
-
-            // Prepend "Collecting" if missing
-            if (!existingIds.has(currentPeriodId) && !existingIds.has('latest')) {
-                html += `<div class="history-sidebar-item pending">
-                    ${currentDisplayTitle} <br>
-                    <span style="font-size:0.7rem; opacity:0.6;">트렌드 집계 중...</span>
-                </div>`;
-            }
-
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const isCurrent = doc.id === reportId;
-                const hiddenClass = count >= 3 ? 'hidden' : '';
-                const activeClass = isCurrent ? 'active' : '';
-                
-                let displayTitle = data.dateRange || data.reportTitle;
-                if (t === 'monthly' && data.lastUpdated) {
-                    const d = data.lastUpdated.toDate();
-                    displayTitle = `${d.getFullYear()} / ${String(d.getMonth() + 1).padStart(2, '0')}`;
-                } else if (t === 'yearly' && data.lastUpdated) {
-                    displayTitle = `${data.lastUpdated.toDate().getFullYear()} Year`;
-                }
-
-                html += `
-                <div class="history-sidebar-item ${activeClass} ${hiddenClass}" onclick="navigateTo('${t}', '${doc.id}')">
-                    ${displayTitle}
-                </div>`;
-                count++;
-            });
-
-            container.innerHTML = html || '<p style="font-size:0.8rem; color:var(--text-muted); padding:1.2rem; opacity:0.6;">리포트 준비 중...</p>';
-            
-            const moreBtn = container.nextElementSibling;
-            if (count <= 3 && moreBtn) moreBtn.style.display = 'none';
-            else if (moreBtn) moreBtn.style.display = 'flex';
-
-        } catch (e) { console.warn(`Sidebar load failed for ${t}`, e); }
-    }
-}
-
-window.navigateTo = (t, id) => {
-    window.location.href = `?type=${t}&country=${country}&id=${id}`;
-};
-
-window.toggleCategory = (t) => {
-    const container = document.getElementById(`sidebar-${t}`);
-    const items = container.querySelectorAll('.history-sidebar-item.hidden');
-    const btn = container.nextElementSibling;
-    const btnSpan = btn.querySelector('span');
-    
-    if (items.length > 0) {
-        items.forEach(el => {
-            el.classList.remove('hidden');
-            el.style.animation = 'fadeInUp 0.4s ease forwards';
-        });
-        if (btnSpan) btnSpan.textContent = '−';
-    } else {
-        loadSidebar(); // Reset
-    }
-};
 
 function renderHero(data) {
     document.getElementById('report-title-text').textContent = data.reportTitle || `${data.type.toUpperCase()} Trend Report`;
@@ -201,7 +142,7 @@ function renderDepthAnalysis(items) {
         if (item.videoLinks) {
             videoGrid.innerHTML = item.videoLinks.slice(0, 2).map(v => `
                 <div class="video-item">
-                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id || v.url?.split('v=')[1]}" frameborder="0" allowfullscreen></iframe>
+                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe>
                 </div>
             `).join('');
         }
@@ -220,3 +161,62 @@ function renderSimpleAnalysis(items) {
         </div>
     `).join('');
 }
+
+async function loadHistory() {
+    const types = ['weekly', 'monthly', 'yearly'];
+    
+    for (const t of types) {
+        const container = document.getElementById(`sidebar-${t}`);
+        if (!container) continue;
+        
+        try {
+            const snapshot = await db.collection("reports").doc(t).collection(country)
+                .orderBy("lastUpdated", "desc")
+                .limit(10)
+                .get();
+                
+            container.innerHTML = '';
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const isActive = doc.id === reportId && t === type;
+                
+                const item = document.createElement('div');
+                item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
+                item.innerHTML = `
+                    <div class="item-date">${data.dateRange || data.reportTitle}</div>
+                    <div class="item-meta">${t.toUpperCase()}</div>
+                `;
+                item.onclick = () => {
+                    window.location.href = `?type=${t}&country=${country}&id=${doc.id}`;
+                };
+                container.appendChild(item);
+            });
+            
+            if (snapshot.empty) {
+                container.innerHTML = '<div class="history-sidebar-item pending">Coming Soon...</div>';
+            }
+        } catch (e) {
+            console.warn(`History load failed for ${t}:`, e);
+        }
+    }
+}
+
+function toggleCategory(cat) {
+    const container = document.getElementById(`sidebar-${cat}`);
+    if (!container) return;
+    
+    const isExpanded = container.classList.toggle('expanded');
+    const btn = container.parentElement.querySelector('.more-btn span');
+    if (btn) btn.textContent = isExpanded ? '-' : '+';
+}
+
+// Add CSS for expansion
+const style = document.createElement('style');
+style.textContent = `
+    .history-list { max-height: 220px; overflow: hidden; transition: max-height 0.5s ease; }
+    .history-list.expanded { max-height: 1000px; }
+    .history-sidebar-item { margin-bottom: 0.5rem; }
+    .item-date { font-weight: 700; font-size: 0.85rem; }
+    .item-meta { font-size: 0.65rem; opacity: 0.7; text-transform: uppercase; margin-top: 0.2rem; }
+`;
+document.head.appendChild(style);

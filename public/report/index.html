@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function() {
+          const mode = localStorage.getItem('theme-mode') || 'system';
+          let theme = mode;
+          if (mode === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <title>Trend Report | GlobalTrendUp</title>
     <meta name="description" content="Global real-time trend reports and AI-powered deep analysis.">
     <link rel="stylesheet" href="../style.css">
@@ -19,6 +27,27 @@
                 <button class="nav-btn" data-type="monthly">Monthly</button>
                 <button class="nav-btn" data-type="yearly">Yearly</button>
             </nav>
+            <div class="header-right">
+                <div class="theme-menu">
+                    <button id="theme-menu-toggle" class="theme-menu-btn" aria-label="Select Theme">
+                        <span class="theme-trigger-icon"></span>
+                    </button>
+                    <div id="theme-dropdown" class="theme-dropdown hidden">
+                        <button class="theme-opt" data-theme="light">
+                            <span class="opt-icon sun-svg"></span>
+                            <span class="opt-label">Light</span>
+                        </button>
+                        <button class="theme-opt" data-theme="dark">
+                            <span class="opt-icon moon-svg"></span>
+                            <span class="opt-label">Dark</span>
+                        </button>
+                        <button class="theme-opt" data-theme="system">
+                            <span class="opt-icon system-svg"></span>
+                            <span class="opt-label">System</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
