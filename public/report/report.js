@@ -174,29 +174,27 @@ function renderTrends(items) {
                 </div>
             </div>
 
-            ${isFeatured ? `
-                <div class="card-supplementary">
-                    ${item.newsLinks ? `
-                        <div class="news-section">
-                            <h4>Related News</h4>
-                            <div class="news-list">
-                                ${item.newsLinks.slice(0, 3).map(n => `
-                                    <a href="${n.url}" target="_blank" class="news-link">${n.title}</a>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    ${item.videoLinks ? `
-                        <div class="video-grid">
-                            ${item.videoLinks.filter(v => v.id).slice(0, 2).map(v => `
-                                <div class="video-item">
-                                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe>
-                                </div>
+            <div class="card-supplementary">
+                ${item.newsLinks ? `
+                    <div class="news-section">
+                        <h4>Related News</h4>
+                        <div class="news-list">
+                            ${item.newsLinks.slice(0, 3).map(n => `
+                                <a href="${n.url}" target="_blank" class="news-link">${n.title}</a>
                             `).join('')}
                         </div>
-                    ` : ''}
-                </div>
-            ` : ''}
+                    </div>
+                ` : ''}
+                ${isFeatured && item.videoLinks ? `
+                    <div class="video-grid">
+                        ${item.videoLinks.filter(v => v.id).slice(0, 2).map(v => `
+                            <div class="video-item">
+                                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
         `;
         
         container.appendChild(card);
