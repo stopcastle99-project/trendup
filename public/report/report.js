@@ -105,6 +105,23 @@ async function loadReport() {
         const docRef = db.collection("reports").doc(type).collection(country).doc(reportId);
         const doc = await docRef.get();
         
+        const now = new Date();
+        const currentMonth = now.getMonth() + 1;
+        const currentYear = now.getFullYear();
+        const isLastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
+        
+        // Gating logic: Show placeholder for 'latest' Monthly/Yearly if not finalizing period yet
+        if (reportId === 'latest') {
+            if (type === 'monthly' && !isLastDayOfMonth) {
+                renderPlaceholder(`${currentMonth}월 트렌드 집계 중`);
+                return;
+            }
+            if (type === 'yearly' && !(now.getMonth() === 11 && now.getDate() === 31)) {
+                renderPlaceholder(`${currentYear}년 트렌드 집계 중`);
+                return;
+            }
+        }
+
         if (!doc.exists) {
             renderPlaceholder();
             return;
@@ -120,16 +137,18 @@ async function loadReport() {
     }
 }
 
-function renderPlaceholder() {
+function renderPlaceholder(customMessage) {
     const main = document.getElementById('report-main');
+    const displayMsg = customMessage || `${country} 트렌드 분석 중`;
+    
     main.innerHTML = `
         <div class="aggregating-placeholder">
             <div class="aggregating-icon">📊</div>
             <div class="aggregating-text">
-                <h2>트렌드 데이터 집계 중...</h2>
-                <p>${country} 지역의 ${type.toUpperCase()} 리포트를 생성하고 있습니다. 잠시만 기다려 주세요.</p>
+                <h2>${displayMsg}</h2>
+                <p>현재 ${country} 지역의 ${type.toUpperCase()} 데이터를 정밀 분석하고 있습니다. 잠시만 기다려 주세요.</p>
             </div>
-            <a href="../" class="period-btn active" style="padding: 1rem 2rem; display: inline-block;">메인으로 돌아가기</a>
+            <a href="../" class="period-btn active" style="padding: 1.2rem 2.5rem; display: inline-block; border-radius: 100px; margin-top: 1rem;">메인으로 돌아가기</a>
         </div>
     `;
 }
