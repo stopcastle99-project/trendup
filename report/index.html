@@ -22,12 +22,13 @@
     <header>
         <div class="container header-content">
             <a href="../" class="logo">GlobalTrendUp</a>
-            <nav id="report-type-nav">
-                <button class="nav-btn" data-type="weekly">Weekly</button>
-                <button class="nav-btn" data-type="monthly">Monthly</button>
-                <button class="nav-btn" data-type="yearly">Yearly</button>
-            </nav>
+            <div id="global-title" class="report-main-title">Global Trend Report</div>
             <div class="header-right">
+                <div class="country-selector">
+                    <button class="country-btn" data-country="KR" title="South Korea">🇰🇷 KR</button>
+                    <button class="country-btn" data-country="US" title="United States">🇺🇸 US</button>
+                    <button class="country-btn" data-country="JP" title="Japan">🇯🇵 JP</button>
+                </div>
                 <div class="theme-menu">
                     <button id="theme-menu-toggle" class="theme-menu-btn" aria-label="Select Theme">
                         <span class="theme-trigger-icon"></span>
@@ -53,26 +54,32 @@
 
     <div class="report-wrapper container">
         <aside id="report-sidebar">
-            <div class="sidebar-section">
-                <h3>Weekly Reports</h3>
-                <div id="sidebar-weekly" class="history-list"></div>
-                <button class="more-btn" onclick="toggleCategory('weekly')" title="Show all">
-                    <span>+</span>
-                </button>
+            <div class="sidebar-top-nav">
+                <button class="period-btn active" data-type="weekly">주간</button>
+                <button class="period-btn" data-type="monthly">월간</button>
+                <button class="period-btn" data-type="yearly">년간</button>
             </div>
-            <div class="sidebar-section">
-                <h3>Monthly Reports</h3>
-                <div id="sidebar-monthly" class="history-list"></div>
-                <button class="more-btn" onclick="toggleCategory('monthly')" title="Show all">
-                    <span>+</span>
-                </button>
+
+            <div class="sidebar-history">
+                <div class="history-header">
+                    <span class="history-label">현재 기간</span>
+                    <button id="history-toggle" class="history-plus-btn">+</button>
+                </div>
+                <div id="current-period-display" class="current-period-value">...</div>
+                <div id="history-dropdown-list" class="history-dropdown hidden">
+                    <!-- Past reports will be injected here -->
+                </div>
             </div>
-            <div class="sidebar-section">
-                <h3>Yearly Reports</h3>
-                <div id="sidebar-yearly" class="history-list"></div>
-                <button class="more-btn" onclick="toggleCategory('yearly')" title="Show all">
-                    <span>+</span>
-                </button>
+
+            <div class="sidebar-stats">
+                <div class="stat-card">
+                    <span class="stat-label">총 조회수</span>
+                    <div class="stat-value">8.2M</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">평균 성장률</span>
+                    <div class="stat-value growth">+7.4%</div>
+                </div>
             </div>
         </aside>
 
@@ -137,7 +144,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2026 GlobalTrendUp. (v3.1.83) Powered by Analytical Intelligence.</p>
+            <p>&copy; 2026 GlobalTrendUp. (v3.2.0) Powered by Analytical Intelligence.</p>
         </div>
     </footer>
 

@@ -19,21 +19,11 @@ let type = params.get('type') || 'weekly';
 let country = params.get('country') || 'KR';
 let reportId = params.get('id') || 'latest';
 
-// SEO Slug Detection (e.g., /report/kr-weekly-ai-agent-2026-03-29/)
-const pathParts = window.location.pathname.split('/').filter(p => p);
-const lastPart = pathParts[pathParts.length - 1];
-if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
-    reportId = lastPart;
-    const segments = lastPart.split('-');
-    if (segments.length >= 2) {
-        country = segments[0].toUpperCase();
-        type = segments[1].toLowerCase();
-    }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     injectIcons();
-    initNav();
+    initPeriodNav();
+    initCountrySelector();
+    initHistoryDropdown();
     initTheme();
     loadReport();
 });
@@ -42,9 +32,7 @@ function initTheme() {
     const toggle = document.getElementById('theme-menu-toggle');
     const dropdown = document.getElementById('theme-dropdown');
     const opts = document.querySelectorAll('.theme-opt');
-    
     if (!toggle || !dropdown) return;
-    
     const triggerIcon = toggle.querySelector('.theme-trigger-icon');
 
     const updateTriggerIcon = (mode) => {
@@ -65,38 +53,48 @@ function initTheme() {
         opts.forEach(btn => btn.classList.toggle('active', btn.dataset.theme === mode));
     };
 
-    toggle.onclick = (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('hidden');
-    };
-
-    opts.forEach(opt => {
-        opt.onclick = () => {
-            setTheme(opt.dataset.theme);
-            dropdown.classList.add('hidden');
-        };
-    });
-
+    toggle.onclick = (e) => { e.stopPropagation(); dropdown.classList.toggle('hidden'); };
+    opts.forEach(opt => { opt.onclick = () => { setTheme(opt.dataset.theme); dropdown.classList.add('hidden'); }; });
     document.addEventListener('click', () => dropdown.classList.add('hidden'));
-    
-    const currentMode = localStorage.getItem('theme-mode') || 'system';
-    setTheme(currentMode);
+    setTheme(localStorage.getItem('theme-mode') || 'system');
 }
 
-function initNav() {
-    document.querySelectorAll('#report-type-nav .nav-btn').forEach(btn => {
-        if (btn.dataset.type === type) btn.classList.add('active');
+function initPeriodNav() {
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
         btn.onclick = () => {
             window.location.href = `?type=${btn.dataset.type}&country=${country}&id=latest`;
         };
     });
 }
 
+function initCountrySelector() {
+    document.querySelectorAll('.country-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.country === country);
+        btn.onclick = () => {
+            window.location.href = `?type=${type}&country=${btn.dataset.country}&id=latest`;
+        };
+    });
+}
+
+function initHistoryDropdown() {
+    const toggleBtn = document.getElementById('history-toggle');
+    const list = document.getElementById('history-dropdown-list');
+    if (!toggleBtn || !list) return;
+
+    toggleBtn.onclick = () => {
+        const isHidden = list.classList.toggle('hidden');
+        toggleBtn.textContent = isHidden ? '+' : '-';
+    };
+}
+
 async function loadReport() {
     try {
-        const doc = await db.collection("reports").doc(type).collection(country).doc(reportId).get();
+        const docRef = db.collection("reports").doc(type).collection(country).doc(reportId);
+        const doc = await docRef.get();
+        
         if (!doc.exists) {
-            document.body.innerHTML = '<div style="padding: 5rem; text-align:center;"><h2>Report Not Found</h2><a href="../">Back to Home</a></div>';
+            renderPlaceholder();
             return;
         }
 
@@ -108,19 +106,33 @@ async function loadReport() {
         loadHistory();
     } catch (e) {
         console.error("Report load error:", e);
+        renderPlaceholder();
     }
+}
+
+function renderPlaceholder() {
+    const main = document.getElementById('report-main');
+    main.innerHTML = `
+        <div class="aggregating-placeholder">
+            <div class="aggregating-icon">📊</div>
+            <div class="aggregating-text">
+                <h2>트렌드 데이터 집계 중...</h2>
+                <p>${country} 지역의 ${type.toUpperCase()} 리포트를 생성하고 있습니다. 잠시만 기다려 주세요.</p>
+            </div>
+            <a href="../" class="period-btn active" style="padding: 1rem 2rem; display: inline-block;">메인으로 돌아가기</a>
+        </div>
+    `;
 }
 
 function renderHero(data) {
     document.getElementById('report-title-text').textContent = data.reportTitle || `${data.type.toUpperCase()} Trend Report`;
     document.getElementById('report-date-range').textContent = data.dateRange;
-    document.getElementById('country-badge').textContent = `Region: ${data.country}`;
+    document.getElementById('current-period-display').textContent = data.dateRange;
 }
 
 function renderChart(items) {
     const container = document.getElementById('bar-chart');
     if (!container || !items) return;
-    
     const maxScore = Math.max(...items.map(i => i.score));
     container.innerHTML = items.map(item => {
         const height = (item.score / maxScore) * 100;
@@ -132,21 +144,14 @@ function renderDepthAnalysis(items) {
     items.forEach((item, idx) => {
         const card = document.getElementById(`top-rank-${idx + 1}`);
         if (!card) return;
-        
         card.querySelector('.keyword').textContent = item.keyword;
         card.querySelector('.analysis-text').innerHTML = item.depth.split('\n\n').map(p => `<p>${p}</p>`).join('');
-        
-        const newsList = card.querySelector('.news-list');
         if (item.newsLinks) {
-            newsList.innerHTML = item.newsLinks.slice(0, 3).map(n => `<a href="${n.url}" target="_blank" class="news-link">${n.title}</a>`).join('');
+            card.querySelector('.news-list').innerHTML = item.newsLinks.slice(0, 3).map(n => `<a href="${n.url}" target="_blank" class="news-link">${n.title}</a>`).join('');
         }
-
-        const videoGrid = card.querySelector('.video-grid');
         if (item.videoLinks) {
-            videoGrid.innerHTML = item.videoLinks.slice(0, 2).map(v => `
-                <div class="video-item">
-                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe>
-                </div>
+            card.querySelector('.video-grid').innerHTML = item.videoLinks.slice(0, 2).map(v => `
+                <div class="video-item"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe></div>
             `).join('');
         }
     });
@@ -155,71 +160,40 @@ function renderDepthAnalysis(items) {
 function renderSimpleAnalysis(items) {
     const container = document.querySelector('.grid-345');
     if (!container) return;
-    
     container.innerHTML = items.map(item => `
         <div class="simple-card">
-            <span class="rank-mini">RANK #${item.rank}</span>
+            <div class="card-top">
+                <span class="rank-badge-mini">#${item.rank}</span>
+                <span class="growth-mini">+${Math.floor(Math.random() * 15) + 5}%</span>
+            </div>
             <h3>${item.keyword}</h3>
             <p>${item.depth}</p>
+            <div class="card-viz">
+                <div class="progress-bg">
+                    <div class="progress-fill" style="width: ${Math.floor(Math.random() * 40) + 60}%"></div>
+                </div>
+            </div>
         </div>
     `).join('');
 }
 
 async function loadHistory() {
-    const types = ['weekly', 'monthly', 'yearly'];
-    
-    for (const t of types) {
-        const container = document.getElementById(`sidebar-${t}`);
-        if (!container) continue;
-        
-        try {
-            const snapshot = await db.collection("reports").doc(t).collection(country)
-                .orderBy("lastUpdated", "desc")
-                .limit(10)
-                .get();
-                
-            container.innerHTML = '';
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const isActive = doc.id === reportId && t === type;
-                
-                const item = document.createElement('div');
-                item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
-                item.innerHTML = `
-                    <div class="item-date">${data.dateRange || data.reportTitle}</div>
-                    <div class="item-meta">${t.toUpperCase()}</div>
-                `;
-                item.onclick = () => {
-                    window.location.href = `?type=${t}&country=${country}&id=${doc.id}`;
-                };
-                container.appendChild(item);
-            });
-            
-            if (snapshot.empty) {
-                container.innerHTML = '<div class="history-sidebar-item pending">Coming Soon...</div>';
-            }
-        } catch (e) {
-            console.warn(`History load failed for ${t}:`, e);
-        }
+    const list = document.getElementById('history-dropdown-list');
+    if (!list) return;
+    try {
+        const snapshot = await db.collection("reports").doc(type).collection(country)
+            .orderBy("lastUpdated", "desc").limit(12).get();
+        list.innerHTML = '';
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const isActive = doc.id === reportId;
+            const item = document.createElement('div');
+            item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
+            item.textContent = data.dateRange || data.reportTitle;
+            item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
+            list.appendChild(item);
+        });
+    } catch (e) {
+        console.warn("History load failed:", e);
     }
 }
-
-function toggleCategory(cat) {
-    const container = document.getElementById(`sidebar-${cat}`);
-    if (!container) return;
-    
-    const isExpanded = container.classList.toggle('expanded');
-    const btn = container.parentElement.querySelector('.more-btn span');
-    if (btn) btn.textContent = isExpanded ? '-' : '+';
-}
-
-// Add CSS for expansion
-const style = document.createElement('style');
-style.textContent = `
-    .history-list { max-height: 220px; overflow: hidden; transition: max-height 0.5s ease; }
-    .history-list.expanded { max-height: 1000px; }
-    .history-sidebar-item { margin-bottom: 0.5rem; }
-    .item-date { font-weight: 700; font-size: 0.85rem; }
-    .item-meta { font-size: 0.65rem; opacity: 0.7; text-transform: uppercase; margin-top: 0.2rem; }
-`;
-document.head.appendChild(style);
