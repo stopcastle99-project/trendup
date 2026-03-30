@@ -303,7 +303,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.51");
+    console.log("App Init: v3.1.52");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -346,6 +346,7 @@ class App {
       const app = initializeApp(firebaseConfig);
       this.db = getFirestore(app);
       this.renderNavs();
+      await this.refreshReportCards(); // Ensure cards refresh after DB is ready
       await this.update();
     } catch (e) { console.error("Firebase init failed:", e.message); }
   }
@@ -376,7 +377,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.1.51) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.1.52) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -560,6 +561,7 @@ class App {
     try {
       const t = i18n[this.currentLang] || i18n.en;
       await this.updateGeminiUsage();
+      await this.refreshReportCards(); // Periodic refresh
       const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();
