@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
 const ICONS = {
   sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
@@ -514,14 +514,25 @@ class App {
       if (!card) continue;
       
       try {
-        const reportDoc = await getDoc(doc(this.db, "reports", type, this.currentCountry, "latest"));
-        if (reportDoc.exists()) {
-          const data = reportDoc.data();
-          const titleEl = card.querySelector(`[data-report="${type}"]`);
-          const badge = card.querySelector('.coming-soon-badge');
-          
-          if (titleEl && data.dateRange) {
-             titleEl.textContent = data.dateRange; // User requested date as title
+        const q = query(collection(this.db, "reports", type, this.currentCountry), orderBy("lastUpdated", "desc"), limit(2));
+        const snap = await getDocs(q);
+        
+        let reportData = null;
+        let reportId = null;
+        
+        snap.forEach(docSnap => {
+          if (docSnap.id !== 'latest' && !reportData) {
+            reportData = docSnap.data();
+            reportId = docSnap.id;
+          }
+        });
+
+        const titleEl = card.querySelector(`[data-report="${type}"]`);
+        const badge = card.querySelector('.coming-soon-badge');
+
+        if (reportData) {
+          if (titleEl && reportData.dateRange) {
+             titleEl.textContent = reportData.dateRange; // User requested date as title
           }
           if (badge) {
             badge.textContent = t.reports[type]; // Swap original title to badge
@@ -529,9 +540,17 @@ class App {
           }
           
           card.onclick = () => { 
-            const url = data.slug ? `report/${data.slug}/` : `report/?type=${type}&country=${this.currentCountry}&id=latest`;
+            const url = reportData.slug ? `report/${reportData.slug}/` : `report/?type=${type}&country=${this.currentCountry}&id=${reportId}`;
             window.location.href = url;
           };
+        } else {
+          // No archived report found -> Show "Aggregating"
+          if (titleEl) titleEl.textContent = t.reports[type];
+          if (badge) {
+            badge.textContent = t.reports.comingSoon || "데이터 집계 중...";
+            badge.classList.remove('active-report');
+          }
+          card.onclick = null;
         }
       } catch (e) {
         console.warn(`Failed to refresh ${type} report card:`, e);
