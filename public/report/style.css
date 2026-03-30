@@ -108,18 +108,70 @@
 
 .more-btn:hover { background: var(--primary); color: white; }
 
-#report-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem; align-items: center; }
-#report-title-text { font-size: 4rem; font-weight: 900; letter-spacing: -0.06em; line-height: 1.05; margin-bottom: 1rem; }
-.country-pill { display: inline-block; font-size: 0.8rem; font-weight: 800; background: var(--border); padding: 4px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em; }
-
-.chart-card { 
-    background: var(--surface); 
-    border-radius: 24px; 
-    padding: 2.5rem; 
-    border: 1px solid var(--border); 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.02); 
+.report-header-stack {
+    margin-bottom: 2rem;
 }
-.chart-card h3 { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.5rem; letter-spacing: 0.1em; }
+
+.report-meta-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+}
+
+.separator {
+    opacity: 0.3;
+}
+
+.country-pill {
+    color: var(--primary);
+    background: oklch(0.6 0.2 20 / 0.1);
+    padding: 4px 12px;
+    border-radius: 100px;
+}
+
+.editorial-title {
+    font-size: 4.5rem;
+    line-height: 1.1;
+    font-weight: 900;
+    letter-spacing: -0.06em;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+}
+
+.byline {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    border-left: 3px solid var(--primary);
+    padding-left: 1rem;
+}
+
+#report-hero-visual {
+    margin-bottom: 4rem;
+}
+
+.intensity-viz {
+    background: var(--surface);
+    border-radius: 32px;
+    padding: 3rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.03);
+}
+
+.viz-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    text-align: center;
+}
 .bar-chart { 
     height: 140px; 
     display: flex; 
