@@ -137,9 +137,11 @@ function renderPlaceholder() {
 }
 
 function renderHero(data) {
-    document.getElementById('report-title-text').textContent = data.reportTitle || `${data.type.toUpperCase()} Trend Report`;
-    document.getElementById('report-date-range').textContent = data.dateRange || 'Latest Update';
-    document.getElementById('current-period-display').textContent = data.dateRange || 'Current Period';
+    const periodSummary = document.getElementById('current-period-summary');
+    if (periodSummary) periodSummary.textContent = data.dateRange || 'Latest Update';
+    
+    const displayElement = document.getElementById('current-period-display');
+    if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
 }
 
 function renderChart(items) {

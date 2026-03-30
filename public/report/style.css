@@ -229,6 +229,28 @@
     color: var(--text);
 }
 
+.main-period-section {
+    margin-bottom: 3rem;
+}
+
+.main-highlight-card {
+    border-radius: 32px;
+    padding: 2.5rem 3rem;
+    background: linear-gradient(135deg, var(--surface), var(--surface-glass));
+    border: 2px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+}
+
+.main-highlight-card .stat-label {
+    color: var(--primary);
+    font-size: 0.8rem;
+}
+
+.main-highlight-card .stat-value {
+    font-size: 2.2rem;
+    letter-spacing: -0.03em;
+}
+
 .byline {
     font-size: 0.9rem;
     color: var(--text-muted);
