@@ -244,19 +244,35 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 
   bumpVersion() {
     try {
-      const indexHtml = fs.readFileSync("index.html", "utf8");
+      let indexHtml = fs.readFileSync("index.html", "utf8");
       const match = indexHtml.match(/v(\d+)\.(\d+)\.(\d+)/);
       if (match) {
-        const newVer = `v${match[1]}.${match[2]}.${parseInt(match[3]) + 1}`;
-        const updated = indexHtml.replace(/v(\d+)\.(\d+)\.(\d+)/g, newVer);
-        fs.writeFileSync("index.html", updated);
-        fs.writeFileSync("public/index.html", updated);
-        // Sync main assets
-        fs.writeFileSync("public/main.js", fs.readFileSync("main.js", "utf8"));
+        const currentVerInt = parseInt(match[3]);
+        const newVerInt = currentVerInt + 1;
+        const newVer = `v${match[1]}.${match[2]}.${newVerInt}`;
+        
+        indexHtml = indexHtml.replace(/v(\d+)\.(\d+)\.(\d+)/g, newVer);
+        
+        // Update physical JS file reference for aggressive Cloudflare cachebusting
+        indexHtml = indexHtml.replace(`main_v${currentVerInt}.js`, `main_v${newVerInt}.js`);
+        
+        fs.writeFileSync("index.html", indexHtml);
+        fs.writeFileSync("public/index.html", indexHtml);
+        
+        // Sync main assets and create a physically unique JS file
+        const jsCode = fs.readFileSync("main.js", "utf8");
+        fs.writeFileSync("public/main.js", jsCode);
+        fs.writeFileSync(`public/main_v${newVerInt}.js`, jsCode);
+        
+        // Clean up old physically unique JS files
+        try { fs.unlinkSync(`public/main_v${currentVerInt}.js`); } catch(e){}
+        
         fs.writeFileSync("public/style.css", fs.readFileSync("style.css", "utf8"));
         return newVer;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error("Failed to bump version", e);
+    }
     return "v3.1.50";
   }
 
