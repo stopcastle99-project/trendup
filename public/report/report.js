@@ -19,6 +19,18 @@ let type = params.get('type') || 'weekly';
 let country = params.get('country') || 'KR';
 let reportId = params.get('id') || 'latest';
 
+// SEO Slug Detection (e.g., /report/kr-weekly-ai-agent-2026-03-29/)
+const pathParts = window.location.pathname.split('/').filter(p => p);
+const lastPart = pathParts[pathParts.length - 1];
+if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
+    reportId = lastPart;
+    const segments = lastPart.split('-');
+    if (segments.length >= 2) {
+        country = segments[0].toUpperCase();
+        type = segments[1].toLowerCase();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     injectIcons();
     initPeriodNav();
@@ -126,8 +138,8 @@ function renderPlaceholder() {
 
 function renderHero(data) {
     document.getElementById('report-title-text').textContent = data.reportTitle || `${data.type.toUpperCase()} Trend Report`;
-    document.getElementById('report-date-range').textContent = data.dateRange;
-    document.getElementById('current-period-display').textContent = data.dateRange;
+    document.getElementById('report-date-range').textContent = data.dateRange || 'Latest Update';
+    document.getElementById('current-period-display').textContent = data.dateRange || 'Current Period';
 }
 
 function renderChart(items) {
@@ -145,12 +157,17 @@ function renderDepthAnalysis(items) {
         const card = document.getElementById(`top-rank-${idx + 1}`);
         if (!card) return;
         card.querySelector('.keyword').textContent = item.keyword;
-        card.querySelector('.analysis-text').innerHTML = item.depth.split('\n\n').map(p => `<p>${p}</p>`).join('');
-        if (item.newsLinks) {
-            card.querySelector('.news-list').innerHTML = item.newsLinks.slice(0, 3).map(n => `<a href="${n.url}" target="_blank" class="news-link">${n.title}</a>`).join('');
+        card.querySelector('.analysis-text').innerHTML = (item.depth || '').split('\n\n').map(p => `<p>${p}</p>`).join('');
+        
+        const newsList = card.querySelector('.news-list');
+        if (newsList && item.newsLinks) {
+            newsList.innerHTML = `<h4 class="sidebar-stat-label">Related News</h4>` + 
+                item.newsLinks.slice(0, 3).map(n => `<a href="${n.url}" target="_blank" class="news-link">${n.title}</a>`).join('');
         }
-        if (item.videoLinks) {
-            card.querySelector('.video-grid').innerHTML = item.videoLinks.slice(0, 2).map(v => `
+
+        const videoGrid = card.querySelector('.video-grid');
+        if (videoGrid && item.videoLinks) {
+            videoGrid.innerHTML = item.videoLinks.filter(v => v.id).slice(0, 2).map(v => `
                 <div class="video-item"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe></div>
             `).join('');
         }
@@ -167,7 +184,7 @@ function renderSimpleAnalysis(items) {
                 <span class="growth-mini">+${Math.floor(Math.random() * 15) + 5}%</span>
             </div>
             <h3>${item.keyword}</h3>
-            <p>${item.depth}</p>
+            <div class="analysis-text">${(item.depth || '').split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>
             <div class="card-viz">
                 <div class="progress-bg">
                     <div class="progress-fill" style="width: ${Math.floor(Math.random() * 40) + 60}%"></div>
