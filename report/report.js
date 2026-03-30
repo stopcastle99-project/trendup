@@ -42,6 +42,9 @@ function initTheme() {
     const toggle = document.getElementById('theme-menu-toggle');
     const dropdown = document.getElementById('theme-dropdown');
     const opts = document.querySelectorAll('.theme-opt');
+    
+    if (!toggle || !dropdown) return;
+    
     const triggerIcon = toggle.querySelector('.theme-trigger-icon');
 
     const updateTriggerIcon = (mode) => {
