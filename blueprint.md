@@ -1,5 +1,12 @@
 # **TrendUp: Real-time Global Trends Dashboard**
 
+## Phase 47: Synchronization & Local Preview Fix (v3.1.80)
+- **Bug Fix:** Resolved the "blank screen" issue by ensuring versioned JS files (`main_v*.js`) are synced across all environments.
+- **Local Dev Alignment:** Updated `.idx/dev.nix` to serve from the `public/` directory, matching Firebase Hosting behavior.
+- **Robust Versioning:** Modified `update-trends.js` to synchronize versioned assets to both root and `public/` directories for dual compatibility.
+- **Immediate Fix:** Manually restored `main_v80.js` in the root and synchronized with versioned `main.js`.
+- **Version Bump:** Synchronized application version to **v3.1.80**.
+
 ## Phase 46: Analytical Reports & Premium UI (v3.1.51)
 - **Feature Addition:** Created `/report` directory and implemented automated trend history archiving.
 - **Data Aggregation:** Deployed Top 5 scoring logic for Weekly, Monthly, and Yearly reports based on rank intensity.

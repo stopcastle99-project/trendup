@@ -263,9 +263,11 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
         const jsCode = fs.readFileSync("main.js", "utf8");
         fs.writeFileSync("public/main.js", jsCode);
         fs.writeFileSync(`public/main_v${newVerInt}.js`, jsCode);
+        fs.writeFileSync(`main_v${newVerInt}.js`, jsCode); // Also Sync to Root for local Dev
         
         // Clean up old physically unique JS files
         try { fs.unlinkSync(`public/main_v${currentVerInt}.js`); } catch(e){}
+        try { fs.unlinkSync(`main_v${currentVerInt}.js`); } catch(e){} // Also clean in Root
         
         fs.writeFileSync("public/style.css", fs.readFileSync("style.css", "utf8"));
         return newVer;
