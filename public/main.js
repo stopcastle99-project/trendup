@@ -540,7 +540,7 @@ class App {
           }
           
           card.onclick = () => { 
-            const url = reportData.slug ? `report/${reportData.slug}/` : `report/?type=${type}&country=${this.currentCountry}&id=${reportId}`;
+            const url = `report/?type=${type}&country=${this.currentCountry}&id=${reportId}`;
             window.location.href = url;
           };
         } else {
