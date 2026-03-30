@@ -1,15 +1,41 @@
-// Trend Report Detail Logic - v3.3.3 (All Ranks News Enabled)
+// Trend Report Detail Logic - v3.3.4 (Multi-Language Support)
 const ICONS = {
   sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
   moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20" opacity="0.5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"></path></svg>`
 };
 
-function injectIcons() {
-    document.querySelectorAll('.sun-svg').forEach(el => el.innerHTML = ICONS.sun);
-    document.querySelectorAll('.moon-svg').forEach(el => el.innerHTML = ICONS.moon);
-    document.querySelectorAll('.system-svg').forEach(el => el.innerHTML = ICONS.system);
-}
+const REPORT_I18N = {
+    ko: {
+        title: "실시간 글로벌 트렌드 리포트",
+        weekly: "주간", monthly: "월간", yearly: "년간",
+        period_summary: "집계 기간 : ", current_period: "현재 기간",
+        history: "과거 내역", related_news: "관련 뉴스", related_videos: "관련 영상",
+        aggregating: "트렌드 집계 중", back_to_main: "메인으로 돌아가기",
+        wait: "현재 데이터를 정밀 분석하고 있습니다. 잠시만 기다려 주세요.",
+        month: (m) => `${m}월`, year: (y) => `${y}년`
+    },
+    ja: {
+        title: "リアルタイム グローバルトレンドレポート",
+        weekly: "週間", monthly: "月間", yearly: "年間",
+        period_summary: "集計期間 : ", current_period: "現在の期間",
+        history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
+        aggregating: "トレンド集計中", back_to_main: "メインに戻る",
+        wait: "現在、データを精密に分析しています。少々お待ちください。",
+        month: (m) => `${m}月`, year: (y) => `${y}年`
+    },
+    en: {
+        title: "Global Trend Report",
+        weekly: "Weekly", monthly: "Monthly", yearly: "Yearly",
+        period_summary: "Aggregation Period : ", current_period: "Current Period",
+        history: "Past History", related_news: "Related News", related_videos: "Related Videos",
+        aggregating: "Trend Aggregating", back_to_main: "Back to Main",
+        wait: "We are carefully analyzing the current data. Please wait a moment.",
+        month: (m) => { const mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return mon[m-1]; },
+        year: (y) => `${y}`
+    }
+};
+
 const firebaseConfig = { projectId: "test-76cdd" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -18,8 +44,9 @@ const params = new URLSearchParams(window.location.search);
 let type = params.get('type') || 'weekly';
 let country = params.get('country') || 'KR';
 let reportId = params.get('id') || 'latest';
+let lang = localStorage.getItem('lang') || params.get('lang') || (country === 'KR' ? 'ko' : country === 'JP' ? 'ja' : 'en');
 
-// SEO Slug Detection (e.g., /report/kr-weekly-ai-agent-2026-03-29/)
+// SEO Slug Detection
 const pathParts = window.location.pathname.split('/').filter(p => p);
 const lastPart = pathParts[pathParts.length - 1];
 if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
@@ -32,6 +59,7 @@ if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    applyTranslations();
     injectIcons();
     initPeriodNav();
     initCountrySelector();
@@ -39,6 +67,24 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     loadReport();
 });
+
+function applyTranslations() {
+    const t = REPORT_I18N[lang] || REPORT_I18N.en;
+    document.documentElement.setAttribute('lang', lang);
+    const titleEl = document.getElementById('global-title');
+    if (titleEl) titleEl.textContent = t.title;
+    
+    // Sidebar Labels
+    const sidebarLabels = document.querySelectorAll('.sidebar-label');
+    if (sidebarLabels[0]) sidebarLabels[0].textContent = t.current_period;
+    if (sidebarLabels[1]) sidebarLabels[1].textContent = t.history;
+    
+    // Period Buttons
+    document.querySelectorAll('[data-type]').forEach(btn => {
+        const type = btn.getAttribute('data-type');
+        if (t[type]) btn.textContent = t[type];
+    });
+}
 
 function initTheme() {
     const toggle = document.getElementById('theme-menu-toggle');
@@ -100,10 +146,17 @@ function initHistoryDropdown() {
     };
 }
 
+function injectIcons() {
+    document.querySelectorAll('.sun-svg').forEach(el => el.innerHTML = ICONS.sun);
+    document.querySelectorAll('.moon-svg').forEach(el => el.innerHTML = ICONS.moon);
+    document.querySelectorAll('.system-svg').forEach(el => el.innerHTML = ICONS.system);
+}
+
 async function loadReport() {
     try {
         const docRef = db.collection("reports").doc(type).collection(country).doc(reportId);
         const doc = await docRef.get();
+        const t = REPORT_I18N[lang] || REPORT_I18N.en;
         
         const now = new Date();
         const currentMonth = now.getMonth() + 1;
@@ -113,11 +166,11 @@ async function loadReport() {
         // Gating logic: Show placeholder for 'latest' Monthly/Yearly if not finalizing period yet
         if (reportId === 'latest') {
             if (type === 'monthly' && !isLastDayOfMonth) {
-                renderPlaceholder(`${currentMonth}월 트렌드 집계 중`);
+                renderPlaceholder(`${t.month(currentMonth)} ${t.aggregating}`);
                 return;
             }
             if (type === 'yearly' && !(now.getMonth() === 11 && now.getDate() === 31)) {
-                renderPlaceholder(`${currentYear}년 트렌드 집계 중`);
+                renderPlaceholder(`${t.year(currentYear)} ${t.aggregating}`);
                 return;
             }
         }
@@ -139,23 +192,25 @@ async function loadReport() {
 
 function renderPlaceholder(customMessage) {
     const main = document.getElementById('report-main');
-    const displayMsg = customMessage || `${country} 트렌드 분석 중`;
+    const t = REPORT_I18N[lang] || REPORT_I18N.en;
+    const displayMsg = customMessage || `${t.aggregating}...`;
     
     main.innerHTML = `
         <div class="aggregating-placeholder">
             <div class="aggregating-icon">📊</div>
             <div class="aggregating-text">
                 <h2>${displayMsg}</h2>
-                <p>현재 ${country} 지역의 ${type.toUpperCase()} 데이터를 정밀 분석하고 있습니다. 잠시만 기다려 주세요.</p>
+                <p>${t.wait}</p>
             </div>
-            <a href="../" class="period-btn active" style="padding: 1.2rem 2.5rem; display: inline-block; border-radius: 100px; margin-top: 1rem;">메인으로 돌아가기</a>
+            <a href="../" class="period-btn active" style="padding: 1.2rem 2.5rem; display: inline-block; border-radius: 100px; margin-top: 1rem;">${t.back_to_main}</a>
         </div>
     `;
 }
 
 function renderHero(data) {
+    const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const periodSummary = document.getElementById('current-period-summary');
-    if (periodSummary) periodSummary.textContent = data.dateRange || 'Latest Update';
+    if (periodSummary) periodSummary.textContent = `${t.period_summary} ${data.dateRange || 'Latest Update'}`;
     
     const displayElement = document.getElementById('current-period-display');
     if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
@@ -165,6 +220,7 @@ function renderTrends(items) {
     const container = document.getElementById('trend-list');
     if (!container) return;
     container.innerHTML = '';
+    const t = REPORT_I18N[lang] || REPORT_I18N.en;
 
     items.forEach((item, idx) => {
         const isFeatured = item.rank <= 2;
@@ -173,18 +229,23 @@ function renderTrends(items) {
         const card = document.createElement('div');
         card.className = `trend-card ${featuredClass}`;
         
-        // Growth calculation (simulated for UI consistency if not in data)
         const growth = item.growth || (Math.floor(Math.random() * 15) + 5);
         const gaugeWidth = item.score ? Math.min(100, Math.max(30, item.score / 10)) : (Math.floor(Math.random() * 40) + 60);
 
+        // Localized Content Selection
+        const displayKeyword = (item.translations && item.translations[lang]) || item.keyword;
+        const displayAnalysis = (item.aiReports && item.aiReports[lang]) || item.depth || '';
+
+        const displayGrowth = lang === 'ko' ? `성장률 +${growth}%` : (lang === 'ja' ? `成長率 +${growth}%` : `+${growth}% Growth`);
+        
         card.innerHTML = `
             <div class="card-top">
                 <span class="rank-badge">#${item.rank}</span>
-                <span class="growth-pill">+${growth}% Growth</span>
+                <span class="growth-pill">${displayGrowth}</span>
             </div>
-            <h3>${item.keyword}</h3>
+            <h3>${displayKeyword}</h3>
             <div class="card-analysis">
-                ${(item.depth || '').split('\n\n').map(p => `<p>${p}</p>`).join('')}
+                ${displayAnalysis.split('\n\n').map(p => `<p>${p}</p>`).join('')}
             </div>
             
             <div class="card-viz">
@@ -196,7 +257,7 @@ function renderTrends(items) {
             <div class="card-supplementary">
                 ${item.newsLinks ? `
                     <div class="news-section">
-                        <h4>Related News</h4>
+                        <h4>${t.related_news}</h4>
                         <div class="news-list">
                             ${item.newsLinks.slice(0, 3).map(n => `
                                 <a href="${n.url}" target="_blank" class="news-link">${n.title}</a>
@@ -208,7 +269,7 @@ function renderTrends(items) {
                     <div class="video-grid">
                         ${item.videoLinks.filter(v => v.id).slice(0, 2).map(v => `
                             <div class="video-item">
-                                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe>
+                                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen title="${v.title}"></iframe>
                             </div>
                         `).join('')}
                     </div>
