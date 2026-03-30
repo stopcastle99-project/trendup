@@ -1,3 +1,8 @@
+## Phase 50: Routing Conflict & Layout Recovery (v3.1.83)
+- **Bug Fix:** Resolved the routing conflict where the root `index.html` was hijacking the `/report/` path due to overly broad rewrites in `firebase.json`.
+- **Logic Refinement:** Added folder-specific rewrite for the report directory to ensure the correct HTML entry point is served.
+- **Improved UX:** Confirmed the new sidebar and dark mode are active by correctly serving the `v3.1.83` report page.
+
 ## Phase 49: Stability & Rewrite Fix (v3.1.82)
 - **Bug Fix:** Resolved the 500 status error caused by a rewrite loop in `firebase.json`.
 - **Logic Refinement:** Simplified the SPA rewrite configuration for better reliability across all asset types.

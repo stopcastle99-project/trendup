@@ -43,6 +43,10 @@
         "destination": "/main.js"
       },
       {
+        "source": "/report/**",
+        "destination": "/report/index.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
