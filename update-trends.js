@@ -406,30 +406,6 @@ No Markdown, just JSON. Avoid repetitive AI-style phrasing.`;
     return slug || "report";
   }
 
-  async preRenderReport(reportData, slug) {
-    const baseTemplate = "public/report/index.html";
-    if (!fs.existsSync(baseTemplate)) return;
-    
-    const targetDir = `public/report/${slug}`;
-    if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
-    
-    let html = fs.readFileSync(baseTemplate, "utf8");
-    
-    // SEO Injection
-    const title = `${reportData.reportTitle} | GlobalTrendUp ${reportData.country}`;
-    const description = `Analyze the Top ${reportData.type} trends for ${reportData.country}: ${reportData.items.slice(0, 3).map(i => i.keyword).join(", ")}. ${reportData.items[0].depth.substring(0, 150)}...`;
-    
-    html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
-    html = html.replace(/<meta name="description" content=".*?">/, `<meta name="description" content="${description}">`);
-    
-    // Update relative paths since it's now in a subfolder
-    html = html.replace(/href="\.\.\/style\.css"/, 'href="../../style.css"');
-    html = html.replace(/href="style\.css"/, 'href="../style.css"');
-    html = html.replace(/src="report\.js"/, 'src="../report.js"');
-    
-    fs.writeFileSync(path.join(targetDir, "index.html"), html);
-  }
-
   async generatePeriodReport(country, type, days, isArchival = false) {
     const historyCol = db.collection("trend_history");
     const cutoffDate = new Date();
@@ -488,10 +464,9 @@ No Markdown, just JSON. Avoid repetitive AI-style phrasing.`;
         // Always save to 'latest'
         await db.collection("reports").doc(type).collection(country).doc("latest").set(reportData);
         
-        // Only Archive and Pre-render if it's the period boundary OR forced
+        // Only Archive if it's the period boundary OR forced
         if (isArchival) {
           await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
-          await this.preRenderReport(reportData, reportSlug);
           console.log(`  - ${type.toUpperCase()} archival report snapshot created: ${reportSlug}`);
         } else {
           console.log(`  - ${type.toUpperCase()} live report updated (latest)`);
