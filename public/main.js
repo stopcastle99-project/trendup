@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
 const ICONS = {
   sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
@@ -303,7 +303,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.50");
+    console.log("App Init: v3.1.52");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -346,6 +346,7 @@ class App {
       const app = initializeApp(firebaseConfig);
       this.db = getFirestore(app);
       this.renderNavs();
+      await this.refreshReportCards(); // Ensure cards refresh after DB is ready
       await this.update();
     } catch (e) { console.error("Firebase init failed:", e.message); }
   }
@@ -376,7 +377,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.1.50) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.1.52) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -504,28 +505,56 @@ class App {
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.refreshUIText(); this.loadLocalCache(); await this.update(); }
   
   async refreshReportCards() {
+    if (!this.db) return;
     const types = ['weekly', 'monthly', 'yearly'];
+    const t = i18n[this.currentLang] || i18n.en;
+    
     for (const type of types) {
       const card = document.querySelector(`.report-card[data-type="${type}"]`);
       if (!card) continue;
       
       try {
-        const query = db.collection("reports").doc(type).collection(this.currentCountry).doc("latest");
-        const doc = await query.get();
-        if (doc.exists) {
-          const data = doc.data();
-          const badge = card.querySelector('.coming-soon-badge');
+        const q = query(collection(this.db, "reports", type, this.currentCountry), orderBy("lastUpdated", "desc"), limit(2));
+        const snap = await getDocs(q);
+        
+        let reportData = null;
+        let reportId = null;
+        
+        snap.forEach(docSnap => {
+          if (docSnap.id !== 'latest' && !reportData) {
+            reportData = docSnap.data();
+            reportId = docSnap.id;
+          }
+        });
+
+        const titleEl = card.querySelector(`[data-report="${type}"]`);
+        const badge = card.querySelector('.coming-soon-badge');
+
+        if (reportData) {
+          if (titleEl && reportData.dateRange) {
+             titleEl.textContent = reportData.dateRange; // User requested date as title
+          }
           if (badge) {
-            badge.textContent = data.dateRange;
+            badge.textContent = t.reports[type]; // Swap original title to badge
             badge.classList.add('active-report');
           }
           
           card.onclick = () => { 
-            const url = data.slug ? `report/${data.slug}/` : `report/?type=${type}&country=${this.currentCountry}&id=latest`;
+            const url = `report/?type=${type}&country=${this.currentCountry}&id=${reportId}`;
             window.location.href = url;
           };
+        } else {
+          // No archived report found -> Show "Aggregating"
+          if (titleEl) titleEl.textContent = t.reports[type];
+          if (badge) {
+            badge.textContent = t.reports.comingSoon || "데이터 집계 중...";
+            badge.classList.remove('active-report');
+          }
+          card.onclick = null;
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn(`Failed to refresh ${type} report card:`, e);
+      }
     }
   }
 
@@ -551,6 +580,7 @@ class App {
     try {
       const t = i18n[this.currentLang] || i18n.en;
       await this.updateGeminiUsage();
+      await this.refreshReportCards(); // Periodic refresh
       const trendDoc = await getDoc(doc(this.db, 'trends', this.currentCountry));
       if (trendDoc.exists()) {
         const dbData = trendDoc.data();
