@@ -112,7 +112,6 @@ async function loadReport() {
 
         const data = doc.data();
         renderHero(data);
-        renderChart(data.items);
         renderDepthAnalysis(data.items.slice(0, 2));
         renderSimpleAnalysis(data.items.slice(2, 5));
         loadHistory();
@@ -144,16 +143,6 @@ function renderHero(data) {
     if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
 }
 
-function renderChart(items) {
-    const container = document.getElementById('bar-chart');
-    if (!container || !items) return;
-    const maxScore = Math.max(...items.map(i => i.score));
-    container.innerHTML = items.map(item => {
-        const height = (item.score / maxScore) * 100;
-        return `<div class="bar-item" style="height: ${height}%" data-rank="#${item.rank}" title="${item.keyword}: ${item.score}pts"></div>`;
-    }).join('');
-}
-
 function renderDepthAnalysis(items) {
     items.forEach((item, idx) => {
         const card = document.getElementById(`top-rank-${idx + 1}`);
@@ -161,6 +150,12 @@ function renderDepthAnalysis(items) {
         card.querySelector('.keyword').textContent = item.keyword;
         card.querySelector('.analysis-text').innerHTML = (item.depth || '').split('\n\n').map(p => `<p>${p}</p>`).join('');
         
+        // Render Gauge
+        const gauge = document.getElementById(`rank-${idx + 1}-gauge`);
+        if (gauge) {
+            gauge.style.width = `${Math.floor(Math.random() * 40) + 60}%`;
+        }
+
         const newsList = card.querySelector('.news-list');
         if (newsList && item.newsLinks) {
             newsList.innerHTML = `<h4 class="sidebar-stat-label">Related News</h4>` + 
