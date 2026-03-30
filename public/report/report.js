@@ -45,6 +45,7 @@ async function loadReport() {
 
         const data = doc.data();
         renderHero(data);
+        renderLeadSummary(data.leadSummary);
         renderChart(data.items);
         renderDepthAnalysis(data.items.slice(0, 2));
         renderSimpleAnalysis(data.items.slice(2, 5));
@@ -53,8 +54,20 @@ async function loadReport() {
     }
 }
 
+function renderLeadSummary(summary) {
+    const container = document.getElementById('lead-summary');
+    if (!container || !summary) {
+        if (container) container.style.display = 'none';
+        return;
+    }
+    container.style.display = 'block';
+    container.innerHTML = summary.split('\n\n').map(p => `<p>${p}</p>`).join('');
+}
+
 async function loadSidebar() {
     const types = ['weekly', 'monthly', 'yearly'];
+    const now = new Date();
+    
     for (const t of types) {
         try {
             const snapshot = await db.collection("reports").doc(t).collection(country)
@@ -67,31 +80,67 @@ async function loadSidebar() {
 
             let html = '';
             let count = 0;
+            const existingIds = new Set();
+            
+            // Calculate current period ID
+            let currentPeriodId = '';
+            let currentDisplayTitle = '';
+            if (t === 'weekly') {
+                const start = new Date(now);
+                start.setDate(now.getDate() - now.getDay());
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                currentPeriodId = `${start.toISOString().split('T')[0]}_${end.toISOString().split('T')[0]}`;
+                currentDisplayTitle = `${start.getMonth()+1}/${start.getDate()} - ${end.getMonth()+1}/${end.getDate()}`;
+            } else if (t === 'monthly') {
+                currentPeriodId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                currentDisplayTitle = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}`;
+            } else if (t === 'yearly') {
+                currentPeriodId = `${now.getFullYear()}`;
+                currentDisplayTitle = `${now.getFullYear()}`;
+            }
+
+            // Check if current exists
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                existingIds.add(doc.id);
+                if (data.periodId) existingIds.add(data.periodId);
+            });
+
+            // Prepend "Collecting" if missing
+            if (!existingIds.has(currentPeriodId) && !existingIds.has('latest')) {
+                html += `<div class="history-sidebar-item pending">
+                    ${currentDisplayTitle} <br>
+                    <span style="font-size:0.7rem; opacity:0.6;">트렌드 집계 중...</span>
+                </div>`;
+            }
+
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const isCurrent = doc.id === reportId;
                 const hiddenClass = count >= 3 ? 'hidden' : '';
                 const activeClass = isCurrent ? 'active' : '';
                 
-                // Format title based on type
                 let displayTitle = data.dateRange || data.reportTitle;
                 if (t === 'monthly' && data.lastUpdated) {
                     const d = data.lastUpdated.toDate();
-                    displayTitle = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    displayTitle = `${d.getFullYear()} / ${String(d.getMonth() + 1).padStart(2, '0')}`;
                 } else if (t === 'yearly' && data.lastUpdated) {
-                    displayTitle = `${data.lastUpdated.toDate().getFullYear()}`;
+                    displayTitle = `${data.lastUpdated.toDate().getFullYear()} Year`;
                 }
 
-                html += `<div class="history-sidebar-item ${activeClass} ${hiddenClass}" onclick="navigateTo('${t}', '${doc.id}')">
+                html += `
+                <div class="history-sidebar-item ${activeClass} ${hiddenClass}" onclick="navigateTo('${t}', '${doc.id}')">
                     ${displayTitle}
                 </div>`;
                 count++;
             });
-            container.innerHTML = html || '<p style="font-size:0.8rem; color:var(--text-muted); padding:10px;">No reports yet</p>';
+
+            container.innerHTML = html || '<p style="font-size:0.8rem; color:var(--text-muted); padding:1.2rem; opacity:0.6;">리포트 준비 중...</p>';
             
-            // Hide "More" button if few items
             const moreBtn = container.nextElementSibling;
             if (count <= 3 && moreBtn) moreBtn.style.display = 'none';
+            else if (moreBtn) moreBtn.style.display = 'flex';
 
         } catch (e) { console.warn(`Sidebar load failed for ${t}`, e); }
     }
@@ -105,14 +154,16 @@ window.toggleCategory = (t) => {
     const container = document.getElementById(`sidebar-${t}`);
     const items = container.querySelectorAll('.history-sidebar-item.hidden');
     const btn = container.nextElementSibling;
+    const btnSpan = btn.querySelector('span');
     
     if (items.length > 0) {
-        items.forEach(el => el.classList.remove('hidden'));
-        btn.textContent = '-';
+        items.forEach(el => {
+            el.classList.remove('hidden');
+            el.style.animation = 'fadeInUp 0.4s ease forwards';
+        });
+        if (btnSpan) btnSpan.textContent = '−';
     } else {
-        // If already expanded, we could collapse, but user asked for "show more"
-        // Let's just keep it simple: if button is '-', refresh sidebar to original state
-        loadSidebar();
+        loadSidebar(); // Reset
     }
 };
 

@@ -311,12 +311,27 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     await this.generatePeriodReport(country, 'yearly', 365, isYearlyFinal || forceOther);
   }
 
-  getDateRange(days) {
+  getDateRange(type, days) {
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - days);
-    const fmt = (d) => `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
-    return `${fmt(start)} - ${fmt(end)}`;
+    
+    const y = end.getFullYear();
+    const m = String(end.getMonth() + 1).padStart(2, '0');
+    const d = String(end.getDate()).padStart(2, '0');
+    
+    const sy = start.getFullYear();
+    const sm = String(start.getMonth() + 1).padStart(2, '0');
+    const sd = String(start.getDate()).padStart(2, '0');
+
+    if (type === 'weekly') {
+      return `${sy}년 ${sm}월 ${sd}일 ~ ${m}월 ${d}일`;
+    } else if (type === 'monthly') {
+      return `${y}년 ${m}월`;
+    } else if (type === 'yearly') {
+      return `${y}년`;
+    }
+    return `${sy}/${sm}/${sd} - ${y}/${m}/${d}`;
   }
 
   async generateAIReportAnalysis(top5, country, type) {
@@ -325,23 +340,29 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const lang = langNames[country] || "English";
     
     const keywordsStr = top5.map((t, i) => `${i+1}. ${t.keyword}`).join("\n");
-    const prompt = `You are a professional trend analyst for GlobalTrendUp. 
-Generate a comprehensive ${type} trend report for ${country} in ${lang}.
-Keywords were:
+    const prompt = `You are a seasoned trend strategist and market analyst for GlobalTrendUp. 
+Write a high-end, professional, and deeply insightful ${type} trend report for ${country} in ${lang}.
+The tone should be authoritative yet conversational, like a premium newsletter or a tech/culture column (e.g., The Verge, Wired, or a specialized market report).
+
+Keywords to analyze:
 ${keywordsStr}
 
 Strictly follow this JSON format:
 {
-  "reportTitle": "A catchy title for this ${type} report",
+  "reportTitle": "A compelling, human-written title for this ${type} insight",
+  "leadSummary": "A 3-4 sentence narrative summarizing the overall trend landscape and thematic shifts observed during this period. Connect the dots between different keywords if applicable.",
   "analyses": [
-    { "keyword": "Rank 1 Keyword", "depth": "Deep analysis (3-4 paragraphs explaining WHY it was the #1 trend this period, social context, and impact)" },
-    { "keyword": "Rank 2 Keyword", "depth": "Deep analysis (3-4 paragraphs explaining WHY it was the #2 trend this period, social context, and impact)" },
-    { "keyword": "Rank 3 Keyword", "depth": "Short summary (1 paragraph context)" },
-    { "keyword": "Rank 4 Keyword", "depth": "Short summary (1 paragraph context)" },
-    { "keyword": "Rank 5 Keyword", "depth": "Short summary (1 paragraph context)" }
+    { 
+      "keyword": "Keyword 1", 
+      "depth": "Expert analysis (3-4 paragraphs). Avoid stating 'Rank 1 is...'. Instead, weave a story about WHY this mattered, the social pulse, and what it implies for the future. Use natural, human-like sentences." 
+    },
+    { "keyword": "Keyword 2", "depth": "Expert analysis (3-4 paragraphs) with human-like storytelling and context." },
+    { "keyword": "Keyword 3", "depth": "One insightful paragraph exploring the context and cultural trigger." },
+    { "keyword": "Keyword 4", "depth": "One insightful paragraph exploring the context and cultural trigger." },
+    { "keyword": "Keyword 5", "depth": "One insightful paragraph exploring the context and cultural trigger." }
   ]
 }
-No Markdown, just JSON.`;
+No Markdown, just JSON. Avoid repetitive AI-style phrasing.`;
 
     const modelsToTry = ["gemma-3-27b-it", "gemma-2-27b-it", "gemini-2.0-flash"];
     let text = "";
@@ -438,7 +459,7 @@ No Markdown, just JSON.`;
       if (top5.length > 0) {
         console.log(`  - Generating AI Analysis for ${type} ${country}...`);
         const analysis = await this.generateAIReportAnalysis(top5, country, type);
-        const dateRange = this.getDateRange(days);
+        const dateRange = this.getDateRange(type, days);
         
         const top1Slug = this.toSlug(top5[0].keyword);
         const reportSlug = `${country.toLowerCase()}-${type}-${top1Slug}-${new Date().toISOString().split('T')[0]}`;

@@ -1,10 +1,12 @@
 # **TrendUp: Real-time Global Trends Dashboard**
 
-## Phase 46: Analytical Reports & Premium UI (v3.1.50)
+## Phase 46: Analytical Reports & Premium UI (v3.1.51)
 - **Feature Addition:** Created `/report` directory and implemented automated trend history archiving.
 - **Data Aggregation:** Deployed Top 5 scoring logic for Weekly, Monthly, and Yearly reports based on rank intensity.
-- **Premium Mobile UI:** Implemented staggered "waterfall" animations, #1 rank highlights, and tactile noise textures.
-- **Version Bump:** Synchronized application version to **v3.1.50**.
+- **Premium Sidebar:** Implemented sticky glassmorphism sidebar for historical report navigation.
+- **Main Page Sync:** Updated report cards on the main page to show aggregation dates as titles with active links.
+- **UI/UX Polish:** Added staggered fadeInUp animations and refined Georgia/Pretendard font pairings for report depth.
+- **Version Bump:** Synchronized application version to **v3.1.51**.
 
 ## Phase 45: Migrate to Gemma 3 & Sync Version (v3.1.48)
 - **GitHub Actions Fix:** Corrected invalid action versions (`v6` -> `v4`) and Node.js version (`24` -> `22`) in `.github/workflows/update.yml`.
@@ -86,8 +88,9 @@ TrendUp is a modern, high-performance web application that provides real-time To
 - [x] Identify `gemini-2.5-flash` as the valid model for 2026 via `get-models.js`.
 - [x] Restore `gemini-2.5-flash` in `update-trends.js`.
 - [x] Update `firebase-functions/index.js` to use `gemini-2.5-flash`.
-- [x] Synchronize all version strings to `v2.9.8`.
+- [x] Synchronize all version strings to `v3.1.51`.
 - [x] Verify fix by running `test-2.5.js`.
+- [x] Implement Premium Sidebar and Main Page Link updates.
 - [ ] Deploy to Firebase.
 
 

@@ -303,7 +303,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.50");
+    console.log("App Init: v3.1.51");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -376,7 +376,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.1.50) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.1.51) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -504,19 +504,26 @@ class App {
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.refreshUIText(); this.loadLocalCache(); await this.update(); }
   
   async refreshReportCards() {
+    if (!this.db) return;
     const types = ['weekly', 'monthly', 'yearly'];
+    const t = i18n[this.currentLang] || i18n.en;
+    
     for (const type of types) {
       const card = document.querySelector(`.report-card[data-type="${type}"]`);
       if (!card) continue;
       
       try {
-        const query = db.collection("reports").doc(type).collection(this.currentCountry).doc("latest");
-        const doc = await query.get();
-        if (doc.exists) {
-          const data = doc.data();
+        const reportDoc = await getDoc(doc(this.db, "reports", type, this.currentCountry, "latest"));
+        if (reportDoc.exists()) {
+          const data = reportDoc.data();
+          const titleEl = card.querySelector(`[data-report="${type}"]`);
           const badge = card.querySelector('.coming-soon-badge');
+          
+          if (titleEl && data.dateRange) {
+             titleEl.textContent = data.dateRange; // User requested date as title
+          }
           if (badge) {
-            badge.textContent = data.dateRange;
+            badge.textContent = t.reports[type]; // Swap original title to badge
             badge.classList.add('active-report');
           }
           
@@ -525,7 +532,9 @@ class App {
             window.location.href = url;
           };
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn(`Failed to refresh ${type} report card:`, e);
+      }
     }
   }
 

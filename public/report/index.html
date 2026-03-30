@@ -27,31 +27,48 @@
             <div class="sidebar-section">
                 <h3>Weekly Reports</h3>
                 <div id="sidebar-weekly" class="history-list"></div>
-                <button class="more-btn" onclick="toggleCategory('weekly')">+</button>
+                <button class="more-btn" onclick="toggleCategory('weekly')" title="Show all">
+                    <span>+</span>
+                </button>
             </div>
             <div class="sidebar-section">
                 <h3>Monthly Reports</h3>
                 <div id="sidebar-monthly" class="history-list"></div>
-                <button class="more-btn" onclick="toggleCategory('monthly')">+</button>
+                <button class="more-btn" onclick="toggleCategory('monthly')" title="Show all">
+                    <span>+</span>
+                </button>
             </div>
             <div class="sidebar-section">
                 <h3>Yearly Reports</h3>
                 <div id="sidebar-yearly" class="history-list"></div>
-                <button class="more-btn" onclick="toggleCategory('yearly')">+</button>
+                <button class="more-btn" onclick="toggleCategory('yearly')" title="Show all">
+                    <span>+</span>
+                </button>
             </div>
         </aside>
 
         <article id="report-main">
+            <header class="article-header">
+                <p id="report-date-range" class="date-badge">...</p>
+                <div class="meta-row">
+                    <span class="byline">Analysis by <strong>GlobalTrendUp Research Team</strong></span>
+                    <span class="reading-time">3 min read</span>
+                </div>
+            </header>
+
             <section id="report-hero">
                 <div class="hero-info">
                     <h1 id="report-title-text">Trend Analysis</h1>
-                    <p id="report-date-range" class="date-badge">...</p>
                     <div id="country-badge" class="country-pill">...</div>
                 </div>
                 <div id="chart-container" class="chart-card">
-                    <h3>Trend Intensity Level</h3>
+                    <h3>Trend Intensity</h3>
                     <div id="bar-chart" class="bar-chart"></div>
                 </div>
+            </section>
+
+            <section id="lead-summary" class="blog-summary">
+                <!-- AI Narrative Summary will be injected here -->
             </section>
 
             <section id="depth-analysis">
