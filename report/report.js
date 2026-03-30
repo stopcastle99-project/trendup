@@ -112,8 +112,7 @@ async function loadReport() {
 
         const data = doc.data();
         renderHero(data);
-        renderDepthAnalysis(data.items.slice(0, 2));
-        renderSimpleAnalysis(data.items.slice(2, 5));
+        renderTrends(data.items);
         loadHistory();
     } catch (e) {
         console.error("Report load error:", e);
@@ -143,52 +142,65 @@ function renderHero(data) {
     if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
 }
 
-function renderDepthAnalysis(items) {
-    items.forEach((item, idx) => {
-        const card = document.getElementById(`top-rank-${idx + 1}`);
-        if (!card) return;
-        card.querySelector('.keyword').textContent = item.keyword;
-        card.querySelector('.analysis-text').innerHTML = (item.depth || '').split('\n\n').map(p => `<p>${p}</p>`).join('');
-        
-        // Render Gauge
-        const gauge = document.getElementById(`rank-${idx + 1}-gauge`);
-        if (gauge) {
-            gauge.style.width = `${Math.floor(Math.random() * 40) + 60}%`;
-        }
-
-        const newsList = card.querySelector('.news-list');
-        if (newsList && item.newsLinks) {
-            newsList.innerHTML = `<h4 class="sidebar-stat-label">Related News</h4>` + 
-                item.newsLinks.slice(0, 3).map(n => `<a href="${n.url}" target="_blank" class="news-link">${n.title}</a>`).join('');
-        }
-
-        const videoGrid = card.querySelector('.video-grid');
-        if (videoGrid && item.videoLinks) {
-            videoGrid.innerHTML = item.videoLinks.filter(v => v.id).slice(0, 2).map(v => `
-                <div class="video-item"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe></div>
-            `).join('');
-        }
-    });
-}
-
-function renderSimpleAnalysis(items) {
-    const container = document.querySelector('.grid-345');
+function renderTrends(items) {
+    const container = document.getElementById('trend-list');
     if (!container) return;
-    container.innerHTML = items.map(item => `
-        <div class="simple-card">
+    container.innerHTML = '';
+
+    items.forEach((item, idx) => {
+        const isFeatured = item.rank <= 2;
+        const featuredClass = item.rank === 1 ? 'featured-1' : (item.rank === 2 ? 'featured-2' : '');
+        
+        const card = document.createElement('div');
+        card.className = `trend-card ${featuredClass}`;
+        
+        // Growth calculation (simulated for UI consistency if not in data)
+        const growth = item.growth || (Math.floor(Math.random() * 15) + 5);
+        const gaugeWidth = item.score ? Math.min(100, Math.max(30, item.score / 10)) : (Math.floor(Math.random() * 40) + 60);
+
+        card.innerHTML = `
             <div class="card-top">
-                <span class="rank-badge-mini">#${item.rank}</span>
-                <span class="growth-mini">+${Math.floor(Math.random() * 15) + 5}%</span>
+                <span class="rank-badge">#${item.rank}</span>
+                <span class="growth-pill">+${growth}% Growth</span>
             </div>
             <h3>${item.keyword}</h3>
-            <div class="analysis-text">${(item.depth || '').split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>
+            <div class="card-analysis">
+                ${(item.depth || '').split('\n\n').map(p => `<p>${p}</p>`).join('')}
+            </div>
+            
             <div class="card-viz">
                 <div class="progress-bg">
-                    <div class="progress-fill" style="width: ${Math.floor(Math.random() * 40) + 60}%"></div>
+                    <div class="progress-fill" style="width: ${gaugeWidth}%"></div>
                 </div>
             </div>
-        </div>
-    `).join('');
+
+            ${isFeatured ? `
+                <div class="card-supplementary">
+                    ${item.newsLinks ? `
+                        <div class="news-section">
+                            <h4>Related News</h4>
+                            <div class="news-list">
+                                ${item.newsLinks.slice(0, 3).map(n => `
+                                    <a href="${n.url}" target="_blank" class="news-link">${n.title}</a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${item.videoLinks ? `
+                        <div class="video-grid">
+                            ${item.videoLinks.filter(v => v.id).slice(0, 2).map(v => `
+                                <div class="video-item">
+                                    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen></iframe>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            ` : ''}
+        `;
+        
+        container.appendChild(card);
+    });
 }
 
 async function loadHistory() {
