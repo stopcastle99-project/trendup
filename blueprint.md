@@ -1,3 +1,8 @@
+## Phase 49: Stability & Rewrite Fix (v3.1.82)
+- **Bug Fix:** Resolved the 500 status error caused by a rewrite loop in `firebase.json`.
+- **Logic Refinement:** Simplified the SPA rewrite configuration for better reliability across all asset types.
+- **Improved UX:** Restored the side-by-side layout for reports by ensuring the latest CSS/HTML structure is deployed.
+
 ## Phase 48: Sidebar Navigation & Dark Mode for Reports (v3.1.81)
 - **UI Enhancement:** Moved "Recent History" from the main content to a persistent left sidebar on the Trend Report page.
 - **Categorization:** Implemented separate sidebar sections for Weekly, Monthly, and Yearly reports with expansion support.
