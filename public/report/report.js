@@ -220,6 +220,11 @@ function renderTrends(items) {
     const container = document.getElementById('trend-list');
     if (!container) return;
     container.innerHTML = '';
+    
+    if (!items || !Array.isArray(items)) {
+        return;
+    }
+
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
 
     items.forEach((item, idx) => {
@@ -251,8 +256,8 @@ function renderTrends(items) {
                 <span class="growth-pill">${displayGrowth}</span>
             </div>
             <h3>${displayKeyword}</h3>
-            <div class="card-analysis">
-                ${displayAnalysis.split('\n\n').map(p => `<p>${p}</p>`).join('')}
+            <div class="card-analysis" style="white-space: pre-wrap; line-height: 1.8; margin-top: 1rem; color: var(--text-secondary);">
+                ${displayAnalysis}
             </div>
             
             <div class="card-viz">
