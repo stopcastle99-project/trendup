@@ -607,6 +607,11 @@ class App {
           const curM = kst.getUTCMonth() + 1;
           const curD = kst.getUTCDate();
 
+          // v3.4.4: Hard-enforce aggregation status on the 1st of a new period
+          if (curD === 1) {
+            finalIsAgg = true;
+          }
+
           // Yearly is ALWAYS accumulating
           if (type === 'yearly') {
             if (curM < 12 || (curM === 12 && curD < 29)) {
@@ -614,22 +619,22 @@ class App {
             }
           }
           
-          // Monthly is ALWAYS active on the last day (28th-31st depending on month)
-          if (type === 'monthly' && curD >= 28) {
+          // Monthly is ALWAYS active on the last day (28th-31st) or 1st
+          if (type === 'monthly' && (curD >= 28 || curD === 1)) {
             finalIsAgg = true;
           }
           
-          // Weekly is ALWAYS active on Sunday (archival) or last day of month
-          if (type === 'weekly' && (kst.getUTCDay() === 0 || curD >= 28)) {
+          // Weekly is ALWAYS active on Sunday or late in month or 1st
+          if (type === 'weekly' && (kst.getUTCDay() === 0 || curD >= 28 || curD === 1)) {
             finalIsAgg = true;
           }
 
           if (finalIsAgg) {
-            // Force 'Writing' on the very last day of the month/week
-            const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && curD >= 30) || (type === 'weekly' && curD >= 30);
+            // Force 'Writing' on the very last day or 1st day (initialization)
+            const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && (curD >= 30 || curD === 1)) || (type === 'weekly' && (curD >= 30 || curD === 1));
             if (isWriting) {
               badgeHtml = `<span class="status-badge writing">✍️ 작성 중</span>`;
-            } else if (type === 'yearly') {
+            } else if (type === 'yearly' || curD === 1) {
               badgeHtml = `<span class="status-badge live">📊 데이터 집계 중</span>`;
             } else {
               badgeHtml = `<span class="status-badge live">🟢 실시간</span>`;
