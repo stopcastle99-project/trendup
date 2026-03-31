@@ -608,6 +608,10 @@
     background: var(--primary);
     color: white;
   }
+  .status-badge.completed {
+    background: #4caf50; /* Green */
+    color: white;
+  }
   @keyframes pulse-writing {
     0% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.8; transform: scale(0.98); }

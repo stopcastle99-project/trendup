@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.00");
+    console.log("App Init: v3.2.01");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -592,12 +592,18 @@ class App {
         const historyExists = pastDocs.length > 0;
 
         // 1. Current Aggregation Status
-        if (latestDoc && isAgg) {
+        if (latestDoc) {
           const rawLabel = latestDoc.dateRange || '';
-          const isWriting = rawLabel.includes('작성중');
-          const badgeHtml = isWriting 
-            ? `<span class="status-badge writing">✍️ 작성 중</span>` 
-            : `<span class="status-badge aggregating">⚡ 데이터 집계 중</span>`;
+          let badgeHtml = '';
+          
+          if (isAgg) {
+            const isWriting = rawLabel.includes('작성중');
+            badgeHtml = isWriting 
+              ? `<span class="status-badge writing">✍️ 작성 중</span>` 
+              : `<span class="status-badge aggregating">⚡ 데이터 집계 중</span>`;
+          } else {
+            badgeHtml = `<span class="status-badge completed">✅ 작성 완료</span>`;
+          }
           
           statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').trim()}</span>`;
           statusEl.style.display = 'block';
