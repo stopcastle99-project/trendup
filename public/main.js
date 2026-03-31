@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.83");
+    console.log("App Init: v3.1.84");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -608,15 +608,19 @@ class App {
             else badge.classList.remove('active-report');
           }
           
-          // Main card click (only if it's not aggregating)
-          if (latestDoc.isAggregating && !isArchived) {
+          // Robust check: If isAggregating is missing, assume true if we have no history
+          const isAgg = latestDoc.isAggregating !== false;
+          
+          if (isAgg && !isArchived) {
             card.classList.add('disabled');
+            card.style.cursor = 'default';
             card.onclick = null;
           } else {
             card.classList.remove('disabled');
+            card.style.cursor = 'pointer';
             card.onclick = () => {
-              const targetDoc = (latestDoc.isAggregating && isArchived) ? pastDocs[0] : { id: latestDoc.slug || 'latest' };
-              const url = `report/?type=${type}&country=${this.currentCountry}&id=${targetDoc.id}`;
+              const targetId = (isAgg && isArchived) ? pastDocs[0].id : (latestDoc.slug || 'latest');
+              const url = `report/?type=${type}&country=${this.currentCountry}&id=${targetId}`;
               window.location.href = url;
             };
           }
