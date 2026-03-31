@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.04");
+    console.log("App Init: v3.2.05");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -660,9 +660,14 @@ class App {
           card.appendChild(pastCtn);
         }
 
-        // Only show historical reports that are actually finalized and have items
-        const archivePool = (featuredDoc && latestDoc && featuredDoc.id !== (latestDoc.slug || 'latest')) ? pastDocs.slice(1) : pastDocs;
-        const validArchives = archivePool.filter(p => p.data.isAggregating === false && p.data.items && p.data.items.length > 0);
+        // Only show historical reports that are actually finalized, have items, and are NOT the one already featured
+        const featuredId = featuredDoc ? featuredDoc.id : null;
+        const validArchives = pastDocs.filter(p => 
+          p.id !== featuredId &&
+          p.data.isAggregating === false && 
+          p.data.items && 
+          p.data.items.length > 0
+        );
         const displayArchives = validArchives.slice(0, 3);
 
         if (displayArchives.length > 0) {
