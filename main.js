@@ -311,14 +311,8 @@ class TrendModal extends HTMLElement {
     this.shadowRoot.getElementById('news-links').innerHTML = (trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('');
     
     const reportsSection = this.shadowRoot.getElementById('reports-section');
-    if (matchedReports && matchedReports.length > 0) {
-      reportsSection.style.display = 'block';
-      this.shadowRoot.getElementById('reports-title').textContent = t.labels.featuredReports || "📅 리포트";
-      this.shadowRoot.getElementById('reports-links').innerHTML = matchedReports.map(r => `<a href="report/${r.slug}/" target="_blank" class="link report-link"><span class="link-meta">${r.type.toUpperCase()} ANALYSIS</span><span>📈 ${r.reportTitle}</span></a>`).join('');
-    } else {
-      reportsSection.style.display = 'none';
-      this.shadowRoot.getElementById('reports-links').innerHTML = '';
-    }
+    reportsSection.style.display = 'none';
+    this.shadowRoot.getElementById('reports-links').innerHTML = '';
 
     const videoSection = this.shadowRoot.getElementById('video-section');
     if (trend.videoLinks && trend.videoLinks.length > 0) {
@@ -331,6 +325,20 @@ class TrendModal extends HTMLElement {
     }
     
     this.shadowRoot.querySelector('.overlay').classList.add('active');
+  }
+
+  updateReports(matchedReports, lang) {
+    const t = i18n[lang] || i18n.en;
+    const reportsSection = this.shadowRoot.getElementById('reports-section');
+    if (matchedReports && matchedReports.length > 0) {
+      reportsSection.style.display = 'block';
+      this.shadowRoot.getElementById('reports-title').textContent = t.labels.featuredReports || "📅 리포트";
+      this.shadowRoot.getElementById('reports-links').innerHTML = matchedReports.map(r => {
+        let titleStr = r.reportTitle;
+        if (typeof titleStr === 'object') titleStr = titleStr[lang] || titleStr.ko || "Trend Report";
+        return `<a href="report/?type=${r.type}&country=${r.country}&id=${r.slug}" target="_blank" class="link report-link"><span class="link-meta">${r.type.toUpperCase()} ANALYSIS</span><span>📈 ${titleStr}</span></a>`;
+      }).join('');
+    }
   }
 
   hide() { this.shadowRoot.querySelector('.overlay').classList.remove('active'); }
@@ -365,8 +373,14 @@ class App {
       window.addEventListener('open-trend-modal', async (e) => { 
         if (!this.modal) return;
         const trend = e.detail;
-        const matchedReports = await this.findMatchedReports(trend.originalTitle || trend.title);
-        this.modal.show(trend, this.currentLang, matchedReports);
+        
+        // Show modal immediately without blocking
+        this.modal.show(trend, this.currentLang);
+        
+        // Fetch matched reports async and then append them to UI
+        this.findMatchedReports(trend.originalTitle || trend.title).then(matchedReports => {
+          this.modal.updateReports(matchedReports, this.currentLang);
+        }).catch(err => console.warn("Matched reports fetch error:", err));
       });
       window.addEventListener('click', () => { 
         document.querySelectorAll('.pill-nav').forEach(n => n.classList.remove('expanded')); 
