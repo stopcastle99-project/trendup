@@ -315,21 +315,40 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const m = kst.getUTCMonth() + 1;
     const d = kst.getUTCDate();
     
+    // Status Logic Helpers
+    const getStatusSuffix = (currentDay, targetDay) => {
+      // If targetDay is in next month (1st), we need to check last day of current month
+      let daysLeft;
+      if (targetDay === 1) {
+        const lastDay = new Date(y, m, 0).getDate();
+        daysLeft = lastDay - currentDay + 1;
+      } else {
+        daysLeft = targetDay - currentDay;
+      }
+      return (daysLeft <= 2) ? "작성중" : "데이터집계중";
+    };
+
     // 1. Generate Latest Drafts (Currently Aggregating)
     const currentWeekChunk = (d <= 7) ? 1 : (d <= 14) ? 2 : (d <= 21) ? 3 : 4;
+    const weeklyTarget = (currentWeekChunk === 1) ? 8 : (currentWeekChunk === 2) ? 15 : (currentWeekChunk === 3) ? 22 : 1;
+    
     const weeklyStartDay = currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22;
     const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(weeklyStartDay).padStart(2, '0')}`;
     const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const monthlyStart = `${y}-${String(m).padStart(2, '0')}-01`;
     const yearlyStart = `${y}-01-01`;
 
-    const wkLabel = `${String(m).padStart(2, '0')}.${String(weeklyStartDay).padStart(2, '0')} ~ ${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
-    const moLabel = `${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
-    const yrLabel = `${y}.01.01 ~ ${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
+    const wkStatus = getStatusSuffix(d, weeklyTarget);
+    const moStatus = getStatusSuffix(d, 1);
+    const yrStatus = (m === 12 && d >= 29) ? "작성중" : "데이터집계중";
 
-    await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', `${m}월 ${currentWeekChunk}주차 (${wkLabel})`);
-    await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', `${m}월 리포트 (${moLabel})`);
-    await this.generatePeriodReport(country, 'yearly', yearlyStart, todayStr, false, '', `${y}년 리포트 (${yrLabel})`);
+    const wkLabel = `${m}월 ${currentWeekChunk}주차 (${String(m).padStart(2, '0')}.${String(weeklyStartDay).padStart(2, '0')} ~ ${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}) ${wkStatus}`;
+    const moLabel = `${m}월 리포트 (${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}) ${moStatus}`;
+    const yrLabel = `${y}년 리포트 (${y}.01.01 ~ 12.31) ${yrStatus}`;
+
+    await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', wkLabel);
+    await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', moLabel);
+    await this.generatePeriodReport(country, 'yearly', yearlyStart, todayStr, false, '', yrLabel);
 
     // 2. Archival Boundaries
     const isWk1End = (d === 8);
