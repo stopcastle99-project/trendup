@@ -682,6 +682,7 @@ ${rank3_5}
       
       const reportData = {
         type, country,
+        startDate, endDate, // v3.4.0: Store raw dates for precise UI display
         dateRange: label,
         slug: reportSlug,
         isAggregating: !isArchival, // Draft is true, Archival is false

@@ -1,8 +1,8 @@
 // Trend Report Detail Logic - v3.3.4 (Multi-Language Support)
 const ICONS = {
-  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
-  moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
-  system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20" opacity="0.5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"></path></svg>`
+    sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
+    moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
+    system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20" opacity="0.5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"></path></svg>`
 };
 
 const REPORT_I18N = {
@@ -31,7 +31,7 @@ const REPORT_I18N = {
         history: "Past History", related_news: "Related News", related_videos: "Related Videos",
         aggregating: "Trend Aggregating", back_to_main: "Back to Main",
         wait: "We are carefully analyzing the current data. Please wait a moment.",
-        month: (m) => { const mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return mon[m-1]; },
+        month: (m) => { const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return mon[m - 1]; },
         year: (y) => `${y}`
     }
 };
@@ -75,12 +75,12 @@ function applyTranslations() {
     document.documentElement.setAttribute('lang', lang);
     const titleEl = document.getElementById('global-title');
     if (titleEl) titleEl.textContent = t.title;
-    
+
     // Sidebar Labels
     const sidebarLabels = document.querySelectorAll('.sidebar-label');
     if (sidebarLabels[0]) sidebarLabels[0].textContent = t.current_period;
     if (sidebarLabels[1]) sidebarLabels[1].textContent = t.history;
-    
+
     // Period Buttons
     document.querySelectorAll('[data-type]').forEach(btn => {
         const type = btn.getAttribute('data-type');
@@ -159,12 +159,12 @@ async function loadReport() {
         const docRef = db.collection("reports").doc(type).collection(country).doc(reportId);
         const doc = await docRef.get();
         const t = REPORT_I18N[lang] || REPORT_I18N.en;
-        
+
         const now = new Date();
         const currentMonth = now.getMonth() + 1;
         const currentYear = now.getFullYear();
         const isLastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
-        
+
         // Gating logic: Show placeholder for 'latest' Monthly/Yearly if not finalizing period yet
         if (reportId === 'latest') {
             if (type === 'monthly' && !isLastDayOfMonth) {
@@ -196,7 +196,7 @@ function renderPlaceholder(customMessage) {
     const main = document.getElementById('report-main');
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const displayMsg = customMessage || `${t.aggregating}...`;
-    
+
     main.innerHTML = `
         <div class="aggregating-placeholder">
             <div class="aggregating-icon">📊</div>
@@ -212,8 +212,23 @@ function renderPlaceholder(customMessage) {
 function renderHero(data) {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const periodSummary = document.getElementById('current-period-summary');
-    if (periodSummary) periodSummary.textContent = `${t.period_summary} ${data.dateRange || 'Latest Update'}`;
     
+    // v3.4.1: Precise date range (M/D-M/D)
+    let displayRange = data.dateRange || 'Latest Update';
+    if (data.startDate && data.endDate) {
+        try {
+            const s = data.startDate.split('-');
+            const e = data.endDate.split('-');
+            if (s.length === 3 && e.length === 3) {
+                const sM = parseInt(s[1]), sD = parseInt(s[2]);
+                const eM = parseInt(e[1]), eD = parseInt(e[2]);
+                displayRange = `${sM}/${sD}-${eM}/${eD}`;
+            }
+        } catch (err) { console.warn("Date parse error:", err); }
+    }
+
+    if (periodSummary) periodSummary.textContent = `${t.period_summary} ${displayRange}`;
+
     const displayElement = document.getElementById('current-period-display');
     if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
 }
@@ -222,7 +237,7 @@ function renderTrends(items) {
     const container = document.getElementById('trend-list');
     if (!container) return;
     container.innerHTML = '';
-    
+
     if (!items || !Array.isArray(items)) {
         return;
     }
@@ -232,10 +247,10 @@ function renderTrends(items) {
     items.forEach((item, idx) => {
         const isFeatured = item.rank <= 2;
         const featuredClass = item.rank === 1 ? 'featured-1' : (item.rank === 2 ? 'featured-2' : '');
-        
+
         const card = document.createElement('div');
         card.className = `trend-card ${featuredClass}`;
-        
+
         const growth = item.growth || (Math.floor(Math.random() * 15) + 5);
         const gaugeWidth = item.score ? Math.min(100, Math.max(30, item.score / 10)) : (Math.floor(Math.random() * 40) + 60);
 
@@ -249,12 +264,12 @@ function renderTrends(items) {
         } else if (typeof item.depth === 'string') {
             displayAnalysis = item.depth;
         }
-        
+
         // Clean up excessive leading indentation often added by AI models
         displayAnalysis = displayAnalysis.trim().split('\n').map(line => line.trim()).join('\n');
 
         const displayGrowth = lang === 'ko' ? `성장률 +${growth}%` : (lang === 'ja' ? `成長率 +${growth}%` : `+${growth}% Growth`);
-        
+
         card.innerHTML = `
             <div class="card-top">
                 <span class="rank-badge">#${item.rank}</span>
@@ -291,7 +306,7 @@ function renderTrends(items) {
                 ` : ''}
             </div>
         `;
-        
+
         container.appendChild(card);
     });
 }
@@ -303,7 +318,7 @@ async function loadHistory() {
         const snapshot = await db.collection("reports").doc(type).collection(country)
             .orderBy("lastUpdated", "desc").limit(20).get(); // Increased limit for better dedup room
         list.innerHTML = '';
-        
+
         const seenTitles = new Set();
         snapshot.forEach(doc => {
             const data = doc.data();
@@ -317,7 +332,7 @@ async function loadHistory() {
             const isActive = doc.id === reportId;
             const item = document.createElement('div');
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
-            
+
             // Simplify title to be clear and concise (e.g., "3월 4주차 트렌드 보고서")
             let historyTitle = data.dateRange || doc.id;
             if (historyTitle.includes('리포트')) {
@@ -325,7 +340,7 @@ async function loadHistory() {
             } else {
                 historyTitle += ' 트렌드 보고서';
             }
-            
+
             item.textContent = historyTitle;
             item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
             list.appendChild(item);

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <script>
-    (function() {
+    (function () {
       const mode = localStorage.getItem('theme-mode') || 'system';
       let theme = mode;
       if (mode === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -11,12 +12,14 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <!-- Primary Meta Tags -->
   <title>GlobalTrendUp | Real-time Global Trends & AI Analysis</title>
   <meta name="title" content="GlobalTrendUp | 실시간 글로벌 트렌드 & AI 분석 대시보드">
-  <meta name="description" content="전 세계(한국, 일본, 미국)의 실시간 급상승 검색어와 트렌드를 AI가 분석하여 요약해 드립니다. 세상의 흐름을 한눈에 파악하세요. | Real-time Global Trends (KR, JP, US) with AI Summaries.">
-  <meta name="keywords" content="실시간 트렌드, 급상승 검색어, AI 트렌드 요약, 글로벌 이슈, 한국 인기 검색어, 일본 트렌드, 야후 재팬 실시간, 구글 트렌드 분석, Trending Keywords, Japan Trends, US Trends, Real-time Analysis, AI News Summary">
+  <meta name="description"
+    content="전 세계(한국, 일본, 미국)의 실시간 급상승 검색어와 트렌드를 AI가 분석하여 요약해 드립니다. 세상의 흐름을 한눈에 파악하세요. | Real-time Global Trends (KR, JP, US) with AI Summaries.">
+  <meta name="keywords"
+    content="실시간 트렌드, 급상승 검색어, AI 트렌드 요약, 글로벌 이슈, 한국 인기 검색어, 일본 트렌드, 야후 재팬 실시간, 구글 트렌드 분석, Trending Keywords, Japan Trends, US Trends, Real-time Analysis, AI News Summary">
   <meta name="author" content="TrendUp Team">
   <meta name="robots" content="index, follow">
 
@@ -24,11 +27,13 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://globaltrendup.com/">
   <meta property="og:title" content="GlobalTrendUp | 실시간 글로벌 트렌드 AI 대시보드">
-  <meta property="og:description" content="전 세계(한국, 일본, 미국)의 실시간 핫이슈를 AI 요약과 함께 확인하세요. | Check out the latest global hot issues with AI summaries.">
+  <meta property="og:description"
+    content="전 세계(한국, 일본, 미국)의 실시간 핫이슈를 AI 요약과 함께 확인하세요. | Check out the latest global hot issues with AI summaries.">
   <meta property="og:image" content="https://globaltrendup.com/og-image.png">
 
   <!-- RSS Feed -->
-  <link rel="alternate" type="application/rss+xml" title="GlobalTrendUp RSS Feed" href="https://globaltrendup.com/rss.xml" />
+  <link rel="alternate" type="application/rss+xml" title="GlobalTrendUp RSS Feed"
+    href="https://globaltrendup.com/rss.xml" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
@@ -62,11 +67,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
-  
+
   <link rel="stylesheet" href="style.css">
-  
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1388346009777764"
-     crossorigin="anonymous"></script>
+    crossorigin="anonymous"></script>
 
   <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
   <script type="importmap">
@@ -79,9 +84,10 @@
     }
   </script>
 </head>
+
 <body>
   <div id="app">
-    
+
     <header>
       <div class="container">
         <div class="header-left">
@@ -92,7 +98,7 @@
             <h1>GlobalTrendUp(Beta)</h1>
           </div>
         </div>
-        
+
         <div class="header-right">
           <div class="theme-menu">
             <button id="theme-menu-toggle" class="theme-menu-btn" aria-label="Select Theme">
@@ -159,14 +165,18 @@
           <p id="last-updated">최근 업데이트: --:--</p>
         </div>
       </section>
-      
+
       <section id="content-grid">
         <div id="main-content">
-          <div class="ad-slot top-ad"><p>Advertisement</p></div>
+          <div class="ad-slot top-ad">
+            <p>Advertisement</p>
+          </div>
           <trend-list id="top-trends"></trend-list>
         </div>
         <aside id="sidebar">
-          <div class="ad-slot sidebar-ad"><p>Advertisement</p></div>
+          <div class="ad-slot sidebar-ad">
+            <p>Advertisement</p>
+          </div>
         </aside>
       </section>
 
@@ -198,7 +208,9 @@
       </section>
 
       <section id="bottom-ads">
-        <div class="ad-slot banner-ad"><p>Advertisement</p></div>
+        <div class="ad-slot banner-ad">
+          <p>Advertisement</p>
+        </div>
       </section>
     </main>
 
@@ -228,6 +240,7 @@
       </div>
     </div>
   </div>
-  <script type="module" src="/main_v142.js?v=3.3.02"></script>
+  <script type="module" src="/main_v144.js?v=3.4.1"></script>
 </body>
+
 </html>
