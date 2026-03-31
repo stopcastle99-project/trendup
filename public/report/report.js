@@ -318,11 +318,12 @@ async function loadHistory() {
             const item = document.createElement('div');
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
             
-            let historyTitle = data.dateRange;
-            if (data.reportTitle && typeof data.reportTitle === 'object') {
-                historyTitle = data.reportTitle[lang] || data.dateRange;
-            } else if (typeof data.reportTitle === 'string') {
-                historyTitle = data.reportTitle;
+            // Simplify title to be clear and concise (e.g., "3월 4주차 트렌드 보고서")
+            let historyTitle = data.dateRange || doc.id;
+            if (historyTitle.includes('리포트')) {
+                historyTitle = historyTitle.replace('리포트', '트렌드 보고서');
+            } else {
+                historyTitle += ' 트렌드 보고서';
             }
             
             item.textContent = historyTitle;
