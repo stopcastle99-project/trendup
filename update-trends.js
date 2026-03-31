@@ -407,8 +407,12 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const moStatus = getStatusSuffix(d, 1);
     const yrStatus = (m === 12 && d >= 29) ? "작성중" : "데이터집계중";
 
-    const wkLabel = `${m}월 ${currentWeekChunk}주차 (${String(m).padStart(2, '0')}.${String(weeklyStartDay).padStart(2, '0')} ~ ${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}) ${wkStatus}`;
-    const moLabel = `${m}월 리포트 (${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}) ${moStatus}`;
+    // v3.4.5: Always show full target period even while aggregating
+    const wkEndDay = (currentWeekChunk === 1) ? 7 : (currentWeekChunk === 2) ? 14 : (currentWeekChunk === 3) ? 21 : new Date(y, m, 0).getDate();
+    const moEndDay = new Date(y, m, 0).getDate();
+
+    const wkLabel = `${m}월 ${currentWeekChunk}주차 (${String(m).padStart(2, '0')}.${String(weeklyStartDay).padStart(2, '0')} ~ ${String(m).padStart(2, '0')}.${String(wkEndDay).padStart(2, '0')}) ${wkStatus}`;
+    const moLabel = `${m}월 리포트 (${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(moEndDay).padStart(2, '0')}) ${moStatus}`;
     const yrLabel = `${y}년 리포트 (${y}.01.01 ~ 12.31) ${yrStatus}`;
 
     await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', wkLabel);

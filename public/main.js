@@ -707,14 +707,17 @@ class App {
         const curSlug = latestDoc ? latestDoc.slug : null;
         const curLabel = latestDoc ? (latestDoc.dateRange || '') : '';
         
-        // Extract month/week components for precision matching
-        const monthPart = curLabel.match(/\d+월/) ? curLabel.match(/\d+월/)[0] : '';
-        const weekPart = curLabel.match(/\d+주차/) ? curLabel.match(/\d+주차/)[0] : '';
+        // Extract month/week components for precision matching (v3.4.5: Fixed regex)
+        const monthMatch = curLabel.match(/(\d+)월/);
+        const weekMatch = curLabel.match(/(\d+)주차/);
+        const curMonthStr = monthMatch ? monthMatch[0] : '';
+        const curWeekStr = weekMatch ? weekMatch[0] : '';
 
         const seenLabels = new Set();
         const validArchives = pastDocs.filter(p => {
           const pTitle = p.data.dateRange || '';
-          const isOverlap = monthPart && weekPart && pTitle.includes(monthPart) && pTitle.includes(weekPart);
+          // v3.4.5: Only mark as overlap if BOTH month and week match. 
+          const isOverlap = curMonthStr && curWeekStr && pTitle.includes(curMonthStr) && pTitle.includes(curWeekStr);
           
           if (seenLabels.has(pTitle)) return false;
           seenLabels.add(pTitle);
