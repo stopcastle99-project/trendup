@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.05");
+    console.log("App Init: v3.2.06");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -661,9 +661,13 @@ class App {
         }
 
         // Only show historical reports that are actually finalized, have items, and are NOT the one already featured
+        // OR the one currently being drafted (latestDoc.slug).
         const featuredId = featuredDoc ? featuredDoc.id : null;
+        const currentTargetSlug = latestDoc ? latestDoc.slug : null;
+        
         const validArchives = pastDocs.filter(p => 
           p.id !== featuredId &&
+          p.id !== currentTargetSlug &&
           p.data.isAggregating === false && 
           p.data.items && 
           p.data.items.length > 0
