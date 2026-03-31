@@ -272,22 +272,68 @@ class TrendList extends HTMLElement {
 }
 
 class TrendModal extends HTMLElement {
-  constructor() { super(); this.attachShadow({ mode: 'open' }); }
-  show(trend, lang, matchedReports = []) {
-    if (!trend) return;
-    const analysis = trend.aiReports?.[lang] || trend.aiReports?.['ko'] || "AI Analysis Report Loading...";
-    this.render(trend, lang, analysis, matchedReports);
-  }
-  hide() { this.shadowRoot.innerHTML = ''; }
-  render(trend, lang, analysis, matchedReports) {
-    const t = i18n[lang] || i18n.en;
-    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; cursor: default; } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); display: flex; align-items: center; justify-content: center; } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; flex-direction: column; transition: all 0.2s; } .link:hover { border-color: var(--primary); background: oklch(0.6 0.2 20 / 0.03); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; } .report-link { border-left: 4px solid var(--primary); background: linear-gradient(to right, oklch(0.6 0.2 20 / 0.05), transparent); }</style>
-      <div class="overlay"><div class="modal"><button class="close">&times;</button><h2 class="title">${trend.originalTitle || trend.title}</h2><span class="section-title">✨ ${t.summary}</span><p class="text">${analysis}</p>
-      ${matchedReports.length > 0 ? `<span class="section-title">${t.labels.featuredReports}</span><div class="link-group">${matchedReports.map(r => `<a href="report/${r.slug}/" target="_blank" class="link report-link"><span class="link-meta">${r.type.toUpperCase()} ANALYSIS</span><span>📈 ${r.reportTitle}</span></a>`).join('')}</div>` : ''}
-      <span class="section-title">📰 ${t.news}</span><div class="link-group">${(trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('')}</div>${(trend.videoLinks && trend.videoLinks.length > 0) ? `<span class="section-title">🎬 ${t.videos}</span><div class="link-group">${trend.videoLinks.map(v => `<a href="${v.url}" target="_blank" class="link"><span class="link-meta">${v.source}</span><span>🎥 ${v.title}</span></a>`).join('')}</div>` : ''}</div></div>`;
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot.innerHTML = `<style>.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; } .overlay.active { opacity: 1; pointer-events: auto; } .modal { background: var(--bg); width: 92%; max-width: 500px; max-height: 85vh; border-radius: 24px; padding: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow-hover); overflow-y: auto; position: relative; cursor: default; transform: translateY(20px); transition: transform 0.2s ease; } .overlay.active .modal { transform: translateY(0); } .close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; border: none; background: var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; color: var(--text); display: flex; align-items: center; justify-content: center; transition: background 0.2s; } .close:hover { background: var(--surface); } .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--text); } .section-title { font-weight: 800; color: var(--primary); margin: 1.5rem 0 0.5rem; display: block; font-size: 0.8rem; text-transform: uppercase; } .text { line-height: 1.6; color: var(--text); margin-bottom: 1.5rem; font-size: 0.95rem; white-space: pre-wrap; } .link-group { display: flex; flex-direction: column; gap: 0.5rem; } .link { padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); font-size: 0.85rem; display: flex; flex-direction: column; transition: all 0.2s; } .link:hover { border-color: var(--primary); background: oklch(0.6 0.2 20 / 0.03); transform: translateY(-1px); } .link-meta { font-size: 0.7rem; font-weight: 800; color: var(--primary); opacity: 0.7; } .report-link { border-left: 4px solid var(--primary); background: linear-gradient(to right, oklch(0.6 0.2 20 / 0.05), transparent); }</style>
+      <div class="overlay">
+        <div class="modal">
+          <button class="close">&times;</button>
+          <h2 class="title" id="title"></h2>
+          <span class="section-title" id="summary-title"></span>
+          <p class="text" id="analysis"></p>
+          <div id="reports-section">
+            <span class="section-title" id="reports-title"></span>
+            <div class="link-group" id="reports-links"></div>
+          </div>
+          <span class="section-title" id="news-title"></span>
+          <div class="link-group" id="news-links"></div>
+          <div id="video-section">
+            <span class="section-title" id="video-title"></span>
+            <div class="link-group" id="video-links"></div>
+          </div>
+        </div>
+      </div>`;
+      
     this.shadowRoot.querySelector('.close').onclick = () => this.hide();
     this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
   }
+
+  show(trend, lang, matchedReports = []) {
+    if (!trend) return;
+    const t = i18n[lang] || i18n.en;
+    const analysis = trend.aiReports?.[lang] || trend.aiReports?.['ko'] || "AI Analysis Report Loading...";
+    
+    this.shadowRoot.getElementById('title').textContent = trend.originalTitle || trend.title;
+    this.shadowRoot.getElementById('summary-title').textContent = `✨ ${t.summary}`;
+    this.shadowRoot.getElementById('analysis').textContent = analysis;
+    this.shadowRoot.getElementById('news-title').textContent = `📰 ${t.news}`;
+    this.shadowRoot.getElementById('news-links').innerHTML = (trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('');
+    
+    const reportsSection = this.shadowRoot.getElementById('reports-section');
+    if (matchedReports && matchedReports.length > 0) {
+      reportsSection.style.display = 'block';
+      this.shadowRoot.getElementById('reports-title').textContent = t.labels.featuredReports || "📅 리포트";
+      this.shadowRoot.getElementById('reports-links').innerHTML = matchedReports.map(r => `<a href="report/${r.slug}/" target="_blank" class="link report-link"><span class="link-meta">${r.type.toUpperCase()} ANALYSIS</span><span>📈 ${r.reportTitle}</span></a>`).join('');
+    } else {
+      reportsSection.style.display = 'none';
+      this.shadowRoot.getElementById('reports-links').innerHTML = '';
+    }
+
+    const videoSection = this.shadowRoot.getElementById('video-section');
+    if (trend.videoLinks && trend.videoLinks.length > 0) {
+      videoSection.style.display = 'block';
+      this.shadowRoot.getElementById('video-title').textContent = `🎬 ${t.videos}`;
+      this.shadowRoot.getElementById('video-links').innerHTML = trend.videoLinks.map(v => `<a href="${v.url}" target="_blank" class="link"><span class="link-meta">${v.source}</span><span>🎥 ${v.title}</span></a>`).join('');
+    } else {
+      videoSection.style.display = 'none';
+      this.shadowRoot.getElementById('video-links').innerHTML = '';
+    }
+    
+    this.shadowRoot.querySelector('.overlay').classList.add('active');
+  }
+
+  hide() { this.shadowRoot.querySelector('.overlay').classList.remove('active'); }
 }
 
 customElements.define('trend-list', TrendList);
