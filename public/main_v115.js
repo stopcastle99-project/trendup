@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.06");
+    console.log("App Init: v3.2.08");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -660,18 +660,29 @@ class App {
           card.appendChild(pastCtn);
         }
 
-        // Only show historical reports that are actually finalized, have items, and are NOT the one already featured
-        // OR the one currently being drafted (latestDoc.slug).
-        const featuredId = featuredDoc ? featuredDoc.id : null;
-        const currentTargetSlug = latestDoc ? latestDoc.slug : null;
+        // Precision Filter: Hide any archive that matches the CURRENT draft's Month & Week
+        // (E.g. if writing "3월 4주차", hide ALL archived reports containing both "3월" and "4주차")
+        const fId = featuredDoc ? featuredDoc.id : null;
+        const curSlug = latestDoc ? latestDoc.slug : null;
+        const curLabel = latestDoc ? (latestDoc.dateRange || '') : '';
         
-        const validArchives = pastDocs.filter(p => 
-          p.id !== featuredId &&
-          p.id !== currentTargetSlug &&
-          p.data.isAggregating === false && 
-          p.data.items && 
-          p.data.items.length > 0
-        );
+        // Extract month/week components for precision matching
+        const monthPart = curLabel.match(/\d+월/) ? curLabel.match(/\d+월/)[0] : '';
+        const weekPart = curLabel.match(/\d+주차/) ? curLabel.match(/\d+주차/)[0] : '';
+
+        const validArchives = pastDocs.filter(p => {
+          const pTitle = p.data.dateRange || '';
+          const isOverlap = monthPart && weekPart && pTitle.includes(monthPart) && pTitle.includes(weekPart);
+          
+          return (
+            p.id !== fId &&
+            p.id !== curSlug &&
+            !isOverlap &&
+            p.data.isAggregating === false && 
+            p.data.items && 
+            p.data.items.length > 0
+          );
+        });
         const displayArchives = validArchives.slice(0, 3);
 
         if (displayArchives.length > 0) {
