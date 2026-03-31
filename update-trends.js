@@ -374,15 +374,25 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
       if (archStart) await this.generatePeriodReport(country, 'weekly', archStart, archEnd, true, archSlug, archLabel);
     }
     
-    const forceOther = force || process.argv.includes('--force-reports');
-    if (forceOther || d === 1) {
-      const prevM = m === 1 ? 12 : m - 1;
-      const prevY = m === 1 ? y - 1 : y;
-      const lastDay = new Date(prevY, prevM, 0).getDate();
-      const archStart = `${prevY}-${String(prevM).padStart(2, '0')}-01`;
-      const archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-      const archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-monthly`;
-      const archLabel = `${prevY}년 ${prevM}월 리포트`;
+    const isLastDayOfMonth = new Date(y, m, 0).getDate() === d;
+    if (forceOther || d === 1 || isLastDayOfMonth) {
+      let archStart, archEnd, archSlug, archLabel;
+      if (d === 1) {
+        // Archive PREVIOUS month on the 1st
+        const prevM = m === 1 ? 12 : m - 1;
+        const prevY = m === 1 ? y - 1 : y;
+        const lastDay = new Date(prevY, prevM, 0).getDate();
+        archStart = `${prevY}-${String(prevM).padStart(2, '0')}-01`;
+        archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+        archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-monthly`;
+        archLabel = `${prevY}년 ${prevM}월 리포트`;
+      } else {
+        // Archive CURRENT month on the last day (Today!)
+        archStart = `${y}-${String(m).padStart(2, '0')}-01`;
+        archEnd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        archSlug = `${y}-${String(m).padStart(2, '0')}-monthly`;
+        archLabel = `${y}년 ${m}월 리포트`;
+      }
       await this.generatePeriodReport(country, 'monthly', archStart, archEnd, true, archSlug, archLabel);
     }
     

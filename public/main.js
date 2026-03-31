@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.16");
+    console.log("App Init: v3.2.17");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -624,7 +624,8 @@ class App {
         // not as the main featured button unless the current period is finished.
 
         // 3. Render Main Card Area
-        if (featuredDoc) {
+        const isYearlyDraft = (type === 'yearly' && isFeaturedNew);
+        if (featuredDoc && !isYearlyDraft) {
           card.classList.remove('disabled');
           card.style.cursor = 'pointer';
           let pTitle = featuredDoc.data.dateRange || featuredDoc.id;
