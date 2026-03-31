@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.32");
+    console.log("App Init: v3.2.33");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -590,6 +590,7 @@ class App {
 
         const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
         const historyExists = pastDocs.length > 0;
+        let finalIsAgg = isAgg; // v3.2.33 Fix
 
         // 1. Current Status Badge
         if (latestDoc) {
@@ -597,7 +598,7 @@ class App {
           let badgeHtml = '';
           
           // 1.1 Status Override Logic: Be smarter than the DB flag
-          let finalIsAgg = isAgg;
+          finalIsAgg = isAgg;
           const kst = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
           const curM = kst.getUTCMonth() + 1;
           const curD = kst.getUTCDate();
