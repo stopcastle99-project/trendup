@@ -12,7 +12,7 @@ let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
     labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록" },
-    reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중..." },
+    reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기" },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" }, 
     pages: { 
       about: { 
@@ -71,7 +71,7 @@ let i18n = {
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
     labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リ포트 분석" },
-    reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中..." },
+    reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート" },
 
     menu: { about: "TrendUpについて", privacy: "プライバシーポリシー", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト情報" }, 
     pages: { 
@@ -119,7 +119,7 @@ let i18n = {
   en: { 
     title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
     labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports" },
-    reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data..." },
+    reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports" },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
       about: { 
@@ -560,37 +560,48 @@ class App {
       if (!card) continue;
       
       try {
-        const q = query(collection(this.db, "reports", type, this.currentCountry), orderBy("lastUpdated", "desc"), limit(2));
+        const q = query(collection(this.db, "reports", type, this.currentCountry), orderBy("lastUpdated", "desc"), limit(4));
         const snap = await getDocs(q);
         
-        let reportData = null;
-        let reportId = null;
+        let latestDoc = null;
+        const pastDocs = [];
         
         snap.forEach(docSnap => {
-          if (docSnap.id !== 'latest' && !reportData) {
-            reportData = docSnap.data();
-            reportId = docSnap.id;
+          if (docSnap.id === 'latest') {
+            latestDoc = docSnap.data();
+          } else {
+            pastDocs.push({ id: docSnap.id, data: docSnap.data() });
           }
         });
 
         const titleEl = card.querySelector(`[data-report="${type}"]`);
         const badge = card.querySelector('.coming-soon-badge');
 
-        if (reportData) {
-          if (titleEl && reportData.dateRange) {
-             titleEl.textContent = reportData.dateRange; // User requested date as title
+        if (latestDoc) {
+          const isArchived = pastDocs.length > 0;
+          const displayDoc = latestDoc.isAggregating && isArchived ? pastDocs[0].data : latestDoc;
+          
+          let transTitle = displayDoc.dateRange;
+          if (displayDoc.reportTitle && displayDoc.reportTitle[this.currentLang]) {
+            transTitle = displayDoc.reportTitle[this.currentLang];
           }
+
+          if (titleEl) titleEl.textContent = transTitle;
+
           if (badge) {
-            badge.textContent = t.reports[type]; // Swap original title to badge
-            badge.classList.add('active-report');
+            badge.textContent = latestDoc.isAggregating ? (t.reports.comingSoon || "데이터 집계 중...") : t.reports[type];
+            if (!latestDoc.isAggregating) badge.classList.add('active-report');
+            else badge.classList.remove('active-report');
           }
           
-          card.onclick = () => { 
-            const url = `report/?type=${type}&country=${this.currentCountry}&id=${reportId}`;
-            window.location.href = url;
+          // Main card click (only if it's not aggregating)
+          card.onclick = () => {
+            if (!latestDoc.isAggregating) {
+              const url = `report/?type=${type}&country=${this.currentCountry}&id=${latestDoc.slug}`;
+              window.location.href = url;
+            }
           };
         } else {
-          // No archived report found -> Show "Aggregating"
           if (titleEl) titleEl.textContent = t.reports[type];
           if (badge) {
             badge.textContent = t.reports.comingSoon || "데이터 집계 중...";
@@ -598,8 +609,32 @@ class App {
           }
           card.onclick = null;
         }
-      } catch (e) {
-        console.warn(`Failed to refresh ${type} report card:`, e);
+
+        // Render Past Docs Lists below the inner card layer
+        let pastCtn = card.querySelector('.past-reports-list');
+        if (!pastCtn) {
+          pastCtn = document.createElement('div');
+          pastCtn.className = 'past-reports-list';
+          card.appendChild(pastCtn);
+        }
+        
+        if (pastDocs.length > 0) {
+          const listHtml = pastDocs.map((p, idx) => {
+            let pTitle = p.data.dateRange || p.id;
+            if (p.data.reportTitle && p.data.reportTitle[this.currentLang]) {
+              pTitle = p.data.reportTitle[this.currentLang];
+            }
+            const isNew = idx === 0 ? `<span class="new-badge">NEW</span>` : '';
+            return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link" onclick="event.stopPropagation()">${isNew}<span>${pTitle}</span></a>`;
+          }).join('');
+          
+          pastCtn.innerHTML = `<span class="past-title">📜 ${t.reports.pastReports || '과거 리포트 모아보기'}</span>` + listHtml;
+        } else {
+          pastCtn.innerHTML = '';
+        }
+
+      } catch (err) { 
+        console.warn(`Failed to refresh ${type} report card:`, err);
       }
     }
   }

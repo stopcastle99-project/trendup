@@ -310,77 +310,129 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 
   async aggregateReports(country, force = false) {
     const now = new Date();
-    const dayOfMonth = now.getDate();
-    const dayOfWeek = now.getDay(); // 0 is Sunday
+    const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+    const y = kst.getUTCFullYear();
+    const m = kst.getUTCMonth() + 1;
+    const d = kst.getUTCDate();
     
-    console.log(`  - Running aggregation for ${country} (Day ${dayOfMonth}, WeekDay ${dayOfWeek})...`);
+    // 1. Generate Latest Drafts (Currently Aggregating)
+    const currentWeekChunk = (d <= 7) ? 1 : (d <= 14) ? 2 : (d <= 21) ? 3 : 4;
+    const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22).padStart(2, '0')}`;
+    const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const monthlyStart = `${y}-${String(m).padStart(2, '0')}-01`;
+    const yearlyStart = `${y}-01-01`;
 
-    // Weekly: Live update hourly, Archive on Sundays
-    const isSundayFinal = (dayOfWeek === 0);
+    await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', `${y}년 ${m}월 ${currentWeekChunk}주차 리포트`);
+    await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', `${y}년 ${m}월 리포트`);
+    await this.generatePeriodReport(country, 'yearly', yearlyStart, todayStr, false, '', `${y}년 리포트`);
+
+    // 2. Archival Boundaries
+    const isWk1End = (d === 8);
+    const isWk2End = (d === 15);
+    const isWk3End = (d === 22);
+    const isWk4End = (d === 1); // 1st of month
     const forceWeekly = force || process.argv.includes('--force-weekly');
-    await this.generatePeriodReport(country, 'weekly', 7, isSundayFinal || forceWeekly);
-    
-    // Monthly/Yearly: Live update hourly, Archive on boundary
-    const forceOther = force;
-    const isMonthlyFinal = (dayOfMonth === 1);
-    await this.generatePeriodReport(country, 'monthly', 30, isMonthlyFinal || forceOther);
-    
-    const isYearlyFinal = (now.getMonth() === 0 && dayOfMonth === 1);
-    await this.generatePeriodReport(country, 'yearly', 365, isYearlyFinal || forceOther);
-  }
 
-  getDateRange(type, days) {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - days);
-    
-    const y = end.getFullYear();
-    const m = String(end.getMonth() + 1).padStart(2, '0');
-    const d = String(end.getDate()).padStart(2, '0');
-    
-    const sy = start.getFullYear();
-    const sm = String(start.getMonth() + 1).padStart(2, '0');
-    const sd = String(start.getDate()).padStart(2, '0');
-
-    if (type === 'weekly') {
-      return `${sy}년 ${sm}월 ${sd}일 ~ ${m}월 ${d}일`;
-    } else if (type === 'monthly') {
-      return `${y}년 ${m}월`;
-    } else if (type === 'yearly') {
-      return `${y}년`;
+    if (forceWeekly || isWk1End || isWk2End || isWk3End || isWk4End) {
+      let archStart, archEnd, archSlug, archLabel;
+      if (isWk1End || (forceWeekly && currentWeekChunk === 1)) {
+        archStart = `${y}-${String(m).padStart(2, '0')}-01`; archEnd = `${y}-${String(m).padStart(2, '0')}-07`; archSlug = `${y}-${String(m).padStart(2, '0')}-week1`; archLabel = `${y}년 ${m}월 1주차 리포트`;
+      } else if (isWk2End || (forceWeekly && currentWeekChunk === 2)) {
+        archStart = `${y}-${String(m).padStart(2, '0')}-08`; archEnd = `${y}-${String(m).padStart(2, '0')}-14`; archSlug = `${y}-${String(m).padStart(2, '0')}-week2`; archLabel = `${y}년 ${m}월 2주차 리포트`;
+      } else if (isWk3End || (forceWeekly && currentWeekChunk === 3)) {
+        archStart = `${y}-${String(m).padStart(2, '0')}-15`; archEnd = `${y}-${String(m).padStart(2, '0')}-21`; archSlug = `${y}-${String(m).padStart(2, '0')}-week3`; archLabel = `${y}년 ${m}월 3주차 리포트`;
+      } else if (isWk4End || (forceWeekly && currentWeekChunk === 4)) {
+        const prevM = m === 1 ? 12 : m - 1;
+        const prevY = m === 1 ? y - 1 : y;
+        const lastDayOfPrevMonth = new Date(prevY, prevM, 0).getDate();
+        archStart = `${prevY}-${String(prevM).padStart(2, '0')}-22`; archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDayOfPrevMonth).padStart(2, '0')}`; archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-week4`; archLabel = `${prevY}년 ${prevM}월 4주차 리포트`;
+      }
+      if (archStart) await this.generatePeriodReport(country, 'weekly', archStart, archEnd, true, archSlug, archLabel);
     }
-    return `${sy}/${sm}/${sd} - ${y}/${m}/${d}`;
+    
+    const forceOther = force || process.argv.includes('--force-reports');
+    if (forceOther || d === 1) {
+      const prevM = m === 1 ? 12 : m - 1;
+      const prevY = m === 1 ? y - 1 : y;
+      const lastDay = new Date(prevY, prevM, 0).getDate();
+      const archStart = `${prevY}-${String(prevM).padStart(2, '0')}-01`;
+      const archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      const archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-monthly`;
+      const archLabel = `${prevY}년 ${prevM}월 리포트`;
+      await this.generatePeriodReport(country, 'monthly', archStart, archEnd, true, archSlug, archLabel);
+    }
+    
+    if (forceOther || (d === 1 && m === 1)) {
+      const prevY = y - 1;
+      const archStart = `${prevY}-01-01`;
+      const archEnd = `${prevY}-12-31`;
+      const archSlug = `${prevY}-yearly`;
+      const archLabel = `${prevY}년 리포트`;
+      await this.generatePeriodReport(country, 'yearly', archStart, archEnd, true, archSlug, archLabel);
+    }
   }
 
-  async generateAIReportAnalysis(top5, country, type) {
+  async generateAIReportAnalysis(top5, country, type, label) {
     if (!this.genAI) throw new Error("GEMINI_API_KEY NOT FOUND");
-    const langNames = { KR: "Korean", JP: "Japanese", US: "English" };
-    const lang = langNames[country] || "English";
     
-    const keywordsStr = top5.map((t, i) => `${i+1}. ${t.keyword}`).join("\n");
-    const prompt = `You are a seasoned trend strategist and market analyst for GlobalTrendUp. 
-Write a high-end, professional, and deeply insightful ${type} trend report for ${country} in ${lang}.
-The tone should be authoritative yet conversational, like a premium newsletter or a tech/culture column (e.g., The Verge, Wired, or a specialized market report).
+    // Split keywords into Rank 1-2 and Rank 3-5
+    const rank1_2 = top5.slice(0, 2).map((t, i) => `${i+1}위. ${t.keyword}`).join("\n");
+    const rank3_5 = top5.slice(2, 5).map((t, i) => `${i+3}위. ${t.keyword}`).join("\n");
+    
+    const prompt = `당신은 글로벌 트렌드 분석 전문가입니다. 아래 ${country}의 ${label} 트렌드 키워드를 분석하여 리포트를 작성하세요. 최고 순위(1~2위)와 하위 순위(3~5위)에 따라 분석 깊이를 다르게 작성해야 합니다.
 
-Keywords to analyze:
-${keywordsStr}
+[작성 규칙 (공통)]
+- 순수 JSON 포맷으로만 응답하세요 (마크다운 텍스트 백틱 제외).
+- 한국어(ko), 영어(en), 일본어(ja) 번역본을 반드시 모두 작성해야 합니다.
+- 사람에게 설명하듯 자연스럽게 작성. 중복 표현 및 기계적인 느낌 제거.
+- 각 항목은 제목을 붙여 구분하고, 가독성 좋게 줄바꿈을 하세요. 불필요한 기호(마크다운 # 등) 사용 자제.
 
-Strictly follow this JSON format:
+==================================
+[랭크 1위, 2위 집중 심층 분석 요청]
+대상 키워드:
+${rank1_2}
+
+아래 [구성] 5가지를 반드시 지켜주세요 (단순 나열 금지, 반드시 이유와 해석 포함, 한 언어당 최소 500자 이상 구체적 서술):
+1. 한줄 요약 (왜 이 트렌드가 뜨는지 핵심 한줄)
+2. 핵심 포인트 3개 (짧게 bullet)
+3. 트렌드 개요 (최근 상황 설명)
+4. 왜 뜨는지 (가장 중요, 2~3가지 사회/문화/경제적 이유를 설명)
+5. 결론 (앞으로 전망 + 한줄 정리)
+
+==================================
+[랭크 3위, 4위, 5위 간략 분석 요청]
+대상 키워드:
+${rank3_5}
+
+아래 [구성] 2가지를 반드시 지켜주세요 (단순 나열 금지, 해석/이유 포함, 핵심 위주 짧은 문단):
+1. 한줄 요약 (왜 이 트렌드가 뜨는지 핵심 한줄)
+2. 핵심 포인트 3개 (짧게 bullet)
+
+==================================
+반드시 아래 JSON 형식으로만 문자열을 출력하세요:
 {
-  "reportTitle": "A compelling, human-written title for this ${type} insight",
-  "leadSummary": "A 3-4 sentence narrative summarizing the overall trend landscape and thematic shifts observed during this period. Connect the dots between different keywords if applicable.",
+  "reportTitle": {
+    "ko": "사람이 쓴 듯한 매력적인 리포트 한국어 제목",
+    "en": "Human-like engaging English title",
+    "ja": "人間らしい魅力的な日本語タイトル"
+  },
+  "leadSummary": {
+    "ko": "전체 분석을 관통하는 도입부 요약 (3~4문장)",
+    "en": "...",
+    "ja": "..."
+  },
   "analyses": [
     { 
-      "keyword": "Keyword 1", 
-      "depth": "Expert analysis (3-4 paragraphs). Avoid stating 'Rank 1 is...'. Instead, weave a story about WHY this mattered, the social pulse, and what it implies for the future. Use natural, human-like sentences." 
-    },
-    { "keyword": "Keyword 2", "depth": "Expert analysis (3-4 paragraphs) with human-like storytelling and context." },
-    { "keyword": "Keyword 3", "depth": "One insightful paragraph exploring the context and cultural trigger." },
-    { "keyword": "Keyword 4", "depth": "One insightful paragraph exploring the context and cultural trigger." },
-    { "keyword": "Keyword 5", "depth": "One insightful paragraph exploring the context and cultural trigger." }
+      "keyword": "키워드 1 (예: Apple)", 
+      "depth": {
+        "ko": "1. 한줄 요약\\n...\\n\\n2. 핵심 포인트 3개\\n... (요구된 구성 및 분량에 맞게 텍스트 작성)",
+        "en": "...",
+        "ja": "..."
+      }
+    }
   ]
 }
-No Markdown, just JSON. Avoid repetitive AI-style phrasing.`;
+`;
 
     const modelsToTry = ["gemma-3-27b-it", "gemma-2-27b-it", "gemini-2.0-flash"];
     let text = "";
@@ -391,7 +443,7 @@ No Markdown, just JSON. Avoid repetitive AI-style phrasing.`;
         try {
           const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
-          text = result.response.text().replace(/```json|```/g, "").trim();
+          text = result.response.text().replace(/\u0060\u0060\u0060json|\u0060\u0060\u0060/g, "").trim();
           usedModel = m;
           break;
         } catch (err) {
@@ -408,35 +460,45 @@ No Markdown, just JSON. Avoid repetitive AI-style phrasing.`;
     } catch (e) {
       console.error(`🚨 AI Analysis failed for ${type} ${country}:`, e.message);
       return { 
-        reportTitle: `${type.toUpperCase()} Trend Report`,
-        analyses: top5.map(t => ({ keyword: t.keyword, depth: "Analysis pending aggregation..." }))
+        reportTitle: { ko: `${label}`, en: `${label}`, ja: `${label}` },
+        analyses: top5.map(t => ({ keyword: t.keyword, depth: { ko: "현재 집계 중이거나 분석 오류가 발생했습니다.", en: "Aggregating...", ja: "集計中..." } }))
       };
     }
   }
 
   toSlug(text) {
     if (!text) return "report";
-    // Convert many non-alphanumeric chars to hyphen
     let slug = text.trim().toLowerCase()
-      .replace(/[^\uAC00-\uD7AF\u3040-\u30FF\u31F0-\u31FF\u4E00-\u9FFF\u4E00-\u9FA5a-z0-9]/g, "-")
+      .replace(/[^가-힣a-z0-9]/gi, "-")
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "");
     return slug || "report";
   }
 
-  async generatePeriodReport(country, type, days, isArchival = false) {
+  async generatePeriodReport(country, type, startDate, endDate, isArchival, slugIdentifier, label) {
     const historyCol = db.collection("trend_history");
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-    const cutoffStr = cutoffDate.toISOString().split('T')[0];
+    
+    // Draft (Latest) doesn't use AI yet to save cost, it just sets the aggregating flag.
+    if (!isArchival) {
+      const latestData = {
+        type, country, dateRange: label, slug: 'latest', isAggregating: true, 
+        reportTitle: { ko: `${label} 집계중...`, en: `${label} (Aggregating)`, ja: `${label} 集計中...` },
+        lastUpdated: admin.firestore.Timestamp.now()
+      };
+      await db.collection("reports").doc(type).collection(country).doc("latest").set(latestData);
+      return;
+    }
     
     try {
       const snapshot = await historyCol.get();
       if (snapshot.empty) return;
+      
       const globalScores = {};
       snapshot.forEach(doc => {
-        const docDate = doc.id.split('_')[1];
-        if (doc.id.startsWith(country) && docDate >= cutoffStr) {
+        const parts = doc.id.split('_');
+        if (parts.length < 2) return;
+        const docDate = parts[1];
+        if (doc.id.startsWith(country) && docDate >= startDate && docDate <= endDate) {
           const kws = doc.data().keywords || {};
           for (const [kw, stats] of Object.entries(kws)) {
             if (!globalScores[kw]) globalScores[kw] = { score: 0 };
@@ -451,27 +513,24 @@ No Markdown, just JSON. Avoid repetitive AI-style phrasing.`;
         .slice(0, 5);
 
       if (top5.length > 0) {
-        console.log(`  - Generating AI Analysis for ${type} ${country}...`);
-        const analysis = await this.generateAIReportAnalysis(top5, country, type);
-        const dateRange = this.getDateRange(type, days);
+        console.log(`  - Generating AI Analysis for ${type} ${country} (${startDate} to ${endDate})...`);
+        const analysis = await this.generateAIReportAnalysis(top5, country, type, label);
         
         const top1Slug = this.toSlug(top5[0].keyword);
-        const reportSlug = `${country.toLowerCase()}-${type}-${top1Slug}-${new Date().toISOString().split('T')[0]}`;
+        const reportSlug = `${slugIdentifier}-${top1Slug}`;
         
         const reportData = {
-          type,
-          country,
-          dateRange,
+          type, country,
+          dateRange: label,
           slug: reportSlug,
+          isAggregating: false,
           reportTitle: analysis.reportTitle,
+          leadSummary: analysis.leadSummary || null,
           keywords: top5.map(t => t.keyword),
           items: await Promise.all(top5.map(async (t, i) => {
-            const extra = analysis.analyses.find(a => a.keyword === t.keyword) || { depth: "Context coming soon." };
+            const extra = analysis.analyses.find(a => a.keyword === t.keyword) || { depth: { ko: "내용 없음", en: "No content", ja: "内容なし" } };
             return {
-              keyword: t.keyword,
-              score: t.score,
-              rank: i + 1,
-              depth: extra.depth,
+              keyword: t.keyword, score: t.score, rank: i + 1, depth: extra.depth,
               newsLinks: await this.getSupplementaryNews(t.keyword, country),
               videoLinks: await this.getYouTubeVideos(t.keyword, country)
             };
@@ -479,16 +538,8 @@ No Markdown, just JSON. Avoid repetitive AI-style phrasing.`;
           lastUpdated: admin.firestore.Timestamp.now()
         };
 
-        // Always save to 'latest'
-        await db.collection("reports").doc(type).collection(country).doc("latest").set(reportData);
-        
-        // Only Archive if it's the period boundary OR forced
-        if (isArchival) {
-          await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
-          console.log(`  - ${type.toUpperCase()} archival report snapshot created: ${reportSlug}`);
-        } else {
-          console.log(`  - ${type.toUpperCase()} live report updated (latest)`);
-        }
+        await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
+        console.log(`  - ${type.toUpperCase()} archival report snapshot created: ${reportSlug}`);
       }
     } catch (e) {
       console.error(`Error generating ${type} report for ${country}:`, e.message);
