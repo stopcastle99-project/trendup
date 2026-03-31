@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.85");
+    console.log("App Init: v3.1.86");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
