@@ -354,11 +354,11 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const isWk1End = (d === 8);
     const isWk2End = (d === 15);
     const isWk3End = (d === 22);
-    const isWk4End = (d === 1); // 1st of month
+    const isLastDayOfMonth = new Date(y, m, 0).getDate() === d;
+    const isWk4End = (d === 1 || isLastDayOfMonth);
     const forceWeekly = force || process.argv.includes('--force-weekly');
-    const forceOther = force || process.argv.includes('--force-reports');
-
-    if (forceWeekly || isWk1End || isWk2End || isWk3End || d === 31 || isWk4End) {
+    const forceOther = force || process.argv.includes('--force-reports') || process.argv.includes('--force-all');
+    if (forceWeekly || isWk1End || isWk2End || isWk3End || isWk4End) {
       let archStart, archEnd, archSlug, archLabel;
       if (isWk1End || (forceWeekly && currentWeekChunk === 1)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-01`; archEnd = `${y}-${String(m).padStart(2, '0')}-07`; archSlug = `${y}-${String(m).padStart(2, '0')}-week1`; archLabel = `${y}년 ${m}월 1주차 리포트`;
@@ -366,16 +366,25 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
         archStart = `${y}-${String(m).padStart(2, '0')}-08`; archEnd = `${y}-${String(m).padStart(2, '0')}-14`; archSlug = `${y}-${String(m).padStart(2, '0')}-week2`; archLabel = `${y}년 ${m}월 2주차 리포트`;
       } else if (isWk3End || (forceWeekly && currentWeekChunk === 3)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-15`; archEnd = `${y}-${String(m).padStart(2, '0')}-21`; archSlug = `${y}-${String(m).padStart(2, '0')}-week3`; archLabel = `${y}년 ${m}월 3주차 리포트`;
-      } else if (isWk4End || d === 31 || (forceWeekly && currentWeekChunk === 4)) {
-        archStart = `${y}-${String(m).padStart(2, '0')}-22`; 
-        archEnd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`; 
-        archSlug = `${y}-${String(m).padStart(2, '0')}-week4`; 
-        archLabel = `${y}년 ${m}월 4주차 리포트`;
+      } else if (isWk4End || (forceWeekly && currentWeekChunk === 4)) {
+        if (d === 1) { // 1st of month: Generate 4th week of PREVIOUS month
+          const prevM = m === 1 ? 12 : m - 1;
+          const prevY = m === 1 ? y - 1 : y;
+          const lastDay = new Date(prevY, prevM, 0).getDate();
+          archStart = `${prevY}-${String(prevM).padStart(2, '0')}-22`; 
+          archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`; 
+          archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-week4`; 
+          archLabel = `${prevY}년 ${prevM}월 4주차 리포트`;
+        } else { // Last day of CURRENT month: Generate 4th week of CURRENT month
+          archStart = `${y}-${String(m).padStart(2, '0')}-22`; 
+          archEnd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`; 
+          archSlug = `${y}-${String(m).padStart(2, '0')}-week4`; 
+          archLabel = `${y}년 ${m}월 4주차 리포트`;
+        }
       }
       if (archStart) await this.generatePeriodReport(country, 'weekly', archStart, archEnd, true, archSlug, archLabel);
     }
     
-    const isLastDayOfMonth = new Date(y, m, 0).getDate() === d;
     if (forceOther || d === 1 || isLastDayOfMonth) {
       let archStart, archEnd, archSlug, archLabel;
       if (d === 1) {
