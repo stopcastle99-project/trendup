@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.33");
+    console.log("App Init: v3.3.02");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -706,10 +706,14 @@ class App {
         const monthPart = curLabel.match(/\d+월/) ? curLabel.match(/\d+월/)[0] : '';
         const weekPart = curLabel.match(/\d+주차/) ? curLabel.match(/\d+주차/)[0] : '';
 
+        const seenLabels = new Set();
         const validArchives = pastDocs.filter(p => {
           const pTitle = p.data.dateRange || '';
           const isOverlap = monthPart && weekPart && pTitle.includes(monthPart) && pTitle.includes(weekPart);
           
+          if (seenLabels.has(pTitle)) return false;
+          seenLabels.add(pTitle);
+
           return (
             p.id !== fId &&
             p.id !== curSlug &&

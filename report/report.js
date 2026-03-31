@@ -301,19 +301,30 @@ async function loadHistory() {
     if (!list) return;
     try {
         const snapshot = await db.collection("reports").doc(type).collection(country)
-            .orderBy("lastUpdated", "desc").limit(12).get();
+            .orderBy("lastUpdated", "desc").limit(20).get(); // Increased limit for better dedup room
         list.innerHTML = '';
+        
+        const seenTitles = new Set();
         snapshot.forEach(doc => {
             const data = doc.data();
+            if (doc.id === 'latest') return;
+
+            // Use dateRange as the unique key for deduplication
+            const periodKey = data.dateRange || doc.id;
+            if (seenTitles.has(periodKey)) return;
+            seenTitles.add(periodKey);
+
             const isActive = doc.id === reportId;
             const item = document.createElement('div');
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
+            
             let historyTitle = data.dateRange;
             if (data.reportTitle && typeof data.reportTitle === 'object') {
                 historyTitle = data.reportTitle[lang] || data.dateRange;
             } else if (typeof data.reportTitle === 'string') {
                 historyTitle = data.reportTitle;
             }
+            
             item.textContent = historyTitle;
             item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
             list.appendChild(item);
