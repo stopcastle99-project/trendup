@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.28");
+    console.log("App Init: v3.2.29");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -596,8 +596,21 @@ class App {
           const rawLabel = latestDoc.dateRange || '';
           let badgeHtml = '';
           
-          if (isAgg) {
-            const isWriting = rawLabel.includes('작성중');
+          // 1.1 Status Override Logic: Be smarter than the DB flag
+          let finalIsAgg = isAgg;
+          const kst = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
+          const curM = kst.getUTCMonth() + 1;
+          const curD = kst.getUTCDate();
+
+          // Yearly is ALWAYS accumulating unless it's Dec 29-31
+          if (type === 'yearly') {
+            if (curM < 12 || (curM === 12 && curD < 29)) {
+              finalIsAgg = true;
+            }
+          }
+
+          if (finalIsAgg) {
+            const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && curD >= 28 && isAgg);
             if (isWriting) {
               badgeHtml = `<span class="status-badge writing">✍️ 작성 중</span>`;
             } else if (type === 'yearly') {
