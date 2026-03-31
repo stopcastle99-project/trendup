@@ -12,7 +12,7 @@ let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
     labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록" },
-    reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기" },
+    reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기", latest: "최신 리포트", currAgg: "현재 집계 중", viewPast: "과거 내역 보기" },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" }, 
     pages: { 
       about: { 
@@ -71,7 +71,7 @@ let i18n = {
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
     labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リ포트 분석" },
-    reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る" },
+    reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る", latest: "最新レポート", currAgg: "現在集計中", viewPast: "過去履歴表示" },
 
     menu: { about: "TrendUpについて", privacy: "プライバシーポリシー", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト情報" }, 
     pages: { 
@@ -119,7 +119,7 @@ let i18n = {
   en: { 
     title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
     labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports" },
-    reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report" },
+    reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report", latest: "Latest Report", currAgg: "Aggregating Now", viewPast: "View Archive" },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
       about: { 
@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.87");
+    console.log("App Init: v3.1.88");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -574,91 +574,89 @@ class App {
       if (!card) continue;
       
       try {
-        const q = query(collection(this.db, "reports", type, this.currentCountry), orderBy("lastUpdated", "desc"), limit(4));
+        const q = query(collection(this.db, "reports", type, this.currentCountry), orderBy("lastUpdated", "desc"), limit(6));
         const snap = await getDocs(q);
         
         let latestDoc = null;
-        const pastDocs = [];
-        
+        let pastDocs = [];
         snap.forEach(docSnap => {
-          if (docSnap.id === 'latest') {
-            latestDoc = docSnap.data();
-          } else {
-            pastDocs.push({ id: docSnap.id, data: docSnap.data() });
-          }
+          if (docSnap.id === 'latest') latestDoc = docSnap.data();
+          else pastDocs.push({ id: docSnap.id, data: docSnap.data() });
         });
 
-        const titleEl = card.querySelector(`[data-report="${type}"]`);
+        const statusEl = card.querySelector(`[data-status="${type}"]`);
+        const periodEl = card.querySelector(`[data-period="${type}"]`);
         const badge = card.querySelector('.coming-soon-badge');
 
         const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
-        const isArchived = pastDocs.length > 0;
+        const historyExists = pastDocs.length > 0;
 
-        if (latestDoc || isArchived) {
-          const displayDoc = (isAgg && isArchived) ? pastDocs[0].data : (latestDoc || pastDocs[0].data);
-          
-          if (titleEl) {
-            // Keep static title if aggregating and no history, otherwise show dynamic if desired, 
-            // but let's stick to user's request: "static title" usually preferred.
-            titleEl.textContent = t.reports[type];
-            if (isAgg && !isArchived) {
-              titleEl.textContent = `${t.reports[type]} (${t.reports.comingSoon})`;
-            }
-          }
-
-          if (badge) {
-            if (isAgg && !isArchived) {
-              // Hide button if no history and still aggregating
-              badge.style.display = 'none';
-            } else {
-              // Show "View Report" button
-              badge.style.display = 'inline-block';
-              badge.textContent = `${t.reports[type]} ${t.reports.view}`;
-              badge.classList.add('active-report');
-            }
-          }
-          
-          if (isAgg && !isArchived) {
-            card.classList.add('disabled');
-            card.style.cursor = 'default';
-            card.onclick = null;
-          } else {
-            card.classList.remove('disabled');
-            card.style.cursor = 'pointer';
-            card.onclick = () => {
-              const targetId = (isAgg && isArchived) ? pastDocs[0].id : (latestDoc ? (latestDoc.slug || 'latest') : pastDocs[0].id);
-              const url = `report/?type=${type}&country=${this.currentCountry}&id=${targetId}`;
-              window.location.href = url;
-            };
-          }
+        // 1. Current Aggregation Status
+        if (latestDoc && isAgg) {
+          statusEl.textContent = `⚡ ${t.reports.currAgg}: ${latestDoc.dateRange || ''}`;
+          statusEl.style.display = 'block';
         } else {
-          if (titleEl) titleEl.textContent = `${t.reports[type]} (${t.reports.comingSoon})`;
-          if (badge) badge.style.display = 'none';
-          card.classList.add('disabled');
-          card.onclick = null;
+          statusEl.style.display = 'none';
         }
 
-        // Render Past Docs Lists below the inner card layer
+        // 2. Identify Featured Report (Main Button)
+        let featuredDoc = null;
+        let isFeaturedNew = false;
+        if (!isAgg && latestDoc) {
+          featuredDoc = { id: latestDoc.slug || 'latest', data: latestDoc };
+          isFeaturedNew = true;
+        } else if (historyExists) {
+          featuredDoc = pastDocs[0];
+          isFeaturedNew = false;
+        }
+
+        // 3. Render Main Card Area
+        if (featuredDoc) {
+          card.classList.remove('disabled');
+          card.style.cursor = 'pointer';
+          let pTitle = featuredDoc.data.dateRange || featuredDoc.id;
+          if (featuredDoc.data.reportTitle && featuredDoc.data.reportTitle[this.currentLang]) {
+            pTitle = featuredDoc.data.reportTitle[this.currentLang];
+          }
+          periodEl.innerHTML = `${isFeaturedNew ? `<span class="new-badge">NEW</span>` : ''}${pTitle}`;
+          badge.style.display = 'inline-block';
+          badge.textContent = `${t.reports[type]} ${t.reports.view}`;
+          badge.classList.add('active-report');
+          card.onclick = () => {
+            window.location.href = `report/?type=${type}&country=${this.currentCountry}&id=${featuredDoc.id}`;
+          };
+        } else {
+          card.classList.add('disabled');
+          card.style.cursor = 'default';
+          card.onclick = null;
+          periodEl.textContent = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
+          badge.style.display = 'none';
+        }
+
+        // 4. Archive List (Older than featured)
         let pastCtn = card.querySelector('.past-reports-list');
         if (!pastCtn) {
           pastCtn = document.createElement('div');
           pastCtn.className = 'past-reports-list';
           card.appendChild(pastCtn);
         }
-        
-        if (pastDocs.length > 0) {
-          const listHtml = pastDocs.map((p, idx) => {
+
+        const archivePool = (featuredDoc && latestDoc && featuredDoc.id !== (latestDoc.slug || 'latest')) ? pastDocs.slice(1) : pastDocs;
+        const displayArchives = archivePool.slice(0, 3);
+
+        if (displayArchives.length > 0) {
+          const listHtml = displayArchives.map(p => {
             let pTitle = p.data.dateRange || p.id;
             if (p.data.reportTitle && p.data.reportTitle[this.currentLang]) {
               pTitle = p.data.reportTitle[this.currentLang];
             }
-            const isNew = idx === 0 ? `<span class="new-badge">NEW</span>` : '';
-            return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link" onclick="event.stopPropagation()">${isNew}<span>${pTitle}</span></a>`;
+            return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link" onclick="event.stopPropagation()"><span>📜 ${pTitle}</span></a>`;
           }).join('');
           
-          pastCtn.innerHTML = `<span class="past-title">📜 ${t.reports.pastReports || '과거 리포트 모아보기'}</span>` + listHtml;
+          pastCtn.innerHTML = `<span class="past-title">${t.reports.viewPast}</span>` + listHtml;
+          pastCtn.style.display = 'block';
         } else {
-          pastCtn.innerHTML = '';
+          pastCtn.style.display = 'none';
         }
 
       } catch (err) { 
