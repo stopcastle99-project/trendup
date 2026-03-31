@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.84");
+    console.log("App Init: v3.1.85");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -600,7 +600,8 @@ class App {
             transTitle = displayDoc.reportTitle[this.currentLang];
           }
 
-          if (titleEl) titleEl.textContent = transTitle;
+          // Keep static title in H3 for consistency with previous version, or only update if finished
+          if (titleEl) titleEl.textContent = t.reports[type];
 
           if (badge) {
             badge.textContent = latestDoc.isAggregating ? (t.reports.comingSoon || "데이터 집계 중...") : t.reports[type];
