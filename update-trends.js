@@ -15,7 +15,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 const db = admin.firestore();
 console.log("====================================================");
 console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.15 <<<");
-console.log(">>> TARGET MODEL: Gemma 3 / 2 (Batch Mode) <<<");
+console.log(">>> TARGET MODEL: Gemini 2.0 (Fallback: Gemma) <<<");
 console.log("====================================================");
 
 class TrendUpdater {
@@ -357,7 +357,7 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const isWk4End = (d === 1); // 1st of month
     const forceWeekly = force || process.argv.includes('--force-weekly');
 
-    if (forceWeekly || isWk1End || isWk2End || isWk3End || isWk4End) {
+    if (forceWeekly || isWk1End || isWk2End || isWk3End || d === 31 || isWk4End) {
       let archStart, archEnd, archSlug, archLabel;
       if (isWk1End || (forceWeekly && currentWeekChunk === 1)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-01`; archEnd = `${y}-${String(m).padStart(2, '0')}-07`; archSlug = `${y}-${String(m).padStart(2, '0')}-week1`; archLabel = `${y}년 ${m}월 1주차 리포트`;
@@ -365,11 +365,11 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
         archStart = `${y}-${String(m).padStart(2, '0')}-08`; archEnd = `${y}-${String(m).padStart(2, '0')}-14`; archSlug = `${y}-${String(m).padStart(2, '0')}-week2`; archLabel = `${y}년 ${m}월 2주차 리포트`;
       } else if (isWk3End || (forceWeekly && currentWeekChunk === 3)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-15`; archEnd = `${y}-${String(m).padStart(2, '0')}-21`; archSlug = `${y}-${String(m).padStart(2, '0')}-week3`; archLabel = `${y}년 ${m}월 3주차 리포트`;
-      } else if (isWk4End || (forceWeekly && currentWeekChunk === 4)) {
-        const prevM = m === 1 ? 12 : m - 1;
-        const prevY = m === 1 ? y - 1 : y;
-        const lastDayOfPrevMonth = new Date(prevY, prevM, 0).getDate();
-        archStart = `${prevY}-${String(prevM).padStart(2, '0')}-22`; archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDayOfPrevMonth).padStart(2, '0')}`; archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-week4`; archLabel = `${prevY}년 ${prevM}월 4주차 리포트`;
+      } else if (isWk4End || d === 31 || (forceWeekly && currentWeekChunk === 4)) {
+        archStart = `${y}-${String(m).padStart(2, '0')}-22`; 
+        archEnd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`; 
+        archSlug = `${y}-${String(m).padStart(2, '0')}-week4`; 
+        archLabel = `${y}년 ${m}월 4주차 리포트`;
       }
       if (archStart) await this.generatePeriodReport(country, 'weekly', archStart, archEnd, true, archSlug, archLabel);
     }
@@ -458,7 +458,7 @@ ${rank3_5}
 }
 `;
 
-    const modelsToTry = ["gemma-3-27b-it", "gemma-2-27b-it", "gemini-2.0-flash"];
+    const modelsToTry = ["gemini-2.1-flash", "gemini-2.0-flash", "gemma-2-27b-it"];
     let text = "";
     let usedModel = "";
 
