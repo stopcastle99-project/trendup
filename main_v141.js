@@ -404,9 +404,13 @@ class App {
   async startAsyncTasks() {
     try {
       const app = initializeApp(firebaseConfig);
-      this.db = getFirestore(app);
+      // v3.3.01 Fundamental Connectivity Fix: Use Long Polling for 10s timeout issues
+      this.db = initializeFirestore(app, {
+        experimentalAutoDetectLongPolling: true,
+        useFetchStreams: false
+      });
       this.renderNavs();
-      await this.refreshReportCards(); // Ensure cards refresh after DB is ready
+      await this.refreshReportCards(); 
       await this.update();
     } catch (e) { console.error("Firebase init failed:", e.message); }
   }

@@ -39,6 +39,8 @@ const REPORT_I18N = {
 const firebaseConfig = { projectId: "test-76cdd" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+// v3.3.01 Connectivity Fix: Long Polling for stability
+db.settings({ experimentalAutoDetectLongPolling: true });
 
 const params = new URLSearchParams(window.location.search);
 let type = params.get('type') || 'weekly';
