@@ -599,23 +599,15 @@
     gap: 3px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
-  .status-badge.writing {
-    background: #ff9800; /* Amber */
-    color: white;
-    animation: pulse-writing 2s infinite;
-  }
-  .status-badge.aggregating {
-    background: var(--primary);
-    color: white;
-  }
-  .status-badge.completed {
-    background: #4caf50; /* Green */
-    color: white;
-  }
-  @keyframes pulse-writing {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(0.98); }
-    100% { opacity: 1; transform: scale(1); }
+  .status-badge.writing { background: oklch(0.8 0.15 60); color: white; animation: pulse-live 2s infinite; }
+  .status-badge.aggregating { background: var(--primary); color: white; }
+  .status-badge.live { background: oklch(0.7 0.2 150); color: white; animation: pulse-live 2s infinite; }
+  .status-badge.completed { background: oklch(0.7 0.15 200); color: white; }
+
+  @keyframes pulse-live {
+    0% { box-shadow: 0 0 0 0 oklch(0.7 0.2 150 / 0.4); }
+    70% { box-shadow: 0 0 0 6px oklch(0.7 0.2 150 / 0); }
+    100% { box-shadow: 0 0 0 0 oklch(0.7 0.2 150 / 0); }
   }
   .status-text {
     color: var(--text-muted);
