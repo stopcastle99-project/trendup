@@ -593,7 +593,13 @@ class App {
 
         // 1. Current Aggregation Status
         if (latestDoc && isAgg) {
-          statusEl.textContent = `⚡ ${latestDoc.dateRange || ''}`;
+          const rawLabel = latestDoc.dateRange || '';
+          const isWriting = rawLabel.includes('작성중');
+          const badgeHtml = isWriting 
+            ? `<span class="status-badge writing">✍️ 작성 중</span>` 
+            : `<span class="status-badge aggregating">⚡ 데이터 집계 중</span>`;
+          
+          statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').trim()}</span>`;
           statusEl.style.display = 'block';
         } else {
           statusEl.style.display = 'none';
