@@ -234,7 +234,14 @@ function renderTrends(items) {
 
         // Localized Content Selection
         const displayKeyword = (item.translations && item.translations[lang]) || item.keyword;
-        const displayAnalysis = (item.aiReports && item.aiReports[lang]) || item.depth || '';
+        let displayAnalysis = '';
+        if (item.aiReports && item.aiReports[lang]) {
+            displayAnalysis = item.aiReports[lang];
+        } else if (item.depth && typeof item.depth === 'object') {
+            displayAnalysis = item.depth[lang] || item.depth.ko || '';
+        } else if (typeof item.depth === 'string') {
+            displayAnalysis = item.depth;
+        }
 
         const displayGrowth = lang === 'ko' ? `성장률 +${growth}%` : (lang === 'ja' ? `成長率 +${growth}%` : `+${growth}% Growth`);
         
@@ -293,7 +300,13 @@ async function loadHistory() {
             const isActive = doc.id === reportId;
             const item = document.createElement('div');
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
-            item.textContent = data.dateRange || data.reportTitle;
+            let historyTitle = data.dateRange;
+            if (data.reportTitle && typeof data.reportTitle === 'object') {
+                historyTitle = data.reportTitle[lang] || data.dateRange;
+            } else if (typeof data.reportTitle === 'string') {
+                historyTitle = data.reportTitle;
+            }
+            item.textContent = historyTitle;
             item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
             list.appendChild(item);
         });

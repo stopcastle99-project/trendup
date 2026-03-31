@@ -577,6 +577,53 @@
     border-color: var(--primary);
   }
   
+  .past-reports-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--border);
+  }
+  .past-title {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 800;
+    margin-bottom: 0.4rem;
+    text-align: left;
+  }
+  .past-report-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    padding: 0.6rem 0.8rem;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+    text-decoration: none;
+    border: 1px solid transparent;
+    text-align: left;
+  }
+  .past-report-link:hover {
+    background: var(--surface);
+    border-color: var(--primary);
+    transform: translateX(3px);
+  }
+  .new-badge {
+    background: var(--primary);
+    color: white;
+    font-size: 0.65rem;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-weight: 800;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
