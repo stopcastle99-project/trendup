@@ -526,9 +526,16 @@ ${rank3_5}
     if (isArchival && reportSlug) {
       const archDoc = await db.collection('reports').doc(type).collection(country).doc(reportSlug).get();
       if (archDoc.exists && archDoc.data().isAggregating === false) {
-        console.log(`  - [STABLE ARCHIVE] ${type} for ${reportSlug} is already finalized. Syncing to latest.`);
-        await latestDocRef.set({ ...archDoc.data(), lastUpdated: admin.firestore.Timestamp.now() });
-        return;
+        const archData = archDoc.data();
+        const isCorrupted = archData.leadSummary && JSON.stringify(archData.leadSummary).includes('정체되어');
+        
+        if (!isCorrupted) {
+          console.log(`  - [STABLE ARCHIVE] ${type} for ${reportSlug} is already finalized. Syncing to latest.`);
+          await latestDocRef.set({ ...archData, lastUpdated: admin.firestore.Timestamp.now() });
+          return;
+        } else {
+          console.log(`  - [HEAL] ${type} for ${reportSlug} contains fallback message. Triggering RE-ANALYSIS.`);
+        }
       }
     }
     // For DRAFTS (isArchival === false), we should NOT lockdown unless the dates EXACTLY match a finalized archive.
