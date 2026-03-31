@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.92");
+    console.log("App Init: v3.1.95");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -603,12 +603,10 @@ class App {
         let featuredDoc = null;
         let isFeaturedNew = false;
         
-        // Show weekly/monthly even if aggregating. Yearly only if not aggregating OR if past history exists.
-        const canViewAgg = (type !== 'yearly');
-
-        if (latestDoc && (!isAgg || canViewAgg)) {
+        // Only show finalized (isAggregating: false) or past archives.
+        if (latestDoc && !isAgg) {
           featuredDoc = { id: latestDoc.slug || 'latest', data: latestDoc };
-          isFeaturedNew = !isAgg;
+          isFeaturedNew = true;
         } else if (historyExists) {
           featuredDoc = pastDocs[0];
           isFeaturedNew = false;
