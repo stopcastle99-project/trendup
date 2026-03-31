@@ -520,6 +520,7 @@ ${rank3_5}
   async generatePeriodReport(country, type, startDate, endDate, isArchival, slugIdentifier, label) {
     const db = admin.firestore();
     const latestDocRef = db.collection("reports").doc(type).collection(country).doc("latest");
+    const historyCol = db.collection("trend_history");
     const reportSlug = slugIdentifier || `${startDate.replace(/-/g, '')}_${endDate.replace(/-/g, '')}_${type}`;
 
     // 1. SMART LOCKDOWN:
