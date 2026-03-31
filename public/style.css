@@ -577,6 +577,15 @@
     border-color: var(--primary);
   }
   
+  .report-card.disabled {
+    cursor: default;
+    border-color: var(--border);
+    transform: none !important;
+    box-shadow: var(--shadow) !important;
+  }
+  .report-card.disabled::after { display: none; }
+  .report-card.disabled .report-icon { transform: none !important; }
+  
   .past-reports-list {
     width: 100%;
     display: flex;
@@ -585,6 +594,8 @@
     margin-top: 1rem;
     padding-top: 1.5rem;
     border-top: 1px dashed var(--border);
+    cursor: default; /* override card pointer if it were there */
+    pointer-events: auto; /* ensure links still work */
   }
   .past-title {
     font-size: 0.85rem;

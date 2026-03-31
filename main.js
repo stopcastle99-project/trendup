@@ -609,18 +609,24 @@ class App {
           }
           
           // Main card click (only if it's not aggregating)
-          card.onclick = () => {
-            if (!latestDoc.isAggregating) {
-              const url = `report/?type=${type}&country=${this.currentCountry}&id=${latestDoc.slug}`;
+          if (latestDoc.isAggregating && !isArchived) {
+            card.classList.add('disabled');
+            card.onclick = null;
+          } else {
+            card.classList.remove('disabled');
+            card.onclick = () => {
+              const targetDoc = (latestDoc.isAggregating && isArchived) ? pastDocs[0] : { id: latestDoc.slug || 'latest' };
+              const url = `report/?type=${type}&country=${this.currentCountry}&id=${targetDoc.id}`;
               window.location.href = url;
-            }
-          };
+            };
+          }
         } else {
           if (titleEl) titleEl.textContent = t.reports[type];
           if (badge) {
             badge.textContent = t.reports.comingSoon || "데이터 집계 중...";
             badge.classList.remove('active-report');
           }
+          card.classList.add('disabled');
           card.onclick = null;
         }
 
