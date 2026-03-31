@@ -527,14 +527,15 @@ ${rank3_5}
       const archDoc = await db.collection('reports').doc(type).collection(country).doc(reportSlug).get();
       if (archDoc.exists && archDoc.data().isAggregating === false) {
         const archData = archDoc.data();
-        const isCorrupted = archData.leadSummary && JSON.stringify(archData.leadSummary).includes('정체되어');
+        const contentStr = JSON.stringify(archData.leadSummary || {});
+        const isCorrupted = contentStr.includes('정체되어') || contentStr.includes('집계 중입니다') || contentStr.includes('발행됩니다');
         
         if (!isCorrupted) {
           console.log(`  - [STABLE ARCHIVE] ${type} for ${reportSlug} is already finalized. Syncing to latest.`);
           await latestDocRef.set({ ...archData, lastUpdated: admin.firestore.Timestamp.now() });
           return;
         } else {
-          console.log(`  - [HEAL] ${type} for ${reportSlug} contains fallback message. Triggering RE-ANALYSIS.`);
+          console.log(`  - [HEAL] ${type} for ${reportSlug} contains placeholders. Triggering RE-ANALYSIS.`);
         }
       }
     }
