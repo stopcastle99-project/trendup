@@ -356,6 +356,7 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const isWk3End = (d === 22);
     const isWk4End = (d === 1); // 1st of month
     const forceWeekly = force || process.argv.includes('--force-weekly');
+    const forceOther = force || process.argv.includes('--force-reports');
 
     if (forceWeekly || isWk1End || isWk2End || isWk3End || d === 31 || isWk4End) {
       let archStart, archEnd, archSlug, archLabel;
