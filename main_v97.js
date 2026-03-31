@@ -12,7 +12,7 @@ let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
     labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록" },
-    reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기" },
+    reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기" },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" }, 
     pages: { 
       about: { 
@@ -71,7 +71,7 @@ let i18n = {
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
     labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リ포트 분석" },
-    reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート" },
+    reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る" },
 
     menu: { about: "TrendUpについて", privacy: "プライバシーポリシー", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト情報" }, 
     pages: { 
@@ -119,7 +119,7 @@ let i18n = {
   en: { 
     title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
     labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports" },
-    reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports" },
+    reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report" },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
       about: { 
@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.86");
+    console.log("App Init: v3.1.87");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -591,26 +591,32 @@ class App {
         const titleEl = card.querySelector(`[data-report="${type}"]`);
         const badge = card.querySelector('.coming-soon-badge');
 
-        if (latestDoc) {
-          const isArchived = pastDocs.length > 0;
-          const displayDoc = latestDoc.isAggregating && isArchived ? pastDocs[0].data : latestDoc;
-          
-          let transTitle = displayDoc.dateRange;
-          if (displayDoc.reportTitle && displayDoc.reportTitle[this.currentLang]) {
-            transTitle = displayDoc.reportTitle[this.currentLang];
-          }
+        const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
+        const isArchived = pastDocs.length > 0;
 
-          // Keep static title in H3 for consistency with previous version, or only update if finished
-          if (titleEl) titleEl.textContent = t.reports[type];
+        if (latestDoc || isArchived) {
+          const displayDoc = (isAgg && isArchived) ? pastDocs[0].data : (latestDoc || pastDocs[0].data);
+          
+          if (titleEl) {
+            // Keep static title if aggregating and no history, otherwise show dynamic if desired, 
+            // but let's stick to user's request: "static title" usually preferred.
+            titleEl.textContent = t.reports[type];
+            if (isAgg && !isArchived) {
+              titleEl.textContent = `${t.reports[type]} (${t.reports.comingSoon})`;
+            }
+          }
 
           if (badge) {
-            badge.textContent = latestDoc.isAggregating ? (t.reports.comingSoon || "데이터 집계 중...") : t.reports[type];
-            if (!latestDoc.isAggregating) badge.classList.add('active-report');
-            else badge.classList.remove('active-report');
+            if (isAgg && !isArchived) {
+              // Hide button if no history and still aggregating
+              badge.style.display = 'none';
+            } else {
+              // Show "View Report" button
+              badge.style.display = 'inline-block';
+              badge.textContent = `${t.reports[type]} ${t.reports.view}`;
+              badge.classList.add('active-report');
+            }
           }
-          
-          // Robust check: If isAggregating is missing, assume true if we have no history
-          const isAgg = latestDoc.isAggregating !== false;
           
           if (isAgg && !isArchived) {
             card.classList.add('disabled');
@@ -620,17 +626,14 @@ class App {
             card.classList.remove('disabled');
             card.style.cursor = 'pointer';
             card.onclick = () => {
-              const targetId = (isAgg && isArchived) ? pastDocs[0].id : (latestDoc.slug || 'latest');
+              const targetId = (isAgg && isArchived) ? pastDocs[0].id : (latestDoc ? (latestDoc.slug || 'latest') : pastDocs[0].id);
               const url = `report/?type=${type}&country=${this.currentCountry}&id=${targetId}`;
               window.location.href = url;
             };
           }
         } else {
-          if (titleEl) titleEl.textContent = t.reports[type];
-          if (badge) {
-            badge.textContent = t.reports.comingSoon || "데이터 집계 중...";
-            badge.classList.remove('active-report');
-          }
+          if (titleEl) titleEl.textContent = `${t.reports[type]} (${t.reports.comingSoon})`;
+          if (badge) badge.style.display = 'none';
           card.classList.add('disabled');
           card.onclick = null;
         }
