@@ -220,6 +220,11 @@ function renderTrends(items) {
     const container = document.getElementById('trend-list');
     if (!container) return;
     container.innerHTML = '';
+    
+    if (!items || !Array.isArray(items)) {
+        return;
+    }
+
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
 
     items.forEach((item, idx) => {

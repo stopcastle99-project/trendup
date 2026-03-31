@@ -488,6 +488,7 @@ ${rank3_5}
       const latestData = {
         type, country, dateRange: label, slug: 'latest', isAggregating: true, 
         reportTitle: { ko: `${label} 집계중...`, en: `${label} (Aggregating)`, ja: `${label} 集計中...` },
+        items: [],
         lastUpdated: admin.firestore.Timestamp.now()
       };
       await db.collection("reports").doc(type).collection(country).doc("latest").set(latestData);
