@@ -526,14 +526,110 @@ ${rank3_5}
     return slug || "report";
   }
 
+  // Phase 1: Ranking Engine (계층형 랭킹 추출)
+  async extractRanking(country, type, startDate, endDate, slug) {
+    if (!slug) return []; 
+    const db = admin.firestore();
+    const rankingsRef = db.collection('rankings').doc(type).collection(country).doc(slug);
+    const doc = await rankingsRef.get();
+    
+    if (doc.exists && doc.data().top5 && doc.data().top5.length > 0) {
+      console.log(`  -> [RANKING HIT] Found existing ${type} ranking for ${slug}`);
+      return doc.data().top5;
+    }
+
+    console.log(`  -> [RANKING COMPUTE] Calculating ${type} ranking for ${slug}`);
+    let globalScores = {};
+    
+    if (type === 'weekly') {
+      const historyCol = db.collection("trend_history");
+      const snapshot = await historyCol.get();
+      snapshot.forEach(hdoc => {
+        const parts = hdoc.id.split('_');
+        if (parts.length < 2) return;
+        const docDate = parts[1];
+        if (hdoc.id.startsWith(country) && docDate >= startDate && docDate <= endDate) {
+          const kws = hdoc.data().keywords || {};
+          for (const [kw, stats] of Object.entries(kws)) {
+            if (!globalScores[kw]) globalScores[kw] = { score: 0 };
+            globalScores[kw].score += (stats.totalRankScore || 0);
+          }
+        }
+      });
+    } else if (type === 'monthly') {
+      // 월간 테이블은 오직 주간 테이블만 분석
+      const weeklyCol = db.collection('rankings').doc('weekly').collection(country);
+      const snapshot = await weeklyCol.get();
+      const yStr = startDate.substring(0, 4);
+      const mStr = startDate.substring(5, 7);
+      const targetPrefix = `${yStr}-${mStr}-week`;
+      
+      snapshot.forEach(wdoc => {
+        if (wdoc.id.startsWith(targetPrefix)) {
+          const t5 = wdoc.data().top5 || [];
+          for (const item of t5) {
+            if (!globalScores[item.keyword]) globalScores[item.keyword] = { score: 0 };
+            globalScores[item.keyword].score += item.score;
+          }
+        }
+      });
+    } else if (type === 'yearly') {
+      // 년간 테이블은 오직 월간 테이블만 분석
+      const monthlyCol = db.collection('rankings').doc('monthly').collection(country);
+      const snapshot = await monthlyCol.get();
+      const yStr = startDate.substring(0, 4);
+      const targetSuffix = `-monthly`;
+      
+      snapshot.forEach(mdoc => {
+        if (mdoc.id.startsWith(yStr) && mdoc.id.endsWith(targetSuffix)) {
+          const t5 = mdoc.data().top5 || [];
+          for (const item of t5) {
+            if (!globalScores[item.keyword]) globalScores[item.keyword] = { score: 0 };
+            globalScores[item.keyword].score += item.score;
+          }
+        }
+      });
+    }
+
+    const top5 = Object.entries(globalScores)
+      .map(([keyword, data]) => ({ keyword, score: data.score }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+
+    if (top5.length > 0) {
+      await rankingsRef.set({ type, country, startDate, endDate, slug, top5, lastUpdated: admin.firestore.Timestamp.now() });
+    }
+    return top5;
+  }
+
+  // 실시간 랭킹 (초안용)
+  async getLiveDraftRanking(country, startDate, endDate) {
+    const db = admin.firestore();
+    const historyCol = db.collection("trend_history");
+    const snapshot = await historyCol.get();
+    let globalScores = {};
+    snapshot.forEach(hdoc => {
+      const parts = hdoc.id.split('_');
+      if (parts.length < 2) return;
+      const docDate = parts[1];
+      if (hdoc.id.startsWith(country) && docDate >= startDate && docDate <= endDate) {
+        const kws = hdoc.data().keywords || {};
+        for (const [kw, stats] of Object.entries(kws)) {
+          if (!globalScores[kw]) globalScores[kw] = { score: 0 };
+          globalScores[kw].score += (stats.totalRankScore || 0);
+        }
+      }
+    });
+    return Object.entries(globalScores).map(([keyword, data]) => ({ keyword, score: data.score })).sort((a, b) => b.score - a.score).slice(0, 5);
+  }
+
+  // Phase 2: Reporting Engine
   async generatePeriodReport(country, type, startDate, endDate, isArchival, slugIdentifier, label) {
     const db = admin.firestore();
     const latestDocRef = db.collection("reports").doc(type).collection(country).doc("latest");
-    const historyCol = db.collection("trend_history");
     const reportSlug = slugIdentifier || `${startDate.replace(/-/g, '')}_${endDate.replace(/-/g, '')}_${type}`;
 
     // 1. SMART LOCKDOWN:
-    // If it's an ARCHIVAL request, skip if already finished.
     if (isArchival && reportSlug) {
       const archDoc = await db.collection('reports').doc(type).collection(country).doc(reportSlug).get();
       if (archDoc.exists && archDoc.data().isAggregating === false) {
@@ -550,41 +646,21 @@ ${rank3_5}
         }
       }
     }
-    // For DRAFTS (isArchival === false), we should NOT lockdown unless the dates EXACTLY match a finalized archive.
-    // This allows Monday/Tuesday live data to show up even if Sunday was just archived.
 
-    // 2. Only now, if we actually need to work, mark as aggregating.
-    // DRAFTS must also stay as 'true' to show they are live, not 'Completed'.
+    // 2. Draft Flagging
     await latestDocRef.set({
       type, country, dateRange: label, isAggregating: true, 
       lastUpdated: admin.firestore.Timestamp.now()
     }, { merge: true });
     
     try {
-      const snapshot = await historyCol.get();
-      if (snapshot.empty) {
-        await latestDocRef.set({ isAggregating: false }, { merge: true });
-        return;
+      // NEW: 2-Tier Ranking Fetch
+      let top5 = [];
+      if (isArchival && reportSlug) {
+        top5 = await this.extractRanking(country, type, startDate, endDate, reportSlug);
+      } else {
+        top5 = await this.getLiveDraftRanking(country, startDate, endDate);
       }
-      
-      const globalScores = {};
-      snapshot.forEach(doc => {
-        const parts = doc.id.split('_');
-        if (parts.length < 2) return;
-        const docDate = parts[1];
-        if (doc.id.startsWith(country) && docDate >= startDate && docDate <= endDate) {
-          const kws = doc.data().keywords || {};
-          for (const [kw, stats] of Object.entries(kws)) {
-            if (!globalScores[kw]) globalScores[kw] = { score: 0 };
-            globalScores[kw].score += (stats.totalRankScore || 0);
-          }
-        }
-      });
-
-      const top5 = Object.entries(globalScores)
-        .map(([keyword, data]) => ({ keyword, score: data.score }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5);
 
       if (top5.length === 0) {
         await latestDocRef.set({ isAggregating: false }, { merge: true });
@@ -592,15 +668,11 @@ ${rank3_5}
       }
 
       let analysis = null;
-      let reportSlug = 'latest';
 
       if (isArchival) {
         console.log(`  - Generating ARCHIVAL AI Analysis for ${type} ${country}...`);
         analysis = await this.generateAIReportAnalysis(top5, country, type, label);
-        const top1Slug = this.toSlug(top5[0].keyword);
-        reportSlug = `${slugIdentifier}-${top1Slug}`;
       } else {
-        // For non-archival drafts, we still display the top keywords but skip heavy AI
         analysis = {
           reportTitle: { ko: `${label} (실시간 집계)`, en: `${label} (Live)`, ja: `${label} (ライブ)` },
           leadSummary: { ko: "현재 가장 뜨거운 트렌드 키워드들을 실시간으로 집계한 결과입니다.", en: "Live aggregation of top trending keywords.", ja: "現在のトレンドキーワードをリアルタイムで集계한結果です。" },
@@ -612,7 +684,7 @@ ${rank3_5}
         type, country,
         dateRange: label,
         slug: reportSlug,
-        isAggregating: !isArchival, // Archival is DONE (false), Draft is STILL AGGREGATING (true)
+        isAggregating: !isArchival, // Draft is true, Archival is false
         reportTitle: analysis.reportTitle,
         leadSummary: analysis.leadSummary || null,
         keywords: top5.map(t => t.keyword),
@@ -631,7 +703,6 @@ ${rank3_5}
         await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
       }
       
-      // Update the latest doc to finalized state
       await latestDocRef.set(reportData);
       console.log(`  - ${type.toUpperCase()} report ${isArchival ? 'archived' : 'updated'}: ${reportSlug}`);
       
