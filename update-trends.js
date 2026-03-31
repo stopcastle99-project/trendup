@@ -458,7 +458,7 @@ ${rank3_5}
 }
 `;
 
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"];
+    const modelsToTry = ["gemini-2.0-flash", "gemma-3-27b-it", "gemma-2-27b-it"];
     let text = "";
     let usedModel = "";
 
