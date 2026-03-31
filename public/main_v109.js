@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.01");
+    console.log("App Init: v3.2.02");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -615,14 +615,13 @@ class App {
         let featuredDoc = null;
         let isFeaturedNew = false;
         
-        // Only show finalized (isAggregating: false) or past archives.
+        // Strict Enforcement: ONLY allow viewing if NOT aggregating (must be 'Completed')
         if (latestDoc && !isAgg) {
           featuredDoc = { id: latestDoc.slug || 'latest', data: latestDoc };
           isFeaturedNew = true;
-        } else if (historyExists) {
-          featuredDoc = pastDocs[0];
-          isFeaturedNew = false;
         }
+        // Historical archives will ONLY appear in the archive list below, 
+        // not as the main featured button unless the current period is finished.
 
         // 3. Render Main Card Area
         if (featuredDoc) {
