@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.89");
+    console.log("App Init: v3.1.96");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -593,7 +593,7 @@ class App {
 
         // 1. Current Aggregation Status
         if (latestDoc && isAgg) {
-          statusEl.textContent = `⚡ ${t.reports.currAgg}: ${latestDoc.dateRange || ''}`;
+          statusEl.textContent = `⚡ ${latestDoc.dateRange || ''}`;
           statusEl.style.display = 'block';
         } else {
           statusEl.style.display = 'none';
@@ -602,7 +602,9 @@ class App {
         // 2. Identify Featured Report (Main Button)
         let featuredDoc = null;
         let isFeaturedNew = false;
-        if (!isAgg && latestDoc) {
+        
+        // Only show finalized (isAggregating: false) or past archives.
+        if (latestDoc && !isAgg) {
           featuredDoc = { id: latestDoc.slug || 'latest', data: latestDoc };
           isFeaturedNew = true;
         } else if (historyExists) {
