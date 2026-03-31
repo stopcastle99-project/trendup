@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.96");
+    console.log("App Init: v3.2.00");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -637,7 +637,13 @@ class App {
           card.classList.add('disabled');
           card.style.cursor = 'default';
           card.onclick = null;
-          periodEl.textContent = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
+          let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
+          // Force Yearly date range for consistency
+          if (type === 'yearly') {
+            const statusSuffix = (latestDoc && latestDoc.dateRange && latestDoc.dateRange.includes('작성중')) ? '작성중' : '데이터집계중';
+            displayLabel = `2026.01.01 ~ 12.31 ${statusSuffix}`;
+          }
+          periodEl.textContent = displayLabel;
           badge.style.display = 'none';
         }
 
