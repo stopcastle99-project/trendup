@@ -519,22 +519,26 @@ ${rank3_5}
   async generatePeriodReport(country, type, startDate, endDate, isArchival, slugIdentifier, label) {
     const db = admin.firestore();
     const latestDocRef = db.collection("reports").doc(type).collection(country).doc("latest");
+    const reportSlug = slugIdentifier || `${startDate.replace(/-/g, '')}_${endDate.replace(/-/g, '')}_${type}`;
 
-    // 1. Check if an ARCHIVAL report already exists to avoid redundant analysis
+    // 1. ABSOLUTE EARLY EXIT: If archival and finished doc already exists, DO NOTHING but sync latest.
     if (isArchival && reportSlug) {
       const existingDoc = await db.collection('reports').doc(type).collection(country).doc(reportSlug).get();
       if (existingDoc.exists && existingDoc.data().isAggregating === false) {
-        console.log(`  - [SKIP] Finalized ${type} report for ${reportSlug} already exists. Syncing to latest.`);
+        console.log(`  - [STABLE] ${type} archive ${reportSlug} is already finalized. Syncing ONLY.`);
         await latestDocRef.set({ ...existingDoc.data(), lastUpdated: admin.firestore.Timestamp.now() });
         return;
       }
     }
 
-    // 2. Start by marking as aggregating for new work
-    await latestDocRef.set({
-      type, country, dateRange: label, isAggregating: true, 
-      lastUpdated: admin.firestore.Timestamp.now()
-    }, { merge: true });
+    // 2. Only now, if we actually need to work, mark as aggregating.
+    // For cheap drafts, we can skip the 'isAggregating: true' to avoid UI flicker.
+    if (isArchival) {
+      await latestDocRef.set({
+        type, country, dateRange: label, isAggregating: true, 
+        lastUpdated: admin.firestore.Timestamp.now()
+      }, { merge: true });
+    }
     
     try {
       const snapshot = await historyCol.get();
