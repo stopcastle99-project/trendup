@@ -247,6 +247,9 @@ function renderTrends(items) {
         } else if (typeof item.depth === 'string') {
             displayAnalysis = item.depth;
         }
+        
+        // Clean up excessive leading indentation often added by AI models
+        displayAnalysis = displayAnalysis.trim().split('\n').map(line => line.trim()).join('\n');
 
         const displayGrowth = lang === 'ko' ? `성장률 +${growth}%` : (lang === 'ja' ? `成長率 +${growth}%` : `+${growth}% Growth`);
         
