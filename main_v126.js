@@ -578,7 +578,7 @@ class App {
       if (!card) continue;
       
       try {
-        const q = query(collection(this.db, "reports", type, this.currentCountry), orderBy("lastUpdated", "desc"), limit(6));
+        const q = query(collection(this.db, "reports", type, this.currentCountry), orderBy("lastUpdated", "desc"), limit(20));
         const snap = await getDocs(q);
         
         let latestDoc = null;
@@ -726,9 +726,7 @@ class App {
             p.id !== fId &&
             p.id !== curSlug &&
             !isOverlap &&
-            p.data.isAggregating === false && 
-            p.data.items && 
-            p.data.items.length > 0
+            p.data.isAggregating === false
           );
         });
         const displayArchives = validArchives.slice(0, 3);
