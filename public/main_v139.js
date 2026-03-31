@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.31");
+    console.log("App Init: v3.2.32");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -652,8 +652,8 @@ class App {
         // not as the main featured button unless the current period is finished.
 
         // 3. Render Main Card Area
-        const isYearlyDraft = (type === 'yearly' && isFeaturedNew);
-        if (featuredDoc && !isYearlyDraft) {
+        const isYearlyDraft = (type === 'yearly' && finalIsAgg);
+        if (featuredDoc && !isYearlyDraft && !finalIsAgg) {
           card.classList.remove('disabled');
           card.style.cursor = 'pointer';
           let pTitle = featuredDoc.data.dateRange || featuredDoc.id;
@@ -664,26 +664,23 @@ class App {
           badge.style.display = 'inline-block';
           badge.textContent = `${t.reports[type]} ${t.reports.view}`;
           badge.classList.add('active-report');
-          card.onclick = (e) => {
-            if (featuredDoc.data.isAggregating) {
-              e.preventDefault();
-              alert("현재 AI 분석 서버가 최종 리포트를 작성 중입니다. 잠시만 기다려 주세요! (약 5~10분 소요)");
-              return false;
-            }
+          card.onclick = () => {
             window.location.href = `report/?type=${type}&country=${this.currentCountry}&id=${featuredDoc.id}`;
           };
         } else {
           card.classList.add('disabled');
           card.style.cursor = 'default';
-          card.onclick = null;
+          card.onclick = (e) => {
+            e.preventDefault();
+            alert("현재 AI 분석 서버가 리포트를 작성 중입니다. 잠시만 기다려 주세요! (약 5~10분 소요)");
+            return false;
+          };
           let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
-          // Force Yearly date range for consistency
           if (type === 'yearly') {
-            const statusSuffix = (latestDoc && latestDoc.dateRange && latestDoc.dateRange.includes('작성중')) ? '작성중' : '데이터집계중';
-            displayLabel = `2026.01.01 ~ 12.31 ${statusSuffix}`;
+            displayLabel = `2026.01.01 ~ 12.31 📊 데이터 집계 중`;
           }
           periodEl.textContent = displayLabel;
-          badge.style.display = 'none';
+          badge.style.display = 'none'; // CRITICAL: Hide the button while writing
         }
 
         // 4. Archive List (Older than featured)
