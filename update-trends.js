@@ -541,13 +541,12 @@ ${rank3_5}
     // For DRAFTS (isArchival === false), we should NOT lockdown unless the dates EXACTLY match a finalized archive.
     // This allows Monday/Tuesday live data to show up even if Sunday was just archived.
 
-    // 2. Only now, if we actually need to work, mark as aggregating for archives.
-    if (isArchival) {
-      await latestDocRef.set({
-        type, country, dateRange: label, isAggregating: true, 
-        lastUpdated: admin.firestore.Timestamp.now()
-      }, { merge: true });
-    }
+    // 2. Only now, if we actually need to work, mark as aggregating.
+    // DRAFTS must also stay as 'true' to show they are live, not 'Completed'.
+    await latestDocRef.set({
+      type, country, dateRange: label, isAggregating: true, 
+      lastUpdated: admin.firestore.Timestamp.now()
+    }, { merge: true });
     
     try {
       const snapshot = await historyCol.get();

@@ -598,9 +598,13 @@ class App {
           
           if (isAgg) {
             const isWriting = rawLabel.includes('작성중');
-            badgeHtml = isWriting 
-              ? `<span class="status-badge writing">✍️ 작성 중</span>` 
-              : `<span class="status-badge live">🟢 실시간</span>`;
+            if (isWriting) {
+              badgeHtml = `<span class="status-badge writing">✍️ 작성 중</span>`;
+            } else if (type === 'yearly') {
+              badgeHtml = `<span class="status-badge live">📊 데이터 집계 중</span>`;
+            } else {
+              badgeHtml = `<span class="status-badge live">🟢 실시간</span>`;
+            }
           } else {
             badgeHtml = `<span class="status-badge completed">✅ 작성 완료</span>`;
           }
@@ -636,7 +640,12 @@ class App {
           badge.style.display = 'inline-block';
           badge.textContent = `${t.reports[type]} ${t.reports.view}`;
           badge.classList.add('active-report');
-          card.onclick = () => {
+          card.onclick = (e) => {
+            if (featuredDoc.data.isAggregating) {
+              e.preventDefault();
+              alert("현재 AI 분석 서버가 최종 리포트를 작성 중입니다. 잠시만 기다려 주세요! (약 5~10분 소요)");
+              return false;
+            }
             window.location.href = `report/?type=${type}&country=${this.currentCountry}&id=${featuredDoc.id}`;
           };
         } else {
