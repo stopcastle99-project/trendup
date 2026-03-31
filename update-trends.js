@@ -713,8 +713,45 @@ ${rank3_5}
     }
   }
 
-  async updateAll() {
+  async healExistingReports() {
+    console.log(">>> HEALING EXISTING 2026 REPORTS (v3.4.2) <<<");
+    const countries = ["KR", "JP", "US"];
+    const types = ["weekly", "monthly", "yearly"];
+    
+    for (const code of countries) {
+      for (const type of types) {
+        const colRef = db.collection("reports").doc(type).collection(code);
+        const snap = await colRef.get();
+        
+        for (const docSnap of snap.docs) {
+          const id = docSnap.id;
+          if (id === 'latest') continue;
+          
+          let update = {};
+          // ID Pattern: 2026-03-week1
+          if (id.startsWith('2026-03-week')) {
+            const w = id.split('week')[1];
+            if (w === '1') update = { startDate: "2026-03-01", endDate: "2026-03-08" };
+            else if (w === '2') update = { startDate: "2026-03-09", endDate: "2026-03-15" };
+            else if (w === '3') update = { startDate: "2026-03-16", endDate: "2026-03-22" };
+            else if (w === '4') update = { startDate: "2026-03-23", endDate: "2026-03-31" };
+          } else if (id === '2026-03-monthly') {
+            update = { startDate: "2026-03-01", endDate: "2026-03-31" };
+          } else if (id === '2026-yearly') {
+            update = { startDate: "2026-01-01", endDate: "2026-12-31" };
+          }
+          
+          if (Object.keys(update).length > 0) {
+            await docSnap.ref.update(update);
+            console.log(`  - Healed ${type}/${code}/${id}: ${update.startDate} ~ ${update.endDate}`);
+          }
+        }
+      }
+    }
+  }
 
+  async updateAll() {
+    await this.healExistingReports(); // v3.4.2 Migration
     const countries = ["KR", "JP", "US"];
     const langs = ["ko", "ja", "en"];
     let allKeywords = [];
@@ -773,6 +810,7 @@ ${rank3_5}
     process.exit(0);
   }
   async runReportOnly() {
+    await this.healExistingReports(); // v3.4.2 Migration
     console.log(">>> RUNNING IN REPORT-ONLY MODE (NO CRAWLING) <<<");
     const countries = ["KR", "JP", "US"];
     const forceReports = process.argv.includes('--force-reports');
