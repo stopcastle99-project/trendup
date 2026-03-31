@@ -112,8 +112,8 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 
     try {
       let text = "";
-      let usedModel = "gemma-3-27b-it";
-      const modelsToTry = ["gemma-3-27b-it", "gemma-2-27b-it", "gemini-2.5-flash"];
+      let usedModel = "gemini-2.0-flash";
+      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
       
       for (const m of modelsToTry) {
         try {
@@ -479,7 +479,7 @@ ${rank3_5}
 }
 `;
 
-    const modelsToTry = ["gemini-2.0-flash", "gemma-2-27b-it", "gemma-2-9b-it"];
+    const modelsToTry = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"];
     let text = "";
     let usedModel = "";
 
