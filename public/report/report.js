@@ -156,26 +156,38 @@ function injectIcons() {
 
 async function loadReport() {
     try {
-        const docRef = db.collection("reports").doc(type).collection(country).doc(reportId);
-        const doc = await docRef.get();
         const t = REPORT_I18N[lang] || REPORT_I18N.en;
+        loadHistory(); // Load history early for better navigation
+
+        let actualDocId = reportId;
+        let showAggBanner = false;
 
         const now = new Date();
-        const currentMonth = now.getMonth() + 1;
-        const currentYear = now.getFullYear();
         const isLastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
+        const isLastDayOfYear = (now.getMonth() === 11 && now.getDate() === 31);
 
-        // Gating logic: Show placeholder for 'latest' Monthly/Yearly if not finalizing period yet
+        // Smart Redirect: If latest is aggregating, find the real last finalized report
         if (reportId === 'latest') {
-            if (type === 'monthly' && !isLastDayOfMonth) {
-                renderPlaceholder(`${t.month(currentMonth)} ${t.aggregating}`);
-                return;
-            }
-            if (type === 'yearly' && !(now.getMonth() === 11 && now.getDate() === 31)) {
-                renderPlaceholder(`${t.year(currentYear)} ${t.aggregating}`);
-                return;
+            const latestRef = db.collection("reports").doc(type).collection(country).doc('latest');
+            const latestSnap = await latestRef.get();
+            if (latestSnap.exists) {
+                const latestData = latestSnap.data();
+                if (latestData.isAggregating !== false) {
+                    showAggBanner = true;
+                    // Find the most recent archived report to show as main content
+                    const archivedSnap = await db.collection("reports").doc(type).collection(country)
+                        .orderBy("lastUpdated", "desc").limit(5).get();
+                    
+                    const lastFinished = archivedSnap.docs.find(d => d.id !== 'latest' && d.data().isAggregating === false);
+                    if (lastFinished) {
+                        actualDocId = lastFinished.id;
+                    }
+                }
             }
         }
+
+        const docRef = db.collection("reports").doc(type).collection(country).doc(actualDocId);
+        const doc = await docRef.get();
 
         if (!doc.exists) {
             renderPlaceholder();
@@ -183,9 +195,8 @@ async function loadReport() {
         }
 
         const data = doc.data();
-        renderHero(data);
+        renderHero(data, showAggBanner);
         renderTrends(data.items);
-        loadHistory();
     } catch (e) {
         console.error("Report load error:", e);
         renderPlaceholder();
@@ -209,7 +220,7 @@ function renderPlaceholder(customMessage) {
     `;
 }
 
-function renderHero(data) {
+function renderHero(data, showAggBanner = false) {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const periodSummary = document.getElementById('current-period-summary');
     
@@ -227,7 +238,18 @@ function renderHero(data) {
         } catch (err) { console.warn("Date parse error:", err); }
     }
 
-    if (periodSummary) periodSummary.textContent = `${t.period_summary} ${displayRange}`;
+    if (periodSummary) {
+        let bannerHtml = '';
+        if (showAggBanner) {
+            const now = new Date();
+            const curM = now.getMonth() + 1;
+            const msg = lang === 'ko' ? `${curM}월 리포트가 집계 중입니다. 최신 완료된 리포트를 보여드립니다.` : (lang === 'ja' ? `${curM}月のレポートが集計中です。最新の完了レポートを表示します。` : `${curM} Monthly report is aggregating. Showing latest finalized.`);
+            bannerHtml = `<div class="agg-running-banner" style="background:var(--primary-light); color:var(--primary); padding:0.8rem 1.2rem; border-radius:12px; margin-bottom:1rem; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:0.5rem; border:1px solid var(--primary-alpha); animation: fadeIn 0.5s ease;">
+                <span style="font-size:1.2rem;">⏳</span> ${msg}
+            </div>`;
+        }
+        periodSummary.innerHTML = bannerHtml + `<span class="period-label-text">${t.period_summary} ${displayRange}</span>`;
+    }
 
     const displayElement = document.getElementById('current-period-display');
     if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
