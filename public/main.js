@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.1.90");
+    console.log("App Init: v3.1.92");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -602,9 +602,13 @@ class App {
         // 2. Identify Featured Report (Main Button)
         let featuredDoc = null;
         let isFeaturedNew = false;
-        if (!isAgg && latestDoc) {
+        
+        // Show weekly/monthly even if aggregating. Yearly only if not aggregating OR if past history exists.
+        const canViewAgg = (type !== 'yearly');
+
+        if (latestDoc && (!isAgg || canViewAgg)) {
           featuredDoc = { id: latestDoc.slug || 'latest', data: latestDoc };
-          isFeaturedNew = true;
+          isFeaturedNew = !isAgg;
         } else if (historyExists) {
           featuredDoc = pastDocs[0];
           isFeaturedNew = false;
