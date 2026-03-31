@@ -578,7 +578,7 @@ ${rank3_5}
         type, country,
         dateRange: label,
         slug: reportSlug,
-        isAggregating: false, // ALWAYS CLEAR THE FLAG
+        isAggregating: !isArchival, // Archival is DONE (false), Draft is STILL AGGREGATING (true)
         reportTitle: analysis.reportTitle,
         leadSummary: analysis.leadSummary || null,
         keywords: top5.map(t => t.keyword),
