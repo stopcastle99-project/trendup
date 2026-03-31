@@ -564,10 +564,22 @@ ${rank3_5}
         };
 
         await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
-        console.log(`  - ${type.toUpperCase()} archival report snapshot created: ${reportSlug}`);
+        
+        // CRITICAL FIX: Sync the 'latest' document status so the UI knows aggregation is DONE.
+        await db.collection("reports").doc(type).collection(country).doc("latest").set({
+          ...reportData,
+          slug: reportSlug // Point 'latest' to the finalized archival slug
+        });
+        
+        console.log(`  - ${type.toUpperCase()} archival report snapshot created and synced: ${reportSlug}`);
       }
     } catch (e) {
       console.error(`Error generating ${type} report for ${country}:`, e.message);
+      // Fallback: Clear aggregating flag on error to prevent infinite UI loading
+      await db.collection("reports").doc(type).collection(country).doc("latest").set({
+        isAggregating: false,
+        lastUpdated: admin.firestore.Timestamp.now()
+      }, { merge: true });
     }
   }
 
