@@ -317,14 +317,19 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     
     // 1. Generate Latest Drafts (Currently Aggregating)
     const currentWeekChunk = (d <= 7) ? 1 : (d <= 14) ? 2 : (d <= 21) ? 3 : 4;
-    const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22).padStart(2, '0')}`;
+    const weeklyStartDay = currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22;
+    const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(weeklyStartDay).padStart(2, '0')}`;
     const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const monthlyStart = `${y}-${String(m).padStart(2, '0')}-01`;
     const yearlyStart = `${y}-01-01`;
 
-    await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', `${y}년 ${m}월 ${currentWeekChunk}주차 리포트`);
-    await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', `${y}년 ${m}월 리포트`);
-    await this.generatePeriodReport(country, 'yearly', yearlyStart, todayStr, false, '', `${y}년 리포트`);
+    const wkLabel = `${String(m).padStart(2, '0')}.${String(weeklyStartDay).padStart(2, '0')} ~ ${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
+    const moLabel = `${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
+    const yrLabel = `${y}.01.01 ~ ${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
+
+    await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', `${m}월 ${currentWeekChunk}주차 (${wkLabel})`);
+    await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', `${m}월 리포트 (${moLabel})`);
+    await this.generatePeriodReport(country, 'yearly', yearlyStart, todayStr, false, '', `${y}년 리포트 (${yrLabel})`);
 
     // 2. Archival Boundaries
     const isWk1End = (d === 8);
