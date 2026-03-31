@@ -259,9 +259,7 @@ function renderTrends(items) {
                 <span class="growth-pill">${displayGrowth}</span>
             </div>
             <h3>${displayKeyword}</h3>
-            <div class="card-analysis" style="white-space: pre-wrap; line-height: 1.8; margin-top: 1rem; color: var(--text-secondary);">
-                ${displayAnalysis}
-            </div>
+            <div class="card-analysis" style="white-space: pre-wrap; line-height: 1.8; margin-top: 1rem; color: var(--text-secondary);">${displayAnalysis}</div>
             
             <div class="card-viz">
                 <div class="progress-bg">
