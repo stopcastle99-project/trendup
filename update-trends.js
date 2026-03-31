@@ -509,21 +509,19 @@ ${rank3_5}
   async generatePeriodReport(country, type, startDate, endDate, isArchival, slugIdentifier, label) {
     const historyCol = db.collection("trend_history");
     
-    // Draft (Latest) doesn't use AI yet to save cost, it just sets the aggregating flag.
-    if (!isArchival) {
-      const latestData = {
-        type, country, dateRange: label, slug: 'latest', isAggregating: true, 
-        reportTitle: { ko: `${label} 집계중...`, en: `${label} (Aggregating)`, ja: `${label} 集計中...` },
-        items: [],
-        lastUpdated: admin.firestore.Timestamp.now()
-      };
-      await db.collection("reports").doc(type).collection(country).doc("latest").set(latestData);
-      return;
-    }
+    // Start by marking as aggregating...
+    const latestDocRef = db.collection("reports").doc(type).collection(country).doc("latest");
+    await latestDocRef.set({
+      type, country, dateRange: label, isAggregating: true, 
+      lastUpdated: admin.firestore.Timestamp.now()
+    }, { merge: true });
     
     try {
       const snapshot = await historyCol.get();
-      if (snapshot.empty) return;
+      if (snapshot.empty) {
+        await latestDocRef.set({ isAggregating: false }, { merge: true });
+        return;
+      }
       
       const globalScores = {};
       snapshot.forEach(doc => {
@@ -544,49 +542,58 @@ ${rank3_5}
         .sort((a, b) => b.score - a.score)
         .slice(0, 5);
 
-      if (top5.length > 0) {
-        console.log(`  - Generating AI Analysis for ${type} ${country} (${startDate} to ${endDate})...`);
-        const analysis = await this.generateAIReportAnalysis(top5, country, type, label);
-        
-        const top1Slug = this.toSlug(top5[0].keyword);
-        const reportSlug = `${slugIdentifier}-${top1Slug}`;
-        
-        const reportData = {
-          type, country,
-          dateRange: label,
-          slug: reportSlug,
-          isAggregating: false,
-          reportTitle: analysis.reportTitle,
-          leadSummary: analysis.leadSummary || null,
-          keywords: top5.map(t => t.keyword),
-          items: await Promise.all(top5.map(async (t, i) => {
-            const extra = analysis.analyses.find(a => a.keyword === t.keyword) || { depth: { ko: "내용 없음", en: "No content", ja: "内容なし" } };
-            return {
-              keyword: t.keyword, score: t.score, rank: i + 1, depth: extra.depth,
-              newsLinks: await this.getSupplementaryNews(t.keyword, country),
-              videoLinks: await this.getYouTubeVideos(t.keyword, country)
-            };
-          })),
-          lastUpdated: admin.firestore.Timestamp.now()
-        };
-
-        await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
-        
-        // CRITICAL FIX: Sync the 'latest' document status so the UI knows aggregation is DONE.
-        await db.collection("reports").doc(type).collection(country).doc("latest").set({
-          ...reportData,
-          slug: reportSlug // Point 'latest' to the finalized archival slug
-        });
-        
-        console.log(`  - ${type.toUpperCase()} archival report snapshot created and synced: ${reportSlug}`);
+      if (top5.length === 0) {
+        await latestDocRef.set({ isAggregating: false }, { merge: true });
+        return;
       }
+
+      let analysis = null;
+      let reportSlug = 'latest';
+
+      if (isArchival) {
+        console.log(`  - Generating ARCHIVAL AI Analysis for ${type} ${country}...`);
+        analysis = await this.generateAIReportAnalysis(top5, country, type, label);
+        const top1Slug = this.toSlug(top5[0].keyword);
+        reportSlug = `${slugIdentifier}-${top1Slug}`;
+      } else {
+        // For non-archival drafts, we still display the top keywords but skip heavy AI
+        analysis = {
+          reportTitle: { ko: `${label} (실시간 집계)`, en: `${label} (Live)`, ja: `${label} (ライブ)` },
+          leadSummary: { ko: "현재 가장 뜨거운 트렌드 키워드들을 실시간으로 집계한 결과입니다.", en: "Live aggregation of top trending keywords.", ja: "現在のトレンドキーワードをリアルタイムで集계한結果です。" },
+          analyses: top5.map(t => ({ keyword: t.keyword, depth: { ko: "현재 데이터 집계 중입니다. 정식 리포트는 마감일에 발행됩니다.", en: "Aggregating data...", ja: "集計中..." } }))
+        };
+      }
+      
+      const reportData = {
+        type, country,
+        dateRange: label,
+        slug: reportSlug,
+        isAggregating: false, // ALWAYS CLEAR THE FLAG
+        reportTitle: analysis.reportTitle,
+        leadSummary: analysis.leadSummary || null,
+        keywords: top5.map(t => t.keyword),
+        items: await Promise.all(top5.map(async (t, i) => {
+          const extra = analysis.analyses.find(a => a.keyword === t.keyword) || { depth: { ko: "내용 없음", en: "No content", ja: "内容なし" } };
+          return {
+            keyword: t.keyword, score: t.score, rank: i + 1, depth: extra.depth,
+            newsLinks: await this.getSupplementaryNews(t.keyword, country),
+            videoLinks: await this.getYouTubeVideos(t.keyword, country)
+          };
+        })),
+        lastUpdated: admin.firestore.Timestamp.now()
+      };
+
+      if (isArchival) {
+        await db.collection("reports").doc(type).collection(country).doc(reportSlug).set(reportData);
+      }
+      
+      // Update the latest doc to finalized state
+      await latestDocRef.set(reportData);
+      console.log(`  - ${type.toUpperCase()} report ${isArchival ? 'archived' : 'updated'}: ${reportSlug}`);
+      
     } catch (e) {
       console.error(`Error generating ${type} report for ${country}:`, e.message);
-      // Fallback: Clear aggregating flag on error to prevent infinite UI loading
-      await db.collection("reports").doc(type).collection(country).doc("latest").set({
-        isAggregating: false,
-        lastUpdated: admin.firestore.Timestamp.now()
-      }, { merge: true });
+      await latestDocRef.set({ isAggregating: false, lastUpdated: admin.firestore.Timestamp.now() }, { merge: true });
     }
   }
 
