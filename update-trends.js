@@ -458,34 +458,40 @@ ${rank3_5}
 }
 `;
 
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro"];
+    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"];
     let text = "";
     let usedModel = "";
+
+    // Helper for sleep to avoid 429 Rate Limits
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
     try {
       for (const m of modelsToTry) {
         try {
+          console.log(`  - Trying AI analysis with ${m}...`);
           const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
           text = result.response.text().replace(/\u0060\u0060\u0060json|\u0060\u0060\u0060/g, "").trim();
           usedModel = m;
-          break;
+          
+          if (text) break;
         } catch (err) {
-          console.warn(`  - Report Analysis Fallback: ${m} failed. Trying next...`);
+          console.warn(`  - Model ${m} failed: ${err.message}. Retrying in 5s with next model...`);
+          await sleep(5000); // 5 second cool-down
         }
       }
 
-      if (!text) throw new Error("All models failed for report analysis");
+      if (!text) throw new Error("All Gemini models exhausted or blocked.");
       
       const parsed = JSON.parse(text);
       console.log(`  - AI Report Success: ${usedModel} analyzed ${country} ${type} report.`);
       await this.incrementGeminiUsage();
       return parsed;
     } catch (e) {
-      console.error(`🚨 AI Analysis failed for ${type} ${country}:`, e.message);
+      console.error(`🚨 Critical AI Analysis failure for ${type} ${country}:`, e.message);
       return { 
         reportTitle: { ko: `${label}`, en: `${label}`, ja: `${label}` },
-        analyses: top5.map(t => ({ keyword: t.keyword, depth: { ko: "현재 집계 중이거나 분석 오류가 발생했습니다.", en: "Aggregating...", ja: "集計中..." } }))
+        analyses: top5.map(t => ({ keyword: t.keyword, depth: { ko: "현재 AI 분석 서버가 매우 정체되어 있습니다. 잠시 후 다시 시도해 주십시오.", en: "AI analysis server is congested. Please try again later.", ja: "AI分析サーバーが混雑しています。後で再試行してください。" } }))
       };
     }
   }
