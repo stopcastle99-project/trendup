@@ -521,27 +521,20 @@ ${rank3_5}
     const latestDocRef = db.collection("reports").doc(type).collection(country).doc("latest");
     const reportSlug = slugIdentifier || `${startDate.replace(/-/g, '')}_${endDate.replace(/-/g, '')}_${type}`;
 
-    // 1. ABSOLUTE LOCKDOWN: Check if ANY finalized archival exists for this period. 
-    // If it's a DRAFT requesting for a period that is ALREADY ARCHIVED, we skip it.
-    let archSlugToCheck = reportSlug;
-    if (!isArchival) {
-      if (type === 'monthly') archSlugToCheck = `${startDate.substring(0,7)}-monthly`;
-      else if (type === 'weekly') {
-        const d_obj = new Date(endDate);
-        const sun = new Date(d_obj.setDate(d_obj.getDate() - d_obj.getDay()));
-        archSlugToCheck = `${sun.toISOString().substring(0,10)}-weekly`;
+    // 1. SMART LOCKDOWN:
+    // If it's an ARCHIVAL request, skip if already finished.
+    if (isArchival && reportSlug) {
+      const archDoc = await db.collection('reports').doc(type).collection(country).doc(reportSlug).get();
+      if (archDoc.exists && archDoc.data().isAggregating === false) {
+        console.log(`  - [STABLE ARCHIVE] ${type} for ${reportSlug} is already finalized. Syncing to latest.`);
+        await latestDocRef.set({ ...archDoc.data(), lastUpdated: admin.firestore.Timestamp.now() });
+        return;
       }
     }
+    // For DRAFTS (isArchival === false), we should NOT lockdown unless the dates EXACTLY match a finalized archive.
+    // This allows Monday/Tuesday live data to show up even if Sunday was just archived.
 
-    const archDoc = await db.collection('reports').doc(type).collection(country).doc(archSlugToCheck).get();
-    if (archDoc.exists && archDoc.data().isAggregating === false) {
-       console.log(`  - [LOCKDOWN] ${type} for ${archSlugToCheck} is already finalized. Skipping all updates.`);
-       // Sync latest only if it's currently different or empty
-       await latestDocRef.set({ ...archDoc.data(), lastUpdated: admin.firestore.Timestamp.now() });
-       return;
-    }
-
-    // 2. Only now, if we actually need to work, mark as aggregating.
+    // 2. Only now, if we actually need to work, mark as aggregating for archives.
     if (isArchival) {
       await latestDocRef.set({
         type, country, dateRange: label, isAggregating: true, 
