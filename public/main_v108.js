@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.2.16");
+    console.log("App Init: v3.2.33");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -590,22 +590,51 @@ class App {
 
         const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
         const historyExists = pastDocs.length > 0;
+        let finalIsAgg = isAgg; // v3.2.33 Fix
 
-        // 1. Current Aggregation Status
+        // 1. Current Status Badge
         if (latestDoc) {
           const rawLabel = latestDoc.dateRange || '';
           let badgeHtml = '';
           
-          if (isAgg) {
-            const isWriting = rawLabel.includes('작성중');
-            badgeHtml = isWriting 
-              ? `<span class="status-badge writing">✍️ 작성 중</span>` 
-              : `<span class="status-badge aggregating">⚡ 데이터 집계 중</span>`;
+          // 1.1 Status Override Logic: Be smarter than the DB flag
+          finalIsAgg = isAgg;
+          const kst = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
+          const curM = kst.getUTCMonth() + 1;
+          const curD = kst.getUTCDate();
+
+          // Yearly is ALWAYS accumulating
+          if (type === 'yearly') {
+            if (curM < 12 || (curM === 12 && curD < 29)) {
+              finalIsAgg = true;
+            }
+          }
+          
+          // Monthly is ALWAYS active on the last day (28th-31st depending on month)
+          if (type === 'monthly' && curD >= 28) {
+            finalIsAgg = true;
+          }
+          
+          // Weekly is ALWAYS active on Sunday (archival) or last day of month
+          if (type === 'weekly' && (kst.getUTCDay() === 0 || curD >= 28)) {
+            finalIsAgg = true;
+          }
+
+          if (finalIsAgg) {
+            // Force 'Writing' on the very last day of the month/week
+            const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && curD >= 30) || (type === 'weekly' && curD >= 30);
+            if (isWriting) {
+              badgeHtml = `<span class="status-badge writing">✍️ 작성 중</span>`;
+            } else if (type === 'yearly') {
+              badgeHtml = `<span class="status-badge live">📊 데이터 집계 중</span>`;
+            } else {
+              badgeHtml = `<span class="status-badge live">🟢 실시간</span>`;
+            }
           } else {
             badgeHtml = `<span class="status-badge completed">✅ 작성 완료</span>`;
           }
           
-          statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').trim()}</span>`;
+          statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').replace('집계중', '').trim()}</span>`;
           statusEl.style.display = 'block';
         } else {
           statusEl.style.display = 'none';
@@ -624,7 +653,8 @@ class App {
         // not as the main featured button unless the current period is finished.
 
         // 3. Render Main Card Area
-        if (featuredDoc) {
+        const isYearlyDraft = (type === 'yearly' && finalIsAgg);
+        if (featuredDoc && !isYearlyDraft && !finalIsAgg) {
           card.classList.remove('disabled');
           card.style.cursor = 'pointer';
           let pTitle = featuredDoc.data.dateRange || featuredDoc.id;
@@ -641,15 +671,17 @@ class App {
         } else {
           card.classList.add('disabled');
           card.style.cursor = 'default';
-          card.onclick = null;
+          card.onclick = (e) => {
+            e.preventDefault();
+            alert("현재 AI 분석 서버가 리포트를 작성 중입니다. 잠시만 기다려 주세요! (약 5~10분 소요)");
+            return false;
+          };
           let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
-          // Force Yearly date range for consistency
           if (type === 'yearly') {
-            const statusSuffix = (latestDoc && latestDoc.dateRange && latestDoc.dateRange.includes('작성중')) ? '작성중' : '데이터집계중';
-            displayLabel = `2026.01.01 ~ 12.31 ${statusSuffix}`;
+            displayLabel = `2026.01.01 ~ 12.31 📊 데이터 집계 중`;
           }
           periodEl.textContent = displayLabel;
-          badge.style.display = 'none';
+          badge.style.display = 'none'; // CRITICAL: Hide the button while writing
         }
 
         // 4. Archive List (Older than featured)
