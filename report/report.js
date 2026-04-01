@@ -250,7 +250,7 @@ function renderHero(data, showAggBanner = false) {
             } else if (lang === 'ja') {
                 msg = type === 'yearly' ? `2026年 ${typeLabel}が集計中です。最新の完了レポートを表示します。` : `${curM}月 ${typeLabel}が集計中です。最新の完了レポートを表示します。`;
             } else {
-                msg = type === 'yearly' ? `2026 Yearly report is aggregating. Showing latest finalized.` : `${curM} Monthly report is aggregating. Showing latest finalized.`;
+                msg = type === 'yearly' ? `2026 ${typeLabel} report is aggregating. Showing latest finalized.` : `${curM} ${typeLabel} report is aggregating. Showing latest finalized.`;
             }
             bannerHtml = `<div class="agg-running-banner" style="background:var(--primary-light); color:var(--primary); padding:0.8rem 1.2rem; border-radius:12px; margin-bottom:1rem; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:0.5rem; border:1px solid var(--primary-alpha); animation: fadeIn 0.5s ease;">
                 <span style="font-size:1.2rem;">⏳</span> ${msg}
