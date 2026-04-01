@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.11");
+    console.log("App Init: v3.4.12");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -441,7 +441,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.11) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.12) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -566,6 +566,12 @@ class App {
   async switchCountry(code) { this.currentCountry = code; localStorage.setItem('country', code); this.loadLocalCache(); this.renderNavs(); await this.update(); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.refreshUIText(); this.loadLocalCache(); await this.update(); }
   
+  safeSetStyle(el, styles) {
+    if (el && el.style) {
+      Object.assign(el.style, styles);
+    }
+  }
+
   async refreshReportCards() {
     if (!this.db) return;
     const types = ['weekly', 'monthly', 'yearly'];
@@ -590,44 +596,23 @@ class App {
         const periodEl = card.querySelector(`[data-period="${type}"]`);
 
         const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
-        const historyExists = pastDocs.length > 0;
-        let finalIsAgg = isAgg; // v3.2.33 Fix
+        let finalIsAgg = isAgg; 
 
         // 1. Current Status Badge
-        if (latestDoc && statusEl) {
+        if (latestDoc) {
           const rawLabel = latestDoc.dateRange || '';
           let badgeHtml = '';
           
-          // 1.1 Status Override Logic: Be smarter than the DB flag
-          finalIsAgg = isAgg;
           const kst = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
           const curM = kst.getUTCMonth() + 1;
           const curD = kst.getUTCDate();
 
-          // v3.4.4: Hard-enforce aggregation status on the 1st of a new period
-          if (curD === 1) {
-            finalIsAgg = true;
-          }
-
-          // Yearly is ALWAYS accumulating
-          if (type === 'yearly') {
-            if (curM < 12 || (curM === 12 && curD < 29)) {
-              finalIsAgg = true;
-            }
-          }
-          
-          // Monthly is ALWAYS active on the last day (28th-31st) or 1st
-          if (type === 'monthly' && (curD >= 28 || curD === 1)) {
-            finalIsAgg = true;
-          }
-          
-          // Weekly is ALWAYS active on Sunday or late in month or 1st
-          if (type === 'weekly' && (kst.getUTCDay() === 0 || curD >= 28 || curD === 1)) {
-            finalIsAgg = true;
-          }
+          if (curD === 1) finalIsAgg = true;
+          if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
+          if (type === 'monthly' && (curD >= 28 || curD === 1)) finalIsAgg = true;
+          if (type === 'weekly' && (kst.getUTCDay() === 0 || curD >= 28 || curD === 1)) finalIsAgg = true;
 
           if (finalIsAgg) {
-            // v3.4.10: Finalized Aggregation UI status
             const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && (curD >= 30 || curD === 1)) || (type === 'weekly' && (curD >= 30 || curD === 1));
             if (isWriting || type === 'yearly' || curD === 1) {
               badgeHtml = `<span class="status-badge writing">📊 집계 중</span>`;
@@ -640,26 +625,24 @@ class App {
           
           if (statusEl) {
              statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').replace('집계중', '').trim()}</span>`;
-             statusEl.style.display = 'block';
+             this.safeSetStyle(statusEl, { display: 'block' });
           }
-        } else if (statusEl) {
-          statusEl.style.display = 'none';
+        } else {
+          this.safeSetStyle(statusEl, { display: 'none' });
         }
 
         // 2. Render Period Label
         if (periodEl) {
           let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
-          if (type === 'yearly') {
-            displayLabel = `2026.01.01 ~ 12.31`;
-          }
+          if (type === 'yearly') displayLabel = `2026.01.01 ~ 12.31`;
           periodEl.textContent = displayLabel;
         }
 
         // 3. Card interaction setup
-        card.classList.add('disabled'); // Default to disabled as interaction is now on links
-        card.style.cursor = 'default';
+        card.classList.add('disabled');
+        this.safeSetStyle(card, { cursor: 'default' });
 
-        // 4. Report List (Latest + Archives)
+        // 4. Report List
         let pastCtn = card.querySelector('.past-reports-list');
         if (!pastCtn) {
           pastCtn = document.createElement('div');
@@ -668,12 +651,10 @@ class App {
         }
 
         const reportsToDisplay = [];
-        // Add latest report if it's NOT aggregating
         if (latestDoc && !finalIsAgg) {
           reportsToDisplay.push({ id: latestDoc.slug || 'latest', data: latestDoc, isNew: true });
         }
 
-        // Add archives
         const curLabel = latestDoc ? (latestDoc.dateRange || '') : '';
         const monthMatch = curLabel.match(/(\d+)월/);
         const weekMatch = curLabel.match(/(\d+)주차/);
@@ -692,9 +673,7 @@ class App {
         });
 
         const finalDisplay = reportsToDisplay.slice(0, 4);
-
-        if (finalDisplay.length > 0) {
-          if (pastCtn) {
+        if (finalDisplay.length > 0 && pastCtn) {
             pastCtn.innerHTML = finalDisplay.map(p => {
               let pTitle = p.data.dateRange || p.id;
               if (p.data.reportTitle && p.data.reportTitle[this.currentLang]) {
@@ -705,14 +684,12 @@ class App {
                 <span>${pTitle}</span>
               </a>`;
             }).join('');
-            pastCtn.style.display = 'block';
-          }
-        } else if (pastCtn) {
-          pastCtn.style.display = 'none';
+            this.safeSetStyle(pastCtn, { display: 'block' });
+        } else {
+            this.safeSetStyle(pastCtn, { display: 'none' });
         }
-
       } catch (err) { 
-        console.warn(`Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.12] Failed to refresh ${type} report card:`, err);
       }
     }
   }
