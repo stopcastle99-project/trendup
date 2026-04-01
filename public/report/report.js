@@ -198,7 +198,7 @@ async function loadReport() {
         const data = doc.data();
         
         // GLOBAL FIX: If any report is currently aggregating, show placeholder immediately
-        if (data.isAggregating !== false) {
+        if (data.isAggregating === true) {
             renderPlaceholder();
             return;
         }
