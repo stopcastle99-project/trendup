@@ -11,7 +11,8 @@ const ICONS = {
 let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
-    labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록" },
+    labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록", analysis: "분석" },
+    seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} 실시간 검색어 1위: \"{keyword}\". {summary}." },
     reports: { 
       title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기", latest: "최신 리포트", currAgg: "현재 집계 중", viewPast: "과거 내역 보기",
       status: { writing: "📊 집계 중", live: "🟢 실시간 집계", completed: "✅ 작성 완료" }
@@ -73,7 +74,8 @@ let i18n = {
   },
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
-    labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リ포트 분석" },
+    labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リポート分析", analysis: "分析" },
+    seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} リアルタイムトレンド1位: \"{keyword}\". {summary}." },
     reports: { 
       title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る", latest: "最新レポート", currAgg: "現在集計中", viewPast: "過去履歴表示",
       status: { writing: "📊 集計中", live: "🟢 リアルタイム集計", completed: "✅ 作成完了" }
@@ -124,7 +126,8 @@ let i18n = {
   },
   en: { 
     title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
-    labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports" },
+    labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports", analysis: "Analysis" },
+    seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} Real-time Trend #1: \"{keyword}\". {summary}." },
     reports: { 
       title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report", latest: "Latest Report", currAgg: "Aggregating Now", viewPast: "View Archive",
       status: { writing: "📊 Aggregating", live: "🟢 Live", completed: "✅ Completed" }
@@ -345,7 +348,7 @@ class TrendModal extends HTMLElement {
       this.shadowRoot.getElementById('reports-links').innerHTML = matchedReports.map(r => {
         let titleStr = r.reportTitle;
         if (typeof titleStr === 'object') titleStr = titleStr[lang] || titleStr.ko || "Trend Report";
-        return `<a href="report/?type=${r.type}&country=${r.country}&id=${r.slug}" target="_blank" class="link report-link"><span class="link-meta">${r.type.toUpperCase()} ANALYSIS</span><span>📈 ${titleStr}</span></a>`;
+        return `<a href="report/?type=${r.type}&country=${r.country}&id=${r.slug}" target="_blank" class="link report-link"><span class="link-meta">${r.type.toUpperCase()} ${t.labels.analysis || 'ANALYSIS'}</span><span class="link-title">${titleStr}</span></a>`;
       }).join('');
     }
   }
