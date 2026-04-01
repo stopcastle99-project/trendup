@@ -681,6 +681,9 @@ class App {
           card.classList.add('disabled');
           card.style.cursor = 'default';
           card.onclick = (e) => {
+            // v3.4.8: Allow clicking past report links even if main card is aggregating
+            if (e.target.closest('.past-report-link')) return; 
+
             e.preventDefault();
             alert("현재 AI 분석 서버가 리포트를 작성 중입니다. 잠시만 기다려 주세요! (약 5~10분 소요)");
             return false;
