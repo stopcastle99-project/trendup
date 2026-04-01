@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.3.02");
+    console.log("App Init: v3.4.10");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -441,7 +441,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.1.52) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.10) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -627,12 +627,10 @@ class App {
           }
 
           if (finalIsAgg) {
-            // Force 'Writing' on the very last day or 1st day (initialization)
+            // v3.4.10: Finalized Aggregation UI status
             const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && (curD >= 30 || curD === 1)) || (type === 'weekly' && (curD >= 30 || curD === 1));
-            if (isWriting) {
+            if (isWriting || type === 'yearly' || curD === 1) {
               badgeHtml = `<span class="status-badge writing">📊 집계 중</span>`;
-            } else if (type === 'yearly' || curD === 1) {
-              badgeHtml = `<span class="status-badge live">📊 데이터 집계 중</span>`;
             } else {
               badgeHtml = `<span class="status-badge live">🟢 실시간 집계</span>`;
             }
@@ -640,8 +638,10 @@ class App {
             badgeHtml = `<span class="status-badge completed">✅ 작성 완료</span>`;
           }
           
-          statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').replace('집계중', '').trim()}</span>`;
-          statusEl.style.display = 'block';
+          if (statusEl) {
+             statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').replace('집계중', '').trim()}</span>`;
+             statusEl.style.display = 'block';
+          }
         } else if (statusEl) {
           statusEl.style.display = 'none';
         }
