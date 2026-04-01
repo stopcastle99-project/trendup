@@ -471,9 +471,7 @@ class App {
         const key = el.getAttribute('data-report');
         if (t.reports[key]) el.textContent = t.reports[key];
       });
-      document.querySelectorAll('.coming-soon-badge').forEach(el => {
-        el.textContent = t.reports.comingSoon;
-      });
+
       this.refreshReportCards();
 
       this.updateGeminiUsage();
@@ -633,11 +631,11 @@ class App {
             // Force 'Writing' on the very last day or 1st day (initialization)
             const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && (curD >= 30 || curD === 1)) || (type === 'weekly' && (curD >= 30 || curD === 1));
             if (isWriting) {
-              badgeHtml = `<span class="status-badge writing">✍️ 작성 중</span>`;
+              badgeHtml = `<span class="status-badge writing">📊 집계 중</span>`;
             } else if (type === 'yearly' || curD === 1) {
               badgeHtml = `<span class="status-badge live">📊 데이터 집계 중</span>`;
             } else {
-              badgeHtml = `<span class="status-badge live">🟢 실시간</span>`;
+              badgeHtml = `<span class="status-badge live">🟢 실시간 집계</span>`;
             }
           } else {
             badgeHtml = `<span class="status-badge completed">✅ 작성 완료</span>`;
@@ -649,54 +647,17 @@ class App {
           statusEl.style.display = 'none';
         }
 
-        // 2. Identify Featured Report (Main Button)
-        let featuredDoc = null;
-        let isFeaturedNew = false;
-        
-        // Strict Enforcement: ONLY allow viewing if NOT aggregating (must be 'Completed')
-        if (latestDoc && !isAgg) {
-          featuredDoc = { id: latestDoc.slug || 'latest', data: latestDoc };
-          isFeaturedNew = true;
+        // 2. Render Period Label
+        let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
+        if (type === 'yearly') {
+          displayLabel = `2026.01.01 ~ 12.31`;
         }
-        // Historical archives will ONLY appear in the archive list below, 
-        // not as the main featured button unless the current period is finished.
+        periodEl.textContent = displayLabel;
+        card.classList.add('disabled'); // Default to disabled as interaction is now on links
+        card.style.cursor = 'default';
 
-        // 3. Render Main Card Area
-        const isYearlyDraft = (type === 'yearly' && finalIsAgg);
-        if (featuredDoc && !isYearlyDraft && !finalIsAgg) {
-          card.classList.remove('disabled');
-          card.style.cursor = 'pointer';
-          let pTitle = featuredDoc.data.dateRange || featuredDoc.id;
-          if (featuredDoc.data.reportTitle && featuredDoc.data.reportTitle[this.currentLang]) {
-            pTitle = featuredDoc.data.reportTitle[this.currentLang];
-          }
-          periodEl.innerHTML = `${isFeaturedNew ? `<span class="new-badge">NEW</span>` : ''}${pTitle}`;
-          badge.style.display = 'inline-block';
-          badge.textContent = `${t.reports[type]} ${t.reports.view}`;
-          badge.classList.add('active-report');
-          card.onclick = () => {
-            window.location.href = `report/?type=${type}&country=${this.currentCountry}&id=${featuredDoc.id}`;
-          };
-        } else {
-          card.classList.add('disabled');
-          card.style.cursor = 'default';
-          card.onclick = (e) => {
-            // v3.4.8: Allow clicking past report links even if main card is aggregating
-            if (e.target.closest('.past-report-link')) return; 
 
-            e.preventDefault();
-            alert("현재 AI 분석 서버가 리포트를 작성 중입니다. 잠시만 기다려 주세요! (약 5~10분 소요)");
-            return false;
-          };
-          let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
-          if (type === 'yearly') {
-            displayLabel = `2026.01.01 ~ 12.31 📊 데이터 집계 중`;
-          }
-          periodEl.textContent = displayLabel;
-          badge.style.display = 'none'; // CRITICAL: Hide the button while writing
-        }
-
-        // 4. Archive List (Older than featured)
+        // 4. Report List (Latest + Archives)
         let pastCtn = card.querySelector('.past-reports-list');
         if (!pastCtn) {
           pastCtn = document.createElement('div');
@@ -704,46 +665,43 @@ class App {
           card.appendChild(pastCtn);
         }
 
-        // Precision Filter: Hide any archive that matches the CURRENT draft's Month & Week
-        // (E.g. if writing "3월 4주차", hide ALL archived reports containing both "3월" and "4주차")
-        const fId = featuredDoc ? featuredDoc.id : null;
-        const curSlug = latestDoc ? latestDoc.slug : null;
+        const reportsToDisplay = [];
+        // Add latest report if it's NOT aggregating
+        if (latestDoc && !finalIsAgg) {
+          reportsToDisplay.push({ id: latestDoc.slug || 'latest', data: latestDoc, isNew: true });
+        }
+
+        // Add archives
         const curLabel = latestDoc ? (latestDoc.dateRange || '') : '';
-        
-        // Extract month/week components for precision matching (v3.4.5: Fixed regex)
         const monthMatch = curLabel.match(/(\d+)월/);
         const weekMatch = curLabel.match(/(\d+)주차/);
         const curMonthStr = monthMatch ? monthMatch[0] : '';
         const curWeekStr = weekMatch ? weekMatch[0] : '';
-
         const seenLabels = new Set();
-        const validArchives = pastDocs.filter(p => {
+        if (latestDoc && !finalIsAgg) seenLabels.add(latestDoc.dateRange);
+
+        pastDocs.forEach(p => {
           const pTitle = p.data.dateRange || '';
-          // v3.4.5: Only mark as overlap if BOTH month and week match. 
           const isOverlap = curMonthStr && curWeekStr && pTitle.includes(curMonthStr) && pTitle.includes(curWeekStr);
-          
-          if (seenLabels.has(pTitle)) return false;
-          seenLabels.add(pTitle);
-
-          return (
-            p.id !== fId &&
-            p.id !== curSlug &&
-            !isOverlap &&
-            p.data.isAggregating === false
-          );
+          if (!seenLabels.has(pTitle) && !isOverlap && p.data.isAggregating === false) {
+             reportsToDisplay.push(p);
+             seenLabels.add(pTitle);
+          }
         });
-        const displayArchives = validArchives.slice(0, 3);
 
-        if (displayArchives.length > 0) {
-          const listHtml = displayArchives.map(p => {
+        const finalDisplay = reportsToDisplay.slice(0, 4);
+
+        if (finalDisplay.length > 0) {
+          pastCtn.innerHTML = finalDisplay.map(p => {
             let pTitle = p.data.dateRange || p.id;
             if (p.data.reportTitle && p.data.reportTitle[this.currentLang]) {
               pTitle = p.data.reportTitle[this.currentLang];
             }
-            return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link" onclick="event.stopPropagation()"><span>📜 ${pTitle}</span></a>`;
+            return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link">
+              ${p.isNew ? '<span class="new-badge">NEW</span>' : '📜'} 
+              <span>${pTitle}</span>
+            </a>`;
           }).join('');
-          
-          pastCtn.innerHTML = `<span class="past-title">${t.reports.viewPast}</span>` + listHtml;
           pastCtn.style.display = 'block';
         } else {
           pastCtn.style.display = 'none';
