@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.3.4 (Multi-Language Support)
+// Trend Report Detail Logic - v3.4.30 (Robust Aggregation Enforcement)
 const ICONS = {
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
@@ -25,11 +25,11 @@ const REPORT_I18N = {
         period_summary: "集計期間 : ", current_period: "現在の期間",
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         aggregating: "トレンド集計中", back_to_main: "メインに戻る",
-        wait: "現在、データを精密に分析しています。少々お待ちください。",
+        wait: "現在、データを精密に分析しています. 少々お待ちください。",
         month: (m) => `${m}月`, year: (y) => `${y}年`,
         growth: "成長率", trend_report: "トレンド報告書",
         total_views: "総閲覧数", avg_growth: "平均成長率", agg_period: "集計期間", please_wait: "お待ちください...",
-        agg_banner: (typeLabel, m) => typeLabel === "年間" ? `2026年 ${typeLabel}レポートが集計中です。最新の完了レポートを表示します。` : `${m}월 ${typeLabel}レポートが集計中です。最新の完了レポートを表示します。`
+        agg_banner: (typeLabel, m) => typeLabel === "年間" ? `2026年 ${typeLabel}レポートが集計中です. 最新の完了レポートを表示します。` : `${m}월 ${typeLabel}レポートが集計中です. 最新の完了レポートを表示합니다。`
     },
     en: {
         title: "Global Trend Report",
@@ -49,7 +49,6 @@ const REPORT_I18N = {
 const firebaseConfig = { projectId: "test-76cdd" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-// v3.3.01 Connectivity Fix: Long Polling for stability
 db.settings({ experimentalAutoDetectLongPolling: true });
 
 const params = new URLSearchParams(window.location.search);
@@ -58,7 +57,6 @@ let country = params.get('country') || 'KR';
 let reportId = params.get('id') || 'latest';
 let lang = localStorage.getItem('lang') || params.get('lang') || (country === 'KR' ? 'ko' : country === 'JP' ? 'ja' : 'en');
 
-// SEO Slug Detection
 const pathParts = window.location.pathname.split('/').filter(p => p);
 const lastPart = pathParts[pathParts.length - 1];
 if (lastPart && lastPart !== 'report' && lastPart !== 'index.html') {
@@ -78,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHistoryDropdown();
     initTheme();
     loadReport();
-    loadLiveStatus(); // Added to keep aggregating info visible
+    loadLiveStatus();
 });
 
 function applyTranslations() {
@@ -87,22 +85,18 @@ function applyTranslations() {
     const titleEl = document.getElementById('global-title');
     if (titleEl) titleEl.textContent = t.title;
 
-    // Sidebar Labels
     const sidebarLabels = document.querySelectorAll('.sidebar-label');
     if (sidebarLabels[0]) sidebarLabels[0].textContent = t.current_period;
     if (sidebarLabels[1]) sidebarLabels[1].textContent = t.history;
 
-    // Stat Labels
     const statLabels = document.querySelectorAll('.stat-label');
     if (statLabels[0]) statLabels[0].textContent = t.total_views;
     if (statLabels[1]) statLabels[1].textContent = t.avg_growth;
     if (statLabels[2]) statLabels[2].textContent = t.agg_period;
 
-    // Loading State
     const loadingState = document.querySelector('.loading-state');
     if (loadingState) loadingState.textContent = t.please_wait;
 
-    // Period Buttons
     document.querySelectorAll('[data-type]').forEach(btn => {
         const type = btn.getAttribute('data-type');
         if (t[type]) btn.textContent = t[type];
@@ -127,7 +121,7 @@ function initTheme() {
 
     const setTheme = (mode) => {
         let theme = mode;
-        if (mode === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (theme === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme-mode', mode);
         updateTriggerIcon(mode);
@@ -178,16 +172,9 @@ function injectIcons() {
 async function loadReport() {
     try {
         const t = REPORT_I18N[lang] || REPORT_I18N.en;
-        loadHistory(); // Load history early for better navigation
+        loadHistory();
 
-        let actualDocId = reportId;
-        let showAggBanner = false;
-
-        const now = new Date();
-        const isLastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
-        const isLastDayOfYear = (now.getMonth() === 11 && now.getDate() === 31);
-
-        const docRef = db.collection("reports").doc(type).collection(country).doc(actualDocId);
+        const docRef = db.collection("reports").doc(type).collection(country).doc(reportId);
         const doc = await docRef.get();
 
         if (!doc.exists) {
@@ -196,37 +183,27 @@ async function loadReport() {
         }
 
         const data = doc.data();
-        
-        // v3.4.28: Selective aggregation – Only hide current month's drafts
         const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
         const curM = kst.getMonth() + 1;
         const curD = kst.getDate();
-        const curDay = kst.getDay();
+        
+        const docRange = data.dateRange || "";
+        const isNewMonthDoc = docRange.includes(`${curM}월`) || 
+                             docRange.includes(`0${curM}.`) || 
+                             docRange.includes(`.${curM}.`) || 
+                             docRange.includes(` ${curM}.`);
 
         let finalIsAgg = (data.isAggregating !== false);
         
-        // MANDATORY FORCE: Only for the NEW month's reports during transition (1st-3rd)
+        // v3.4.30: Mandatory Force during transition (1st-3rd) for current month drafts
         if (curD >= 1 && curD <= 3) {
-            const docRange = data.dateRange || "";
-            const isNewMonthDoc = docRange.includes(`0${curM}.`) || docRange.includes(`${curM}월`);
-            
-            // If it's a new month document that is NOT yet finished, hide it.
-            // If it is an OLD month document, let it show (even if isAggregating is unset).
             if (isNewMonthDoc) {
-                if (data.isAggregating !== false) finalIsAgg = true;
+                finalIsAgg = true;
             } else {
-                // For old reports (e.g. March), trust the DB or default to showing
                 finalIsAgg = (data.isAggregating === true);
             }
-        }
-
-        // Standard transitional rules for badges/placeholders
-        if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
-        // For monthly/weekly, if it's the draft period AND it's a new month doc, hide it.
-        if ((type === 'monthly' || type === 'weekly') && (curD >= 28 || curD <= 3)) {
-            const docRange = data.dateRange || "";
-            const isNewMonthDoc = docRange.includes(`0${curM}.`) || docRange.includes(`${curM}월`);
-            if (isNewMonthDoc && data.isAggregating !== false) finalIsAgg = true;
+        } else if (isNewMonthDoc && data.isAggregating !== false) {
+            finalIsAgg = true;
         }
 
         if (finalIsAgg) {
@@ -234,7 +211,7 @@ async function loadReport() {
             return;
         }
 
-        renderHero(data, showAggBanner);
+        renderHero(data);
         renderTrends(data.items);
     } catch (e) {
         console.error("Report load error:", e);
@@ -259,121 +236,60 @@ function renderPlaceholder(customMessage) {
     `;
 }
 
-function renderHero(data, showAggBanner = false) {
+function renderHero(data) {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const periodSummary = document.getElementById('current-period-summary');
-    
-    // v3.4.1: Precise date range (M/D-M/D)
     let displayRange = data.dateRange || 'Latest Update';
-    if (data.startDate && data.endDate) {
-        try {
-            const s = data.startDate.split('-');
-            const e = data.endDate.split('-');
-            if (s.length === 3 && e.length === 3) {
-                const sM = parseInt(s[1]), sD = parseInt(s[2]);
-                const eM = parseInt(e[1]), eD = parseInt(e[2]);
-                if (type === 'yearly') {
-                    displayRange = `${s[0]}.${sM}.${sD} ~ ${e[0]}.${eM}.${eD}`;
-                } else {
-                    displayRange = `${sM}/${sD} - ${eM}/${eD}`;
-                }
-            }
-        } catch (err) { console.warn("Date parse error:", err); }
-    }
-
+    
     if (periodSummary) {
-        let bannerHtml = '';
-        if (showAggBanner) {
-            const now = new Date();
-            const curM = now.getMonth() + 1;
-            const typeLabel = t[type] || type;
-            const msg = t.agg_banner ? t.agg_banner(typeLabel, curM) : `${typeLabel} Aggregating...`;
-            
-            bannerHtml = `<div class="agg-running-banner" style="background:var(--primary-light); color:var(--primary); padding:0.8rem 1.2rem; border-radius:12px; margin-bottom:1rem; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:0.5rem; border:1px solid var(--primary-alpha); animation: fadeIn 0.5s ease;">
-                <span style="font-size:1.2rem;">⏳</span> ${msg}
-            </div>`;
-        }
-        periodSummary.innerHTML = bannerHtml + `<span class="period-label-text">${t.period_summary} ${displayRange}</span>`;
+        periodSummary.innerHTML = `<span class="period-label-text">${t.period_summary} ${displayRange}</span>`;
     }
-
     const displayElement = document.getElementById('current-period-display');
     if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
 }
 
 function renderTrends(items) {
     const container = document.getElementById('trend-list');
-    if (!container) return;
+    if (!container || !items || !Array.isArray(items)) return;
     container.innerHTML = '';
-
-    if (!items || !Array.isArray(items)) {
-        return;
-    }
-
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
 
-    items.forEach((item, idx) => {
-        const isFeatured = item.rank <= 2;
+    items.forEach((item) => {
         const featuredClass = item.rank === 1 ? 'featured-1' : (item.rank === 2 ? 'featured-2' : '');
-
         const card = document.createElement('div');
         card.className = `trend-card ${featuredClass}`;
 
         const growth = item.growth || (Math.floor(Math.random() * 15) + 5);
         const gaugeWidth = item.score ? Math.min(100, Math.max(30, item.score / 10)) : (Math.floor(Math.random() * 40) + 60);
-
-        // Localized Content Selection
         const displayKeyword = (item.translations && item.translations[lang]) || item.keyword;
+        
         let displayAnalysis = '';
-        if (item.aiReports && item.aiReports[lang]) {
-            displayAnalysis = item.aiReports[lang];
-        } else if (item.depth && typeof item.depth === 'object') {
-            displayAnalysis = item.depth[lang] || item.depth.ko || '';
-        } else if (typeof item.depth === 'string') {
-            displayAnalysis = item.depth;
-        }
-
-        // Clean up excessive leading indentation often added by AI models
+        if (item.aiReports && item.aiReports[lang]) displayAnalysis = item.aiReports[lang];
+        else if (item.depth && typeof item.depth === 'object') displayAnalysis = item.depth[lang] || item.depth.ko || '';
+        else if (typeof item.depth === 'string') displayAnalysis = item.depth;
         displayAnalysis = displayAnalysis.trim().split('\n').map(line => line.trim()).join('\n');
-
-        const displayGrowth = `${t.growth} +${growth}%`;
 
         card.innerHTML = `
             <div class="card-top">
                 <span class="rank-badge">#${item.rank}</span>
-                <span class="growth-pill">${displayGrowth}</span>
+                <span class="growth-pill">${t.growth} +${growth}%</span>
             </div>
             <h3>${displayKeyword}</h3>
             <div class="card-analysis" style="white-space: pre-wrap; line-height: 1.8; margin-top: 1rem; color: var(--text-secondary);">${displayAnalysis}</div>
-            
             <div class="card-viz">
-                <div class="progress-bg">
-                    <div class="progress-fill" style="width: ${gaugeWidth}%"></div>
-                </div>
+                <div class="progress-bg"><div class="progress-fill" style="width: ${gaugeWidth}%"></div></div>
             </div>
-
             <div class="card-supplementary">
                 ${item.newsLinks ? `
                     <div class="news-section">
                         <h4>${t.related_news}</h4>
                         <div class="news-list">
-                            ${item.newsLinks.slice(0, 3).map(n => `
-                                <a href="${n.url}" target="_blank" class="news-link">${n.title}</a>
-                            `).join('')}
+                            ${item.newsLinks.slice(0, 3).map(n => `<a href="${n.url}" target="_blank" class="news-link">${n.title}</a>`).join('')}
                         </div>
-                    </div>
-                ` : ''}
-                ${isFeatured && item.videoLinks ? `
-                    <div class="video-grid">
-                        ${item.videoLinks.filter(v => v.id).slice(0, 2).map(v => `
-                            <div class="video-item">
-                                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${v.id}" frameborder="0" allowfullscreen title="${v.title}"></iframe>
-                            </div>
-                        `).join('')}
                     </div>
                 ` : ''}
             </div>
         `;
-
         container.appendChild(card);
     });
 }
@@ -386,7 +302,6 @@ async function loadHistory() {
         const snapshot = await db.collection("reports").doc(type).collection(country)
             .orderBy("lastUpdated", "desc").limit(20).get(); 
         list.innerHTML = '';
-
         const seenTitles = new Set();
         const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
         const curM = kst.getMonth() + 1;
@@ -394,7 +309,6 @@ async function loadHistory() {
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            // deduplicate by raw label
             const periodKey = data.dateRange || doc.id;
             if (seenTitles.has(periodKey)) return;
             seenTitles.add(periodKey);
@@ -403,28 +317,22 @@ async function loadHistory() {
             const item = document.createElement('div');
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
 
-            // v3.4.29: Label aggregating reports in the selection list
             let historyTitle = data.dateRange || doc.id;
-            const isNewMonth = historyTitle.includes(`0${curM}.`) || historyTitle.includes(`${curM}월`);
+            const isNewMonth = historyTitle.includes(`${curM}월`) || historyTitle.includes(`0${curM}.`) || 
+                              historyTitle.includes(`.${curM}.`) || historyTitle.includes(` ${curM}.`);
+            
             let isAgg = (data.isAggregating !== false);
-
-            // Refined aggregate check for historical items
             if (doc.id !== 'latest') {
                 isAgg = (data.isAggregating === true);
-            } else if (curD > 3 && !isNewMonth) {
-                // If it's latest but not a new month doc and not in transition, respect DB
+            } else if (curD <= 3 && isNewMonth) {
+                isAgg = true;
+            } else if (!isNewMonth && curD > 3) {
                 isAgg = (data.isAggregating !== false);
             }
 
-            if (historyTitle.includes('리포트')) {
-                historyTitle = historyTitle.replace('리포트', t.trend_report);
-            } else if (!historyTitle.includes(t.trend_report)) {
-                historyTitle += ` ${t.trend_report}`;
-            }
-
-            if (isAgg) {
-                historyTitle += ` [${t.aggregating}]`;
-            }
+            if (historyTitle.includes('리포트')) historyTitle = historyTitle.replace('리포트', t.trend_report);
+            else if (!historyTitle.includes(t.trend_report)) historyTitle += ` ${t.trend_report}`;
+            if (isAgg) historyTitle += ` [${t.aggregating}]`;
 
             item.textContent = historyTitle;
             item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
@@ -434,18 +342,15 @@ async function loadHistory() {
         console.warn("History load failed:", e);
     }
 }
+
 async function loadLiveStatus() {
     const sidebar = document.getElementById('report-sidebar');
     if (!sidebar) return;
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
-
     try {
         const latestDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
         if (latestDoc.exists && latestDoc.data().isAggregating !== false) {
             const data = latestDoc.data();
-            const liveTitle = data.dateRange || 'Draft';
-            
-            // Check if status element exists, otherwise prepend it to history section
             let statusEl = document.getElementById('sidebar-live-status');
             if (!statusEl) {
                 const historyHeader = document.querySelector('.history-header');
@@ -454,16 +359,13 @@ async function loadLiveStatus() {
                 statusEl.className = 'sidebar-live-container';
                 if (historyHeader) historyHeader.parentNode.insertBefore(statusEl, historyHeader);
             }
-            
             statusEl.innerHTML = `
                 <div class="live-status-badge">LIVE</div>
                 <div class="live-status-text">
                     <span class="label">${t.live_status}</span>
-                    <span class="value">${liveTitle}</span>
+                    <span class="value">${data.dateRange || 'Draft'}</span>
                 </div>
             `;
         }
-    } catch (e) {
-        console.warn("Live status load error:", e);
-    }
+    } catch (e) { console.warn("Live status load error:", e); }
 }
