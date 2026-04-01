@@ -14,7 +14,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.4.29 <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.4.30 <<<");
 console.log(">>> TARGET: Gemma-Summaries / Gemini-Pro-Reports <<<");
 console.log("====================================================");
 
