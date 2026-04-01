@@ -195,7 +195,7 @@ async function loadReport() {
             return;
         }
 
-        // v3.4.26: Synchronized logic with main.js for consistent aggregation status
+        // v3.4.27: Selective aggregation – Only hide current month's drafts
         const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
         const curM = kst.getMonth() + 1;
         const curD = kst.getDate();
@@ -203,21 +203,29 @@ async function loadReport() {
 
         let finalIsAgg = (data.isAggregating !== false);
         
-        // MANDATORY FORCE: Start of month transition (1st-3rd)
-        // If we are in the first 3 days of the month, force placeholder for any report
-        // that matches this month's label or is the 'latest' link.
+        // MANDATORY FORCE: Only for the NEW month's reports during transition (1st-3rd)
         if (curD >= 1 && curD <= 3) {
             const docRange = data.dateRange || "";
             const isNewMonthDoc = docRange.includes(`0${curM}.`) || docRange.includes(`${curM}월`);
-            if (isNewMonthDoc || reportId === 'latest') {
-                finalIsAgg = true;
+            
+            // If it's a new month document that is NOT yet finished, hide it.
+            // If it is an OLD month document, let it show (even if isAggregating is unset).
+            if (isNewMonthDoc) {
+                if (data.isAggregating !== false) finalIsAgg = true;
+            } else {
+                // For old reports (e.g. March), trust the DB or default to showing
+                finalIsAgg = (data.isAggregating === true);
             }
         }
 
-        // Standard transitional rules
+        // Standard transitional rules for badges/placeholders
         if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
-        if (type === 'monthly' && (curD >= 28 || curD <= 3)) finalIsAgg = true;
-        if (type === 'weekly' && (curDay === 0 || curDay === 1 || curDay === 2 || curD >= 28 || curD <= 3)) finalIsAgg = true;
+        // For monthly/weekly, if it's the draft period AND it's a new month doc, hide it.
+        if ((type === 'monthly' || type === 'weekly') && (curD >= 28 || curD <= 3)) {
+            const docRange = data.dateRange || "";
+            const isNewMonthDoc = docRange.includes(`0${curM}.`) || docRange.includes(`${curM}월`);
+            if (isNewMonthDoc && data.isAggregating !== false) finalIsAgg = true;
+        }
 
         if (finalIsAgg) {
             renderPlaceholder();
