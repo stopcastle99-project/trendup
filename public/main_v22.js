@@ -12,7 +12,10 @@ let i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
     labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록" },
-    reports: { title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기", latest: "최신 리포트", currAgg: "현재 집계 중", viewPast: "과거 내역 보기" },
+    reports: { 
+      title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기", latest: "최신 리포트", currAgg: "현재 집계 중", viewPast: "과거 내역 보기",
+      status: { writing: "📊 집계 중", live: "🟢 실시간 집계", completed: "✅ 작성 완료" }
+    },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" }, 
     pages: { 
       about: { 
@@ -71,7 +74,10 @@ let i18n = {
   ja: { 
     title: "リアルタイムトレンド", update: "最終更新", summary: "AI分析レポート", news: "関連ニュース", videos: "YouTubeニュース", loading: "読み込み中...", T: "トレンド設定", L: "言語設定", original: "原文",
     labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リ포트 분석" },
-    reports: { title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る", latest: "最新レポート", currAgg: "現在集計中", viewPast: "過去履歴表示" },
+    reports: { 
+      title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る", latest: "最新レポート", currAgg: "現在集計中", viewPast: "過去履歴表示",
+      status: { writing: "📊 集計中", live: "🟢 リアルタイム集計", completed: "✅ 作成完了" }
+    },
 
     menu: { about: "TrendUpについて", privacy: "プライバシーポリシー", terms: "利用規約", contact: "お問い合わせ", siteInfo: "サイト情報" }, 
     pages: { 
@@ -119,7 +125,10 @@ let i18n = {
   en: { 
     title: "Global Trends", update: "Updated", summary: "AI Analysis Report", news: "Top Stories", videos: "YouTube News", loading: "Loading...", T: "Trend Settings", L: "Language Settings", original: "Original",
     labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports" },
-    reports: { title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report", latest: "Latest Report", currAgg: "Aggregating Now", viewPast: "View Archive" },
+    reports: { 
+      title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report", latest: "Latest Report", currAgg: "Aggregating Now", viewPast: "View Archive",
+      status: { writing: "📊 Aggregating", live: "🟢 Live", completed: "✅ Completed" }
+    },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" }, 
     pages: { 
       about: { 
@@ -612,12 +621,12 @@ class App {
           if (finalIsAgg) {
             const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && (curD >= 30 || curD === 1)) || (type === 'weekly' && (curD >= 30 || curD === 1));
             if (isWriting || type === 'yearly' || curD === 1) {
-              badgeHtml = `<span class="status-badge writing">📊 집계 중</span>`;
+              badgeHtml = `<span class="status-badge writing">${t.reports.status.writing}</span>`;
             } else {
-              badgeHtml = `<span class="status-badge live">🟢 실시간 집계</span>`;
+              badgeHtml = `<span class="status-badge live">${t.reports.status.live}</span>`;
             }
           } else {
-            badgeHtml = `<span class="status-badge completed">✅ 작성 완료</span>`;
+            badgeHtml = `<span class="status-badge completed">${t.reports.status.completed}</span>`;
           }
           
           if (statusEl) {
