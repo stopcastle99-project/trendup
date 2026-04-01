@@ -606,14 +606,18 @@
     background: var(--primary);
     color: white;
     font-size: 0.65rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 900;
     line-height: 1;
-    margin-right: 6px;
-    display: inline-block;
-    vertical-align: middle;
-    box-shadow: 0 2px 4px oklch(0.6 0.2 20 / 0.2);
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px oklch(0.6 0.2 20 / 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
   
   .past-reports-list {
@@ -643,18 +647,8 @@
     background: var(--bg);
     border-color: var(--primary);
     color: var(--primary);
-    transform: translateY(-2px);
+    transform: translateX(4px);
     box-shadow: 0 4px 12px oklch(0 0 0 / 0.05);
-  }
-  .new-badge {
-    background: var(--primary);
-    color: white;
-    font-size: 0.65rem;
-    padding: 3px 6px;
-    border-radius: 4px;
-    font-weight: 800;
-    line-height: 1;
-    flex-shrink: 0;
   }
   
   @keyframes fadeIn {
