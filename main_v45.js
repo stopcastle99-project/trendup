@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.20 Loaded");
+console.log("GlobalTrendUp v3.4.21 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.20");
+    console.log("App Init: v3.4.21");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -480,7 +480,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.20) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.21) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -540,7 +540,7 @@ class App {
       document.querySelectorAll('.sun-svg').forEach(el => el.innerHTML = ICONS.sun);
       document.querySelectorAll('.moon-svg').forEach(el => el.innerHTML = ICONS.moon);
       document.querySelectorAll('.system-svg').forEach(el => el.innerHTML = ICONS.system);
-    } catch (e) { }
+    } catch (e) {}
   }
   initThemeMenu() {
     const toggle = document.getElementById('theme-menu-toggle');
@@ -642,13 +642,14 @@ class App {
           let finalIsAgg = isAgg;
 
           const kst = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
-          const curM = kst.getUTCMonth() + 1;
-          const curD = kst.getUTCDate();
+          const curM = kst.getMonth() + 1;
+          const curD = kst.getDate();
+          const curDay = kst.getDay();
 
           if (curD === 1) finalIsAgg = true;
           if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
           if (type === 'monthly' && (curD >= 28 || curD === 1)) finalIsAgg = true;
-          if (type === 'weekly' && (kst.getUTCDay() === 0 || curD >= 28 || curD === 1)) finalIsAgg = true;
+          if (type === 'weekly' && (curDay === 0 || curD >= 28 || curD === 1)) finalIsAgg = true;
 
           if (finalIsAgg) {
             const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && (curD >= 30 || curD === 1)) || (type === 'weekly' && (curD >= 30 || curD === 1));
@@ -693,7 +694,8 @@ class App {
         }
 
         const seenLabels = new Set();
-        if (latestDoc) {
+        if (latestDoc && !isCompleted) {
+          // If latest is a draft, we "see" its label to prevent the archived version of the same period from appearing
           const lLabel = (latestDoc.dateRange || '').trim();
           if (lLabel) seenLabels.add(lLabel);
         }
@@ -712,7 +714,7 @@ class App {
           }
         });
 
-        const finalDisplay = reportsToDisplay.slice(0, 4);
+        const finalDisplay = reportsToDisplay.slice(0, 6); // Increased visibility to 6
         if (finalDisplay.length > 0) {
           pastCtn.innerHTML = finalDisplay.map(p => {
             let pTitle = p.data.dateRange || p.id;
@@ -732,7 +734,7 @@ class App {
           safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) {
-        console.warn(`[v3.4.20] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.21] Failed to refresh ${type} report card:`, err);
       }
     }
   }

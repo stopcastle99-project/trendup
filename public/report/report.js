@@ -9,7 +9,7 @@ const REPORT_I18N = {
     ko: {
         title: "실시간 글로벌 트렌드 리포트",
         weekly: "주간", monthly: "월간", yearly: "년간",
-        period_summary: "집계 기간 : ", current_period: "현재 기간",
+        period_summary: "집계 기간 : ", current_period: "선택 기간",
         history: "과거 내역", related_news: "관련 뉴스", related_videos: "관련 영상",
         aggregating: "트렌드 집계 중", back_to_main: "메인으로 돌아가기",
         wait: "현재 데이터를 정밀 분석하고 있습니다. 잠시만 기다려 주세요.",
@@ -365,9 +365,10 @@ function renderTrends(items) {
 async function loadHistory() {
     const list = document.getElementById('history-dropdown-list');
     if (!list) return;
+    const t = REPORT_I18N[lang] || REPORT_I18N.en;
     try {
         const snapshot = await db.collection("reports").doc(type).collection(country)
-            .orderBy("lastUpdated", "desc").limit(20).get(); // Increased limit for better dedup room
+            .orderBy("lastUpdated", "desc").limit(20).get(); 
         list.innerHTML = '';
 
         const seenTitles = new Set();
