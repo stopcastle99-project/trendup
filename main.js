@@ -7,8 +7,14 @@ const ICONS = {
   system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20" opacity="0.5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"></path></svg>`
 };
 
+function safeSetStyle(el, styles) {
+  if (el && styles) {
+    Object.assign(el.style, styles);
+  }
+}
+
 // --- Localization ---
-let i18n = {
+const i18n = {
   ko: { 
     title: "실시간 글로벌 트렌드", update: "업데이트", summary: "AI 분석 리포트", news: "관련 뉴스", videos: "YouTube 뉴스", loading: "불러오는 중...", T: "트렌드 설정", L: "언어 설정", original: "원문보기",
     labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록", analysis: "분석" },
@@ -322,7 +328,7 @@ class TrendModal extends HTMLElement {
     this.shadowRoot.querySelector('.overlay').onclick = (e) => { if (e.target === e.currentTarget) this.hide(); };
   }
 
-  show(trend, lang, matchedReports = []) {
+  show(trend, lang) {
     if (!trend) return;
     const t = i18n[lang] || i18n.en;
     const analysis = trend.aiReports?.[lang] || trend.aiReports?.['ko'] || "AI Analysis Report Loading...";
@@ -334,27 +340,31 @@ class TrendModal extends HTMLElement {
     this.shadowRoot.getElementById('news-links').innerHTML = (trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('');
     
     const reportsSection = this.shadowRoot.getElementById('reports-section');
-    this.safeSetStyle(reportsSection, { display: 'none' });
+    safeSetStyle(reportsSection, { display: 'none' });
     this.shadowRoot.getElementById('reports-links').innerHTML = '';
 
     const videoSection = this.shadowRoot.getElementById('video-section');
-    if (trend.videoLinks && trend.videoLinks.length > 0) {
-      this.safeSetStyle(videoSection, { display: 'block' });
-      this.shadowRoot.getElementById('video-title').textContent = `🎬 ${t.videos}`;
-      this.shadowRoot.getElementById('video-links').innerHTML = trend.videoLinks.map(v => `<a href="${v.url}" target="_blank" class="link"><span class="link-meta">${v.source}</span><span>🎥 ${v.title}</span></a>`).join('');
+    if (trend.newsLinks && trend.newsLinks.length > 0) {
+      const videoLinks = trend.newsLinks.filter(l => l.url.includes('youtube.com') || l.url.includes('youtu.be'));
+      if (videoLinks.length > 0) {
+        safeSetStyle(videoSection, { display: 'block' });
+        this.shadowRoot.getElementById('video-title').textContent = `🎬 ${t.videos}`;
+        this.shadowRoot.getElementById('video-links').innerHTML = videoLinks.map(v => `<a href="${v.url}" target="_blank" class="link"><span class="link-meta">${v.source}</span><span>🎥 ${v.title}</span></a>`).join('');
+      } else {
+        safeSetStyle(videoSection, { display: 'none' });
+      }
     } else {
-      this.safeSetStyle(videoSection, { display: 'none' });
-      this.shadowRoot.getElementById('video-links').innerHTML = '';
+      safeSetStyle(videoSection, { display: 'none' });
     }
     
     this.shadowRoot.querySelector('.overlay').classList.add('active');
   }
 
   updateReports(matchedReports, lang) {
-    const t = i18n[lang] || i18n.en;
-    const reportsSection = this.shadowRoot.getElementById('reports-section');
     if (matchedReports && matchedReports.length > 0) {
-      this.safeSetStyle(reportsSection, { display: 'block' });
+      const t = i18n[lang] || i18n.en;
+      const reportsSection = this.shadowRoot.getElementById('reports-section');
+      safeSetStyle(reportsSection, { display: 'block' });
       this.shadowRoot.getElementById('reports-title').textContent = t.labels.featuredReports || "📅 리포트";
       this.shadowRoot.getElementById('reports-links').innerHTML = matchedReports.map(r => {
         let titleStr = r.reportTitle;
@@ -595,11 +605,7 @@ class App {
   async switchCountry(code) { this.currentCountry = code; localStorage.setItem('country', code); this.loadLocalCache(); this.renderNavs(); await this.update(); }
   async switchLang(code) { this.currentLang = code; localStorage.setItem('lang', code); this.renderNavs(); this.refreshUIText(); this.loadLocalCache(); await this.update(); }
   
-  safeSetStyle(el, styles) {
-    if (el && el.style) {
-      Object.assign(el.style, styles);
-    }
-  }
+  clearCache() { localStorage.removeItem('trends_cache'); location.reload(); }
 
   async refreshReportCards() {
     if (!this.db) return;
@@ -651,15 +657,15 @@ class App {
           
           if (statusEl) {
              statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').replace('집계중', '').trim()}</span>`;
-             this.safeSetStyle(statusEl, { display: 'block' });
+             safeSetStyle(statusEl, { display: 'block' });
           }
         } else {
-          if (statusEl) this.safeSetStyle(statusEl, { display: 'none' });
+          if (statusEl) safeSetStyle(statusEl, { display: 'none' });
         }
 
         // 3. Card interaction setup
         card.classList.add('disabled');
-        this.safeSetStyle(card, { cursor: 'default' });
+        safeSetStyle(card, { cursor: 'default' });
 
         // 4. Report List
         let pastCtn = card.querySelector('.past-reports-list');
@@ -702,10 +708,10 @@ class App {
                 </span>
               </a>`;
             }).join('');
-            this.safeSetStyle(pastCtn, { display: 'flex' });
+            safeSetStyle(pastCtn, { display: 'flex' });
         } else {
             pastCtn.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; opacity:0.6;">${t.reports.comingSoon}</div>`;
-            this.safeSetStyle(pastCtn, { display: 'flex' });
+            safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) { 
         console.warn(`[v3.4.15] Failed to refresh ${type} report card:`, err);
@@ -723,9 +729,9 @@ class App {
         const data = usageDoc.data();
         const count = data.gemini_count || 0;
         usageEl.textContent = `(${count}/14400)`;
-        if (count > 14000) this.safeSetStyle(usageEl, { color: 'var(--error)' });
-        else if (count > 12000) this.safeSetStyle(usageEl, { color: 'var(--warning)' });
-        else this.safeSetStyle(usageEl, { color: 'inherit' });
+        if (count > 14000) safeSetStyle(usageEl, { color: 'var(--error)' });
+        else if (count > 12000) safeSetStyle(usageEl, { color: 'var(--warning)' });
+        else safeSetStyle(usageEl, { color: 'inherit' });
       }
     } catch (e) { console.warn("Failed to fetch AI usage:", e.message); }
   }
