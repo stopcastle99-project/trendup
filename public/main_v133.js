@@ -588,14 +588,13 @@ class App {
 
         const statusEl = card.querySelector(`[data-status="${type}"]`);
         const periodEl = card.querySelector(`[data-period="${type}"]`);
-        const badge = card.querySelector('.coming-soon-badge');
 
         const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
         const historyExists = pastDocs.length > 0;
         let finalIsAgg = isAgg; // v3.2.33 Fix
 
         // 1. Current Status Badge
-        if (latestDoc) {
+        if (latestDoc && statusEl) {
           const rawLabel = latestDoc.dateRange || '';
           let badgeHtml = '';
           
@@ -643,19 +642,22 @@ class App {
           
           statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').replace('집계중', '').trim()}</span>`;
           statusEl.style.display = 'block';
-        } else {
+        } else if (statusEl) {
           statusEl.style.display = 'none';
         }
 
         // 2. Render Period Label
-        let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
-        if (type === 'yearly') {
-          displayLabel = `2026.01.01 ~ 12.31`;
+        if (periodEl) {
+          let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
+          if (type === 'yearly') {
+            displayLabel = `2026.01.01 ~ 12.31`;
+          }
+          periodEl.textContent = displayLabel;
         }
-        periodEl.textContent = displayLabel;
+
+        // 3. Card interaction setup
         card.classList.add('disabled'); // Default to disabled as interaction is now on links
         card.style.cursor = 'default';
-
 
         // 4. Report List (Latest + Archives)
         let pastCtn = card.querySelector('.past-reports-list');
