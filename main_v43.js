@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.17 Loaded");
+console.log("GlobalTrendUp v3.4.19 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.17");
+    console.log("App Init: v3.4.19");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -480,7 +480,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.17) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.19) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -691,14 +691,22 @@ class App {
         }
 
         const seenLabels = new Set();
-        if (latestDoc) seenLabels.add(latestDoc.dateRange || '');
+        if (latestDoc) {
+          const lLabel = (latestDoc.dateRange || '').trim();
+          if (lLabel) seenLabels.add(lLabel);
+        }
 
         pastDocs.forEach(p => {
-          const pTitle = p.data.dateRange || '';
-          const isActuallyAgg = p.data.isAggregating !== false || pTitle.includes('작성중') || pTitle.includes('집계중') || pTitle.includes('Live');
-          if (!seenLabels.has(pTitle) && !isActuallyAgg) {
+          const rawTitle = (p.data.dateRange || '').trim();
+          
+          // Strict Filter: ABSOLUTELY COMPLETED reports only
+          // Must have isAggregating: false AND no status keywords in the raw label
+          const isAggFlag = p.data.isAggregating !== false;
+          const containsDraftKeywords = rawTitle.includes('집계') || rawTitle.includes('작성') || rawTitle.includes('Live');
+
+          if (!isAggFlag && !containsDraftKeywords && !seenLabels.has(rawTitle)) {
             reportsToDisplay.push(p);
-            seenLabels.add(pTitle);
+            seenLabels.add(rawTitle);
           }
         });
 
@@ -722,7 +730,7 @@ class App {
           safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) {
-        console.warn(`[v3.4.17] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.19] Failed to refresh ${type} report card:`, err);
       }
     }
   }
