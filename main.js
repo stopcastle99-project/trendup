@@ -198,7 +198,19 @@ class TrendService {
 }
 
 class TrendList extends HTMLElement {
-  constructor() { super(); this.attachShadow({ mode: 'open' }); }
+  constructor() { 
+    super(); 
+    this.attachShadow({ mode: 'open' }); 
+    this.shadowRoot.addEventListener('click', (e) => {
+      const item = e.composedPath().find(el => el.classList && el.classList.contains('item'));
+      if (item && this._trends) {
+        const index = parseInt(item.dataset.index);
+        if (this._trends[index]) {
+          window.dispatchEvent(new CustomEvent('open-trend-modal', { detail: this._trends[index] }));
+        }
+      }
+    });
+  }
   set data({ trends, lang, country }) { this.render(trends, lang, country); }
   render(trends, lang, country) {
     const t = i18n[lang] || i18n.en;
@@ -208,6 +220,8 @@ class TrendList extends HTMLElement {
       if (dir === 'new') return '<span style="color: #ffaa00; font-size: 0.6rem; font-weight: 800; border: 1px solid #ffaa00; padding: 1px 4px; border-radius: 4px; letter-spacing: -0.02em;">NEW</span>';
       return '<span style="color: var(--text-muted); opacity: 0.3; font-size: 0.8rem;">-</span>';
     };
+    this._trends = trends; // Store for event delegation
+    const isMobile = window.innerWidth <= 768;
     this.shadowRoot.innerHTML = `<style>
       :host { display: block; }
       .list { display: flex; flex-direction: column; gap: 0.75rem; perspective: 1000px; }
@@ -277,9 +291,6 @@ class TrendList extends HTMLElement {
           <span class="growth">${getTrendIcon(item.trendDir)}</span>
         </div>`;
       }).join('')}</div>`;
-    this.shadowRoot.querySelectorAll('.item').forEach(el => { 
-      el.onclick = () => { window.dispatchEvent(new CustomEvent('open-trend-modal', { detail: trends[parseInt(el.dataset.index)] })); };
-    });
   }
 }
 
@@ -495,11 +506,17 @@ class App {
     const t = i18n[this.currentLang] || i18n.en;
     const trendTitle = firstTrend.originalTitle || firstTrend.title;
     const translatedTitle = (firstTrend.translations && firstTrend.translations[this.currentLang]) ? firstTrend.translations[this.currentLang] : trendTitle;
-    const newTitle = `GlobalTrendUp | ${this.currentCountry} #1: ${translatedTitle}`;
-    document.title = newTitle;
-    const description = `${this.currentCountry} Real-time Trend #1: "${translatedTitle}". ${t.summary}.`;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', description);
+    
+    if (t.seo) {
+      const newTitle = t.seo.title.replace('{country}', this.currentCountry).replace('{keyword}', translatedTitle);
+      document.title = newTitle;
+      const description = t.seo.desc.replace('{country}', this.currentCountry).replace('{keyword}', translatedTitle).replace('{summary}', t.summary);
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', description);
+    } else {
+      const newTitle = `GlobalTrendUp | ${this.currentCountry} #1: ${translatedTitle}`;
+      document.title = newTitle;
+    }
   }
 
   initThemeIcons() {
