@@ -195,7 +195,9 @@ async function loadReport() {
             return;
         }
 
-        // v3.4.27: Selective aggregation – Only hide current month's drafts
+        const data = doc.data();
+        
+        // v3.4.28: Selective aggregation – Only hide current month's drafts
         const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
         const curM = kst.getMonth() + 1;
         const curD = kst.getDate();
