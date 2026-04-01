@@ -388,11 +388,13 @@ async function loadHistory() {
         list.innerHTML = '';
 
         const seenTitles = new Set();
+        const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+        const curM = kst.getMonth() + 1;
+        const curD = kst.getDate();
+
         snapshot.forEach(doc => {
             const data = doc.data();
-            if (doc.id === 'latest') return;
-
-            // Use dateRange as the unique key for deduplication
+            // deduplicate by raw label
             const periodKey = data.dateRange || doc.id;
             if (seenTitles.has(periodKey)) return;
             seenTitles.add(periodKey);
@@ -401,12 +403,27 @@ async function loadHistory() {
             const item = document.createElement('div');
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
 
-            // Simplify title to be clear and concise
+            // v3.4.29: Label aggregating reports in the selection list
             let historyTitle = data.dateRange || doc.id;
+            const isNewMonth = historyTitle.includes(`0${curM}.`) || historyTitle.includes(`${curM}월`);
+            let isAgg = (data.isAggregating !== false);
+
+            // Refined aggregate check for historical items
+            if (doc.id !== 'latest') {
+                isAgg = (data.isAggregating === true);
+            } else if (curD > 3 && !isNewMonth) {
+                // If it's latest but not a new month doc and not in transition, respect DB
+                isAgg = (data.isAggregating !== false);
+            }
+
             if (historyTitle.includes('리포트')) {
                 historyTitle = historyTitle.replace('리포트', t.trend_report);
             } else if (!historyTitle.includes(t.trend_report)) {
                 historyTitle += ` ${t.trend_report}`;
+            }
+
+            if (isAgg) {
+                historyTitle += ` [${t.aggregating}]`;
             }
 
             item.textContent = historyTitle;
