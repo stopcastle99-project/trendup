@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.25 Loaded");
+console.log("GlobalTrendUp v3.4.26 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.25");
+    console.log("App Init: v3.4.26");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -480,7 +480,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.25) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.26) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -638,8 +638,8 @@ class App {
           const rawLabel = latestDoc.dateRange || '';
           let badgeHtml = '';
 
-          const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
-          let finalIsAgg = isAgg;
+          const isAggDB = (latestDoc.isAggregating !== false);
+          let finalIsAgg = isAggDB;
 
           // Use standard KST conversion to avoid double-offsetting issues on local machines
           const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
@@ -647,8 +647,15 @@ class App {
           const curD = kst.getDate(); 
           const curDay = kst.getDay();
 
-          // Force Aggregating status during the transition periods (end of month to start of month)
-          if (curD >= 28 || curD <= 3) finalIsAgg = true;
+          // v3.4.26: Mandatory Aggregating status for NEW PERIOD drafts
+          // During the first 3 days of the month, force aggregation for any report starting this month
+          if (curD >= 1 && curD <= 3) {
+            const isNewMonthDoc = rawLabel.includes(`0${curM}.`) || rawLabel.includes(`${curM}월`);
+            if (isNewMonthDoc || type === 'monthly' || type === 'weekly') {
+                finalIsAgg = true;
+            }
+          }
+
           if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
           if (type === 'monthly' && (curD >= 28 || curD <= 3)) finalIsAgg = true;
           if (type === 'weekly' && (curDay === 0 || curDay === 1 || curDay === 2 || curD >= 28 || curD <= 3)) finalIsAgg = true;
@@ -736,7 +743,7 @@ class App {
           safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) {
-        console.warn(`[v3.4.25] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.26] Failed to refresh ${type} report card:`, err);
       }
     }
   }

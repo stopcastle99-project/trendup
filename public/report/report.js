@@ -195,9 +195,7 @@ async function loadReport() {
             return;
         }
 
-        const data = doc.data();
-        
-        // v3.4.25: Synchronized logic with main.js for consistent aggregation status
+        // v3.4.26: Synchronized logic with main.js for consistent aggregation status
         const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
         const curM = kst.getMonth() + 1;
         const curD = kst.getDate();
@@ -205,19 +203,21 @@ async function loadReport() {
 
         let finalIsAgg = (data.isAggregating !== false);
         
-        // Force Aggregating status during transition periods (1st-3rd of the month, etc.)
-        if (curD >= 28 || curD <= 3) {
-            // Check if this specific report data is for the current/future period
-            // If it's a draft or doesn't have isAggregating: false, hide it during transition
-            if (data.isAggregating !== false) finalIsAgg = true;
+        // MANDATORY FORCE: Start of month transition (1st-3rd)
+        // If we are in the first 3 days of the month, force placeholder for any report
+        // that matches this month's label or is the 'latest' link.
+        if (curD >= 1 && curD <= 3) {
+            const docRange = data.dateRange || "";
+            const isNewMonthDoc = docRange.includes(`0${curM}.`) || docRange.includes(`${curM}월`);
+            if (isNewMonthDoc || reportId === 'latest') {
+                finalIsAgg = true;
+            }
         }
+
+        // Standard transitional rules
         if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
-        if (type === 'monthly' && (curD >= 28 || curD <= 3)) {
-            if (data.isAggregating !== false) finalIsAgg = true;
-        }
-        if (type === 'weekly' && (curDay === 0 || curDay === 1 || curDay === 2 || curD >= 28 || curD <= 3)) {
-            if (data.isAggregating !== false) finalIsAgg = true;
-        }
+        if (type === 'monthly' && (curD >= 28 || curD <= 3)) finalIsAgg = true;
+        if (type === 'weekly' && (curDay === 0 || curDay === 1 || curDay === 2 || curD >= 28 || curD <= 3)) finalIsAgg = true;
 
         if (finalIsAgg) {
             renderPlaceholder();
