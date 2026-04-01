@@ -57,14 +57,14 @@
     <div class="report-wrapper container">
         <aside id="report-sidebar">
             <div class="sidebar-top-nav">
-                <button class="period-btn active" data-type="weekly">주간</button>
-                <button class="period-btn" data-type="monthly">월간</button>
-                <button class="period-btn" data-type="yearly">년간</button>
+                <button class="period-btn active" data-type="weekly">Weekly</button>
+                <button class="period-btn" data-type="monthly">Monthly</button>
+                <button class="period-btn" data-type="yearly">Yearly</button>
             </div>
 
             <div class="sidebar-history">
                 <div class="history-header">
-                    <span class="history-label">현재 기간</span>
+                    <span class="sidebar-label">Current Period</span>
                     <button id="history-toggle" class="history-plus-btn">+</button>
                 </div>
                 <div id="current-period-display" class="current-period-value">...</div>
@@ -75,12 +75,12 @@
 
             <div class="sidebar-stats">
                 <div class="stat-card">
-                    <span class="stat-label">총 조회수</span>
-                    <div class="stat-value">8.2M</div>
+                    <span class="stat-label">Total Views</span>
+                    <div class="stat-value">8.2M+</div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-label">평균 성장률</span>
-                    <div class="stat-value growth">+7.4%</div>
+                    <span class="stat-label">Avg Growth</span>
+                    <div class="stat-value growth">+15.4%</div>
                 </div>
             </div>
         </aside>
@@ -88,14 +88,14 @@
         <article id="report-main">
             <div class="main-period-section">
                 <div class="stat-card main-highlight-card">
-                    <span class="stat-label">집계기간</span>
+                    <span class="stat-label">Aggregation Period</span>
                     <div id="current-period-summary" class="stat-value">...</div>
                 </div>
             </div>
 
             <div id="trend-list" class="trend-list-container">
                 <!-- All 5 ranks will be injected here using a consistent card style -->
-                <div class="loading-state">기다려주세요...</div>
+                <div class="loading-state">Please wait...</div>
             </div>
         </article>
     </div>

@@ -13,7 +13,10 @@ const REPORT_I18N = {
         history: "과거 내역", related_news: "관련 뉴스", related_videos: "관련 영상",
         aggregating: "트렌드 집계 중", back_to_main: "메인으로 돌아가기",
         wait: "현재 데이터를 정밀 분석하고 있습니다. 잠시만 기다려 주세요.",
-        month: (m) => `${m}월`, year: (y) => `${y}년`
+        month: (m) => `${m}월`, year: (y) => `${y}년`,
+        growth: "성장률", trend_report: "트렌드 보고서",
+        total_views: "총 조회수", avg_growth: "평균 성장률", agg_period: "집계기간", please_wait: "기다려주세요...",
+        agg_banner: (typeLabel, m) => typeLabel === "년간" ? `2026년 ${typeLabel} 리포트가 집계 중입니다. 최신 완료된 리포트를 보여드립니다.` : `${m}월 ${typeLabel} 리포트가 집계 중입니다. 최신 완료된 리포트를 보여드립니다.`
     },
     ja: {
         title: "リアルタイム グローバルトレンドレポート",
@@ -22,7 +25,10 @@ const REPORT_I18N = {
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         aggregating: "トレンド集計中", back_to_main: "メインに戻る",
         wait: "現在、データを精密に分析しています。少々お待ちください。",
-        month: (m) => `${m}月`, year: (y) => `${y}年`
+        month: (m) => `${m}月`, year: (y) => `${y}年`,
+        growth: "成長率", trend_report: "トレンド報告書",
+        total_views: "総閲覧数", avg_growth: "平均成長率", agg_period: "集計期間", please_wait: "お待ちください...",
+        agg_banner: (typeLabel, m) => typeLabel === "年間" ? `2026年 ${typeLabel}レポートが集計中です。最新の完了レポートを表示します。` : `${m}월 ${typeLabel}レポートが集計中です。最新の完了レポートを表示します。`
     },
     en: {
         title: "Global Trend Report",
@@ -32,7 +38,10 @@ const REPORT_I18N = {
         aggregating: "Trend Aggregating", back_to_main: "Back to Main",
         wait: "We are carefully analyzing the current data. Please wait a moment.",
         month: (m) => { const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return mon[m - 1]; },
-        year: (y) => `${y}`
+        year: (y) => `${y}`,
+        growth: "Growth", trend_report: "Trend Report",
+        total_views: "Total Views", avg_growth: "Avg Growth", agg_period: "Aggregation Period", please_wait: "Please wait...",
+        agg_banner: (typeLabel, m) => typeLabel === "Yearly" ? `2026 ${typeLabel} report is aggregating. Showing latest finalized.` : `${m} ${typeLabel} report is aggregating. Showing latest finalized.`
     }
 };
 
@@ -80,6 +89,16 @@ function applyTranslations() {
     const sidebarLabels = document.querySelectorAll('.sidebar-label');
     if (sidebarLabels[0]) sidebarLabels[0].textContent = t.current_period;
     if (sidebarLabels[1]) sidebarLabels[1].textContent = t.history;
+
+    // Stat Labels
+    const statLabels = document.querySelectorAll('.stat-label');
+    if (statLabels[0]) statLabels[0].textContent = t.total_views;
+    if (statLabels[1]) statLabels[1].textContent = t.avg_growth;
+    if (statLabels[2]) statLabels[2].textContent = t.agg_period;
+
+    // Loading State
+    const loadingState = document.querySelector('.loading-state');
+    if (loadingState) loadingState.textContent = t.please_wait;
 
     // Period Buttons
     document.querySelectorAll('[data-type]').forEach(btn => {
@@ -252,14 +271,8 @@ function renderHero(data, showAggBanner = false) {
             const now = new Date();
             const curM = now.getMonth() + 1;
             const typeLabel = t[type] || type;
-            let msg = '';
-            if (lang === 'ko') {
-                msg = type === 'yearly' ? `2026년 ${typeLabel}가 집계 중입니다. 최신 완료된 리포트를 보여드립니다.` : `${curM}월 ${typeLabel}가 집계 중입니다. 최신 완료된 리포트를 보여드립니다.`;
-            } else if (lang === 'ja') {
-                msg = type === 'yearly' ? `2026年 ${typeLabel}が集計中です。最新の完了レポートを表示します。` : `${curM}月 ${typeLabel}が集計中です。最新の完了レポートを表示します。`;
-            } else {
-                msg = type === 'yearly' ? `2026 ${typeLabel} report is aggregating. Showing latest finalized.` : `${curM} ${typeLabel} report is aggregating. Showing latest finalized.`;
-            }
+            const msg = t.agg_banner ? t.agg_banner(typeLabel, curM) : `${typeLabel} Aggregating...`;
+            
             bannerHtml = `<div class="agg-running-banner" style="background:var(--primary-light); color:var(--primary); padding:0.8rem 1.2rem; border-radius:12px; margin-bottom:1rem; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:0.5rem; border:1px solid var(--primary-alpha); animation: fadeIn 0.5s ease;">
                 <span style="font-size:1.2rem;">⏳</span> ${msg}
             </div>`;
@@ -306,7 +319,7 @@ function renderTrends(items) {
         // Clean up excessive leading indentation often added by AI models
         displayAnalysis = displayAnalysis.trim().split('\n').map(line => line.trim()).join('\n');
 
-        const displayGrowth = lang === 'ko' ? `성장률 +${growth}%` : (lang === 'ja' ? `成長率 +${growth}%` : `+${growth}% Growth`);
+        const displayGrowth = `${t.growth} +${growth}%`;
 
         card.innerHTML = `
             <div class="card-top">
@@ -371,12 +384,12 @@ async function loadHistory() {
             const item = document.createElement('div');
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
 
-            // Simplify title to be clear and concise (e.g., "3월 4주차 트렌드 보고서")
+            // Simplify title to be clear and concise
             let historyTitle = data.dateRange || doc.id;
             if (historyTitle.includes('리포트')) {
-                historyTitle = historyTitle.replace('리포트', '트렌드 보고서');
-            } else {
-                historyTitle += ' 트렌드 보고서';
+                historyTitle = historyTitle.replace('리포트', t.trend_report);
+            } else if (!historyTitle.includes(t.trend_report)) {
+                historyTitle += ` ${t.trend_report}`;
             }
 
             item.textContent = historyTitle;
