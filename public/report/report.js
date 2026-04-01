@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.30 (Robust Aggregation Enforcement)
+// Trend Report Detail Logic - v3.4.31 (Simplified - Completed Reports Only)
 const ICONS = {
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
@@ -25,7 +25,7 @@ const REPORT_I18N = {
         period_summary: "集計期間 : ", current_period: "現在の期間",
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         aggregating: "トレンド集計中", back_to_main: "メインに戻る",
-        wait: "現在、データを精密に分析しています. 少々お待ちください。",
+        wait: "現在, データを精密に分析しています. 少々お待ちください。",
         month: (m) => `${m}月`, year: (y) => `${y}年`,
         growth: "成長率", trend_report: "トレンド報告書",
         total_views: "総閲覧数", avg_growth: "平均成長率", agg_period: "集計期間", please_wait: "お待ちください...",
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHistoryDropdown();
     initTheme();
     loadReport();
-    loadLiveStatus();
+    // v3.4.31: loadLiveStatus removed to keep UI simple as requested
 });
 
 function applyTranslations() {
@@ -98,8 +98,8 @@ function applyTranslations() {
     if (loadingState) loadingState.textContent = t.please_wait;
 
     document.querySelectorAll('[data-type]').forEach(btn => {
-        const type = btn.getAttribute('data-type');
-        if (t[type]) btn.textContent = t[type];
+        const type_btn = btn.getAttribute('data-type');
+        if (t[type_btn]) btn.textContent = t[type_btn];
     });
 }
 
@@ -174,39 +174,54 @@ async function loadReport() {
         const t = REPORT_I18N[lang] || REPORT_I18N.en;
         loadHistory();
 
-        const docRef = db.collection("reports").doc(type).collection(country).doc(reportId);
-        const doc = await docRef.get();
+        const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+        const curM = kst.getMonth() + 1;
+        const curD = kst.getDate();
 
-        if (!doc.exists) {
+        // v3.4.31: Always try to fetch the most recent COMPLETED report first
+        const completeSnap = await db.collection("reports").doc(type).collection(country)
+            .where("isAggregating", "==", false)
+            .orderBy("lastUpdated", "desc").limit(1).get();
+
+        let finalDoc;
+        if (reportId === 'latest') {
+            if (!completeSnap.empty) {
+                finalDoc = completeSnap.docs[0];
+            } else {
+                // If no completed reports exist (Yearly case), fall back to draft
+                const latestDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
+                finalDoc = latestDoc;
+            }
+        } else {
+            const requestedDoc = await db.collection("reports").doc(type).collection(country).doc(reportId).get();
+            // If the specific requested report is still aggregating, fall back to latest completed
+            if (requestedDoc.exists && (requestedDoc.data().isAggregating === true)) {
+                if (!completeSnap.empty) finalDoc = completeSnap.docs[0];
+                else finalDoc = requestedDoc;
+            } else {
+                finalDoc = requestedDoc;
+            }
+        }
+
+        if (!finalDoc || !finalDoc.exists) {
             renderPlaceholder();
             return;
         }
 
-        const data = doc.data();
-        const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-        const curM = kst.getMonth() + 1;
-        const curD = kst.getDate();
+        const data = finalDoc.data();
         
+        // Final sanity check before rendering – especially for Yearly at year-start
         const docRange = data.dateRange || "";
-        const isNewMonthDoc = docRange.includes(`${curM}월`) || 
-                             docRange.includes(`0${curM}.`) || 
-                             docRange.includes(`.${curM}.`) || 
-                             docRange.includes(` ${curM}.`);
+        const isNewMonthDoc = docRange.includes(`${curM}월`) || docRange.includes(`0${curM}.`) || 
+                             docRange.includes(`.${curM}.`) || docRange.includes(` ${curM}.`);
 
-        let finalIsAgg = (data.isAggregating !== false);
-        
-        // v3.4.30: Mandatory Force during transition (1st-3rd) for current month drafts
-        if (curD >= 1 && curD <= 3) {
-            if (isNewMonthDoc) {
-                finalIsAgg = true;
-            } else {
-                finalIsAgg = (data.isAggregating === true);
-            }
-        } else if (isNewMonthDoc && data.isAggregating !== false) {
-            finalIsAgg = true;
+        let isAgg = (data.isAggregating === true);
+        // Force placeholder ONLY if absolutely nothing completed is available
+        if (curD >= 1 && curD <= 3 && isNewMonthDoc && data.isAggregating !== false) {
+            isAgg = true;
         }
 
-        if (finalIsAgg) {
+        if (isAgg) {
             renderPlaceholder();
             return;
         }
@@ -299,13 +314,13 @@ async function loadHistory() {
     if (!list) return;
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     try {
+        // v3.4.31: filter history to ONLY show completed reports
         const snapshot = await db.collection("reports").doc(type).collection(country)
+            .where("isAggregating", "==", false)
             .orderBy("lastUpdated", "desc").limit(20).get(); 
+
         list.innerHTML = '';
         const seenTitles = new Set();
-        const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-        const curM = kst.getMonth() + 1;
-        const curD = kst.getDate();
 
         snapshot.forEach(doc => {
             const data = doc.data();
@@ -318,21 +333,10 @@ async function loadHistory() {
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
 
             let historyTitle = data.dateRange || doc.id;
-            const isNewMonth = historyTitle.includes(`${curM}월`) || historyTitle.includes(`0${curM}.`) || 
-                              historyTitle.includes(`.${curM}.`) || historyTitle.includes(` ${curM}.`);
-            
-            let isAgg = (data.isAggregating !== false);
-            if (doc.id !== 'latest') {
-                isAgg = (data.isAggregating === true);
-            } else if (curD <= 3 && isNewMonth) {
-                isAgg = true;
-            } else if (!isNewMonth && curD > 3) {
-                isAgg = (data.isAggregating !== false);
-            }
 
             if (historyTitle.includes('리포트')) historyTitle = historyTitle.replace('리포트', t.trend_report);
             else if (!historyTitle.includes(t.trend_report)) historyTitle += ` ${t.trend_report}`;
-            if (isAgg) historyTitle += ` [${t.aggregating}]`;
+            // v3.4.31 aggregation label removed
 
             item.textContent = historyTitle;
             item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
@@ -344,28 +348,5 @@ async function loadHistory() {
 }
 
 async function loadLiveStatus() {
-    const sidebar = document.getElementById('report-sidebar');
-    if (!sidebar) return;
-    const t = REPORT_I18N[lang] || REPORT_I18N.en;
-    try {
-        const latestDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
-        if (latestDoc.exists && latestDoc.data().isAggregating !== false) {
-            const data = latestDoc.data();
-            let statusEl = document.getElementById('sidebar-live-status');
-            if (!statusEl) {
-                const historyHeader = document.querySelector('.history-header');
-                statusEl = document.createElement('div');
-                statusEl.id = 'sidebar-live-status';
-                statusEl.className = 'sidebar-live-container';
-                if (historyHeader) historyHeader.parentNode.insertBefore(statusEl, historyHeader);
-            }
-            statusEl.innerHTML = `
-                <div class="live-status-badge">LIVE</div>
-                <div class="live-status-text">
-                    <span class="label">${t.live_status}</span>
-                    <span class="value">${data.dateRange || 'Draft'}</span>
-                </div>
-            `;
-        }
-    } catch (e) { console.warn("Live status load error:", e); }
+    // Function exists but not called in v3.4.31 as per simplification request
 }
