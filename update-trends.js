@@ -18,16 +18,16 @@ console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.4.30 <<<");
 console.log(">>> TARGET: Gemma-Summaries / Gemini-Pro-Reports <<<");
 console.log("====================================================");
 
-// 2026 Optimized Model Configuration (Strict Separation)
+// 2026 Optimized Model Configuration (Final Verified IDs)
 const SUMMARIZER_MODELS = [
-  "models/gemma-2-27b-it", 
-  "models/gemma-2-9b-it", 
-  "models/gemma-2-2b-it"
+  "models/gemma-3-27b-it", 
+  "models/gemma-3-12b-it", 
+  "models/gemma-3-4b-it"
 ]; 
 const REPORT_MODELS = [
-  "models/gemini-3-pro", 
-  "models/gemini-2.5-pro", 
-  "models/gemini-1.5-pro-002"
+  "models/gemini-3-pro-preview", 
+  "models/gemini-3.1-pro-preview", 
+  "models/gemini-2.5-pro-preview-tts"
 ];
 
 class TrendUpdater {
