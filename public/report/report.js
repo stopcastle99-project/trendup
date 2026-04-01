@@ -187,19 +187,6 @@ async function loadReport() {
         const isLastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
         const isLastDayOfYear = (now.getMonth() === 11 && now.getDate() === 31);
 
-        // NEW: If latest is aggregating, show placeholder immediately
-        if (reportId === 'latest') {
-            const latestRef = db.collection("reports").doc(type).collection(country).doc('latest');
-            const latestSnap = await latestRef.get();
-            if (latestSnap.exists) {
-                const latestData = latestSnap.data();
-                if (latestData.isAggregating !== false) {
-                    renderPlaceholder(); // Show placeholder screen
-                    return;
-                }
-            }
-        }
-
         const docRef = db.collection("reports").doc(type).collection(country).doc(actualDocId);
         const doc = await docRef.get();
 
@@ -209,6 +196,13 @@ async function loadReport() {
         }
 
         const data = doc.data();
+        
+        // GLOBAL FIX: If any report is currently aggregating, show placeholder immediately
+        if (data.isAggregating !== false) {
+            renderPlaceholder();
+            return;
+        }
+
         renderHero(data, showAggBanner);
         renderTrends(data.items);
     } catch (e) {
