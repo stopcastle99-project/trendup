@@ -9,7 +9,8 @@ const REPORT_I18N = {
     ko: {
         title: "실시간 글로벌 트렌드 리포트",
         weekly: "주간", monthly: "월간", yearly: "년간",
-        period_summary: "집계 기간 : ", current_period: "선택 기간",
+        period_summary: "집계 기간 : ", current_period: "선택 리포트",
+        live_status: "현재 집계 중 : ",
         history: "과거 내역", related_news: "관련 뉴스", related_videos: "관련 영상",
         aggregating: "트렌드 집계 중", back_to_main: "메인으로 돌아가기",
         wait: "현재 데이터를 정밀 분석하고 있습니다. 잠시만 기다려 주세요.",
@@ -77,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHistoryDropdown();
     initTheme();
     loadReport();
+    loadLiveStatus(); // Added to keep aggregating info visible
 });
 
 function applyTranslations() {
@@ -185,26 +187,15 @@ async function loadReport() {
         const isLastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() === now.getDate();
         const isLastDayOfYear = (now.getMonth() === 11 && now.getDate() === 31);
 
-        // Smart Redirect: If latest is aggregating, find the real last finalized report
+        // NEW: If latest is aggregating, show placeholder immediately
         if (reportId === 'latest') {
             const latestRef = db.collection("reports").doc(type).collection(country).doc('latest');
             const latestSnap = await latestRef.get();
             if (latestSnap.exists) {
                 const latestData = latestSnap.data();
                 if (latestData.isAggregating !== false) {
-                    showAggBanner = true;
-                    // Find the most recent archived report to show as main content
-                    const archivedSnap = await db.collection("reports").doc(type).collection(country)
-                        .orderBy("lastUpdated", "desc").limit(5).get();
-                    
-                    const lastFinished = archivedSnap.docs.find(d => d.id !== 'latest' && d.data().isAggregating === false);
-                    if (lastFinished) {
-                        actualDocId = lastFinished.id;
-                    } else if (type === 'yearly') {
-                        // Fallback: expressly look for the previous year doc (e.g., 2025-yearly)
-                        const prevYear = (new Date().getFullYear() - 1);
-                        actualDocId = `${prevYear}-yearly`;
-                    }
+                    renderPlaceholder(); // Show placeholder screen
+                    return;
                 }
             }
         }
@@ -399,5 +390,38 @@ async function loadHistory() {
         });
     } catch (e) {
         console.warn("History load failed:", e);
+    }
+}
+async function loadLiveStatus() {
+    const sidebar = document.getElementById('report-sidebar');
+    if (!sidebar) return;
+    const t = REPORT_I18N[lang] || REPORT_I18N.en;
+
+    try {
+        const latestDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
+        if (latestDoc.exists && latestDoc.data().isAggregating !== false) {
+            const data = latestDoc.data();
+            const liveTitle = data.dateRange || 'Draft';
+            
+            // Check if status element exists, otherwise prepend it to history section
+            let statusEl = document.getElementById('sidebar-live-status');
+            if (!statusEl) {
+                const historyHeader = document.querySelector('.history-header');
+                statusEl = document.createElement('div');
+                statusEl.id = 'sidebar-live-status';
+                statusEl.className = 'sidebar-live-container';
+                if (historyHeader) historyHeader.parentNode.insertBefore(statusEl, historyHeader);
+            }
+            
+            statusEl.innerHTML = `
+                <div class="live-status-badge">LIVE</div>
+                <div class="live-status-text">
+                    <span class="label">${t.live_status}</span>
+                    <span class="value">${liveTitle}</span>
+                </div>
+            `;
+        }
+    } catch (e) {
+        console.warn("Live status load error:", e);
     }
 }

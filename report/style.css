@@ -555,3 +555,48 @@
         gap: 1.5rem; 
     }
 }
+
+/* v3.4.22 Sidebar Live Status Styles */
+.sidebar-live-container {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    border: 1px solid var(--primary-alpha);
+    animation: pulseSubtle 3s infinite ease-in-out;
+}
+
+.live-status-badge {
+    background: var(--primary);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.2rem 0.5rem;
+    border-radius: 100px;
+    letter-spacing: 0.05rem;
+}
+
+.live-status-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.live-status-text .label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.live-status-text .value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+@keyframes pulseSubtle {
+    0%, 100% { border-color: var(--primary-alpha); box-shadow: 0 0 0 0 transparent; }
+    50% { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-alpha); }
+}
