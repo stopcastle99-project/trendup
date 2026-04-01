@@ -5,7 +5,7 @@
     "predeploy": [
       "cp index.html public/",
       "cp main.js public/",
-      "cp main.js public/main_v160.js",
+      "cp main.js public/main_v161.js",
       "cp style.css public/",
       "mkdir -p public/report && cp report/index.html public/report/ && cp report/report.js public/report/",
       "cp naver1141b796dc8b921333cb22d8a36d78d6.html public/",
