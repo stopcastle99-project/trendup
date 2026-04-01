@@ -439,10 +439,14 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     }
   }
 
-  async generateAIReportAnalysis(topItems, country, type, label) {
+  async generateAIReportAnalysis(topItems, country, type, label, newsContext = []) {
     if (!this.genAI) throw new Error("GEMINI_API_KEY NOT FOUND");
 
-    const keywordsList = topItems.map((t, i) => `${i + 1}위. ${t.keyword}`).join("\n");
+    const keywordsWithNews = topItems.map((t, i) => {
+      const news = newsContext.find(n => n.keyword === t.keyword);
+      const newsInfo = news ? `\n  - 관련 뉴스: ${news.newsTitles.join(' / ')}` : "";
+      return `${i + 1}위. ${t.keyword}${newsInfo}`;
+    }).join("\n\n");
 
     const prompt = `당신은 글로벌 트렌드 분석 전문가입니다. 아래 ${country}의 ${label} 트렌드 키워드 5개를 분석하여 리포트를 작성하세요. 모든 키워드에 대해 균등하게 심층적인 분석을 제공해야 합니다.
 
@@ -455,10 +459,10 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 
 ==================================
 [분석 요청 사항]
-대상 키워드 리스트:
-${keywordsList}
+대상 키워드 및 관련 뉴스 리스트:
+${keywordsWithNews}
 
-아래 [구성]을 모든 키워드에 대해 반드시 지켜주세요 (단순 나열 금지, 반드시 이유와 해석 포함, 한 키워드당 2~3개 문단으로 구체적 서술):
+아래 [구성]을 모든 키워드에 대해 반드시 지켜주세요 (제공된 관련 뉴스 내용을 참고하여 왜 이 트렌드가 뜨는지 심층 분석하세요):
 1. 한줄 요약 (왜 이 트렌드가 뜨는지 핵심 한줄)
 2. 트렌드 분석 (최근 상황 및 사회/문화적 배경 설명)
 3. 핵심 인사이트 (3가지 포인트를 bullet으로 정리)
@@ -682,8 +686,14 @@ ${keywordsList}
       let analysis = null;
 
       if (isArchival) {
-        console.log(`  - Generating ARCHIVAL AI Analysis for ${type} ${country}...`);
-        analysis = await this.generateAIReportAnalysis(top5, country, type, label);
+        console.log(`  - Fetching latest news for periodic analysis (${type} ${country})...`);
+        const newsContext = await Promise.all(top5.map(async (t) => {
+          const news = await this.getSupplementaryNews(t.keyword, country);
+          return { keyword: t.keyword, newsTitles: news.map(n => n.title) };
+        }));
+
+        console.log(`  - Generating ARCHIVAL AI Analysis with news context...`);
+        analysis = await this.generateAIReportAnalysis(top5, country, type, label, newsContext);
       } else {
         analysis = {
           reportTitle: { ko: `${label} (실시간 집계)`, en: `${label} (Live)`, ja: `${label} (ライブ)` },
