@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.10");
+    console.log("App Init: v3.4.11");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -441,7 +441,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.10) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.11) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -694,18 +694,20 @@ class App {
         const finalDisplay = reportsToDisplay.slice(0, 4);
 
         if (finalDisplay.length > 0) {
-          pastCtn.innerHTML = finalDisplay.map(p => {
-            let pTitle = p.data.dateRange || p.id;
-            if (p.data.reportTitle && p.data.reportTitle[this.currentLang]) {
-              pTitle = p.data.reportTitle[this.currentLang];
-            }
-            return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link">
-              ${p.isNew ? '<span class="new-badge">NEW</span>' : '📜'} 
-              <span>${pTitle}</span>
-            </a>`;
-          }).join('');
-          pastCtn.style.display = 'block';
-        } else {
+          if (pastCtn) {
+            pastCtn.innerHTML = finalDisplay.map(p => {
+              let pTitle = p.data.dateRange || p.id;
+              if (p.data.reportTitle && p.data.reportTitle[this.currentLang]) {
+                pTitle = p.data.reportTitle[this.currentLang];
+              }
+              return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link">
+                ${p.isNew ? '<span class="new-badge">NEW</span>' : '📜'} 
+                <span>${pTitle}</span>
+              </a>`;
+            }).join('');
+            pastCtn.style.display = 'block';
+          }
+        } else if (pastCtn) {
           pastCtn.style.display = 'none';
         }
 
