@@ -347,19 +347,28 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const isWk2End = (d === 15);
     const isWk3End = (d === 22);
     const isLastDayOfMonth = new Date(y, m, 0).getDate() === d;
-    const isWk4End = (d === 1 || isLastDayOfMonth);
-    const forceWeekly = force || process.argv.includes('--force-weekly');
-    const forceOther = force || process.argv.includes('--force-reports') || process.argv.includes('--force-all');
-    if (forceWeekly || isWk1End || isWk2End || isWk3End || isWk4End) {
+    const isDaily = process.argv.includes('--daily');
+    const isWeekly = process.argv.includes('--weekly');
+    const isMonthly = process.argv.includes('--monthly');
+    const isYearly = process.argv.includes('--yearly');
+    const forceAll = force || process.argv.includes('--force-all');
+
+    // 1. Archival Boundaries (Deep Analysis with Gemini Pro)
+    if (isWeekly || forceAll) {
+      const isWk1End = (d === 8);
+      const isWk2End = (d === 15);
+      const isWk3End = (d === 22);
+      const isWk4End = (d === 1 || isLastDayOfMonth);
+      
       let archStart, archEnd, archSlug, archLabel;
-      if (isWk1End || (forceWeekly && currentWeekChunk === 1)) {
+      if (isWk1End || (forceAll && currentWeekChunk === 1)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-01`; archEnd = `${y}-${String(m).padStart(2, '0')}-07`; archSlug = `${y}-${String(m).padStart(2, '0')}-week1`; archLabel = `${y}년 ${m}월 1주차 리포트`;
-      } else if (isWk2End || (forceWeekly && currentWeekChunk === 2)) {
+      } else if (isWk2End || (forceAll && currentWeekChunk === 2)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-08`; archEnd = `${y}-${String(m).padStart(2, '0')}-14`; archSlug = `${y}-${String(m).padStart(2, '0')}-week2`; archLabel = `${y}년 ${m}월 2주차 리포트`;
-      } else if (isWk3End || (forceWeekly && currentWeekChunk === 3)) {
+      } else if (isWk3End || (forceAll && currentWeekChunk === 3)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-15`; archEnd = `${y}-${String(m).padStart(2, '0')}-21`; archSlug = `${y}-${String(m).padStart(2, '0')}-week3`; archLabel = `${y}년 ${m}월 3주차 리포트`;
-      } else if (isWk4End || (forceWeekly && currentWeekChunk === 4)) {
-        if (d === 1) { // 1st of month: Generate 4th week of PREVIOUS month
+      } else if (isWk4End || (forceAll && currentWeekChunk === 4)) {
+        if (d === 1) {
           const prevM = m === 1 ? 12 : m - 1;
           const prevY = m === 1 ? y - 1 : y;
           const lastDay = new Date(prevY, prevM, 0).getDate();
@@ -367,7 +376,7 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
           archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
           archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-week4`;
           archLabel = `${prevY}년 ${prevM}월 4주차 리포트`;
-        } else { // Last day of CURRENT month: Generate 4th week of CURRENT month
+        } else {
           archStart = `${y}-${String(m).padStart(2, '0')}-22`;
           archEnd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           archSlug = `${y}-${String(m).padStart(2, '0')}-week4`;
@@ -377,10 +386,9 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
       if (archStart) await this.generatePeriodReport(country, 'weekly', archStart, archEnd, true, archSlug, archLabel);
     }
 
-    if (forceOther || d === 1 || isLastDayOfMonth) {
+    if (isMonthly || forceAll) {
       let archStart, archEnd, archSlug, archLabel;
       if (d === 1) {
-        // Archive PREVIOUS month on the 1st
         const prevM = m === 1 ? 12 : m - 1;
         const prevY = m === 1 ? y - 1 : y;
         const lastDay = new Date(prevY, prevM, 0).getDate();
@@ -388,17 +396,16 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
         archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
         archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-monthly`;
         archLabel = `${prevY}년 ${prevM}월 리포트`;
-      } else {
-        // Archive CURRENT month on the last day (Today!)
+      } else if (isLastDayOfMonth) {
         archStart = `${y}-${String(m).padStart(2, '0')}-01`;
         archEnd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         archSlug = `${y}-${String(m).padStart(2, '0')}-monthly`;
         archLabel = `${y}년 ${m}월 리포트`;
       }
-      await this.generatePeriodReport(country, 'monthly', archStart, archEnd, true, archSlug, archLabel);
+      if (archStart) await this.generatePeriodReport(country, 'monthly', archStart, archEnd, true, archSlug, archLabel);
     }
 
-    if (forceOther || (d === 1 && m === 1)) {
+    if (isYearly || (forceAll && d === 1 && m === 1)) {
       const prevY = y - 1;
       const archStart = `${prevY}-01-01`;
       const archEnd = `${prevY}-12-31`;
@@ -407,29 +414,29 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
       await this.generatePeriodReport(country, 'yearly', archStart, archEnd, true, archSlug, archLabel);
     }
 
-    // 2. Generate Latest Drafts (Perform Drafts LAST so 'latest' doc is active)
-    const weeklyStartDay = currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22;
-    const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(weeklyStartDay).padStart(2, '0')}`;
-    const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const monthlyStart = `${y}-${String(m).padStart(2, '0')}-01`;
-    const yearlyStart = `${y}-01-01`;
+    // 2. Generate Latest Drafts (Live Aggregation - Daily Update Only)
+    if (isDaily || forceAll) {
+      const weeklyStartDay = currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22;
+      const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(weeklyStartDay).padStart(2, '0')}`;
+      const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const monthlyStart = `${y}-${String(m).padStart(2, '0')}-01`;
+      const yearlyStart = `${y}-01-01`;
 
-    const wkStatus = getStatusSuffix(d, weeklyTarget);
-    const moStatus = getStatusSuffix(d, 1);
-    const yrStatus = (m === 12 && d >= 29) ? "작성중" : "데이터집계중";
+      const wkStatus = getStatusSuffix(d, weeklyTarget);
+      const moStatus = getStatusSuffix(d, 1);
+      const yrStatus = (m === 12 && d >= 29) ? "작성중" : "데이터집계중";
 
-    // v3.4.5: Always show full target period even while aggregating
-    const wkEndDay = (currentWeekChunk === 1) ? 7 : (currentWeekChunk === 2) ? 14 : (currentWeekChunk === 3) ? 21 : new Date(y, m, 0).getDate();
-    const moEndDay = new Date(y, m, 0).getDate();
+      const wkEndDay = (currentWeekChunk === 1) ? 7 : (currentWeekChunk === 2) ? 14 : (currentWeekChunk === 3) ? 21 : new Date(y, m, 0).getDate();
+      const moEndDay = new Date(y, m, 0).getDate();
 
-    const wkLabel = `${m}월 ${currentWeekChunk}주차 (${String(m).padStart(2, '0')}.${String(weeklyStartDay).padStart(2, '0')} ~ ${String(m).padStart(2, '0')}.${String(wkEndDay).padStart(2, '0')}) ${wkStatus}`;
-    const moLabel = `${m}월 리포트 (${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(moEndDay).padStart(2, '0')}) ${moStatus}`;
-    const yrLabel = `${y}년 리포트 (${y}.01.01 ~ 12.31) ${yrStatus}`;
+      const wkLabel = `${m}월 ${currentWeekChunk}주차 (${String(m).padStart(2, '0')}.${String(weeklyStartDay).padStart(2, '0')} ~ ${String(m).padStart(2, '0')}.${String(wkEndDay).padStart(2, '0')}) ${wkStatus}`;
+      const moLabel = `${m}월 리포트 (${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(moEndDay).padStart(2, '0')}) ${moStatus}`;
+      const yrLabel = `${y}년 리포트 (${y}.01.01 ~ 12.31) ${yrStatus}`;
 
-    const yearlyEnd = `${y}-12-31`;
-    await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', wkLabel);
-    await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', moLabel);
-    await this.generatePeriodReport(country, 'yearly', yearlyStart, yearlyEnd, false, '', yrLabel);
+      await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', wkLabel);
+      await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', moLabel);
+      await this.generatePeriodReport(country, 'yearly', yearlyStart, `${y}-12-31`, false, '', yrLabel);
+    }
   }
 
   async generateAIReportAnalysis(topItems, country, type, label) {
@@ -437,7 +444,7 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 
     const keywordsList = topItems.map((t, i) => `${i + 1}위. ${t.keyword}`).join("\n");
 
-    const prompt = `당신은 글로벌 트렌드 분석 전문가입니다. 아래 ${country}의 ${label} 트렌드 키워드 10개를 분석하여 리포트를 작성하세요. 모든 키워드에 대해 균등하게 심층적인 분석을 제공해야 합니다.
+    const prompt = `당신은 글로벌 트렌드 분석 전문가입니다. 아래 ${country}의 ${label} 트렌드 키워드 5개를 분석하여 리포트를 작성하세요. 모든 키워드에 대해 균등하게 심층적인 분석을 제공해야 합니다.
 
 [작성 규칙 (공통)]
 - 순수 JSON 포맷으로만 응답하세요 (마크다운 텍스트 백틱 제외).
@@ -594,10 +601,10 @@ ${keywordsList}
       });
     }
 
-    const top10 = Object.entries(globalScores)
+    const top5 = Object.entries(globalScores)
       .map(([keyword, data]) => ({ keyword, score: data.score }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
+      .slice(0, 5);
 
     if (top10.length > 0) {
       await rankingsRef.set({ type, country, startDate, endDate, slug, top10, lastUpdated: admin.firestore.Timestamp.now() });
@@ -658,11 +665,13 @@ ${keywordsList}
 
     try {
       // NEW: 2-Tier Ranking Fetch
-      let top5 = [];
       if (isArchival && reportSlug) {
         top5 = await this.extractRanking(country, type, startDate, endDate, reportSlug);
       } else {
-        top5 = await this.getLiveDraftRanking(country, startDate, endDate);
+        // Live Draft: Still Top 10 for visibility, or match Archival?
+        // User Vision: Archival uses Rank 1-5.
+        const fullRanking = await this.getLiveDraftRanking(country, startDate, endDate);
+        top5 = fullRanking.slice(0, 5); 
       }
 
       if (top5.length === 0) {
@@ -828,8 +837,13 @@ ${keywordsList}
 }
 
 const updater = new TrendUpdater();
-if (process.argv.includes('--force-reports') || process.argv.includes('--force-weekly')) {
+if (process.argv.includes('--daily')) {
+  updater.updateAll();
+} else if (process.argv.includes('--weekly') || process.argv.includes('--monthly') || process.argv.includes('--yearly')) {
+  updater.runReportOnly();
+} else if (process.argv.includes('--force-reports') || process.argv.includes('--force-weekly')) {
   updater.runReportOnly();
 } else {
+  // Default: Run as Daily for safety if no flag (backward compatibility)
   updater.updateAll();
 }

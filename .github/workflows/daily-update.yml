@@ -1,11 +1,11 @@
-name: Scheduled Trend Update
+name: Daily Trend Update
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    - cron: '45 * * * *' # 매시간 45분에 실행 (AdSense 등을 고려한 분산)
+    - cron: '45 * * * *' # Every hour at 45 min
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE22: true
@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  update-trends:
+  update-daily:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -37,31 +37,25 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Run Update Script
+      - name: Run Daily Update
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
-          node update-trends.js
+          node update-trends.js --daily
 
-      - name: Deploy to Firebase Hosting
+      - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
-          if [ -n "$FIREBASE_TOKEN" ]; then
-            npx firebase-tools deploy --only hosting,firestore:rules --token "$FIREBASE_TOKEN"
-          else
-            npx firebase-tools deploy --only hosting,firestore:rules
-          fi
+          npx firebase-tools deploy --only hosting,firestore:rules --token "$FIREBASE_TOKEN"
           rm gcp-key.json
 
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: schedule trend update"
+          commit_message: "chore: daily trend update"
           branch: main
-

@@ -1,0 +1,55 @@
+name: Yearly Trend Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 1 1 *' # Every Jan 1st at 02:00 UTC
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE22: true
+
+permissions:
+  contents: write
+
+jobs:
+  update-yearly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Generate Yearly Report
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT" > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
+          node update-trends.js --yearly
+
+      - name: Deploy to Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
+          npx firebase-tools deploy --only hosting,firestore:rules --token "$FIREBASE_TOKEN"
+          rm gcp-key.json
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: yearly trend report"
+          branch: main
