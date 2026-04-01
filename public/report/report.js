@@ -197,8 +197,29 @@ async function loadReport() {
 
         const data = doc.data();
         
-        // GLOBAL FIX: If any report is currently aggregating, show placeholder immediately
-        if (data.isAggregating === true) {
+        // v3.4.25: Synchronized logic with main.js for consistent aggregation status
+        const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+        const curM = kst.getMonth() + 1;
+        const curD = kst.getDate();
+        const curDay = kst.getDay();
+
+        let finalIsAgg = (data.isAggregating !== false);
+        
+        // Force Aggregating status during transition periods (1st-3rd of the month, etc.)
+        if (curD >= 28 || curD <= 3) {
+            // Check if this specific report data is for the current/future period
+            // If it's a draft or doesn't have isAggregating: false, hide it during transition
+            if (data.isAggregating !== false) finalIsAgg = true;
+        }
+        if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
+        if (type === 'monthly' && (curD >= 28 || curD <= 3)) {
+            if (data.isAggregating !== false) finalIsAgg = true;
+        }
+        if (type === 'weekly' && (curDay === 0 || curDay === 1 || curDay === 2 || curD >= 28 || curD <= 3)) {
+            if (data.isAggregating !== false) finalIsAgg = true;
+        }
+
+        if (finalIsAgg) {
             renderPlaceholder();
             return;
         }
