@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.24 Loaded");
+console.log("GlobalTrendUp v3.4.25 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 

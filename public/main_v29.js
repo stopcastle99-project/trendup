@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.24 Loaded");
+console.log("GlobalTrendUp v3.4.25 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -372,6 +372,9 @@ class TrendModal extends HTMLElement {
         if (typeof titleStr === 'object') titleStr = titleStr[lang] || titleStr.ko || "Trend Report";
         return `<a href="report/?type=${r.type}&country=${r.country}&id=${r.slug}" target="_blank" class="link report-link"><span class="link-meta">${r.type.toUpperCase()} ${t.labels.analysis || 'ANALYSIS'}</span><span class="link-title">${titleStr}</span></a>`;
       }).join('');
+    } else {
+      const reportsSection = this.shadowRoot.getElementById('reports-section');
+      safeSetStyle(reportsSection, { display: 'none' });
     }
   }
 
@@ -463,7 +466,9 @@ class App {
         const snap = await getDocs(q);
         snap.forEach(doc => {
           const data = doc.data();
-          if (data.slug) allMatches.push({ type, slug: data.slug, reportTitle: data.reportTitle });
+          if (data.slug && data.isAggregating === false) {
+             allMatches.push({ type, slug: data.slug, reportTitle: data.reportTitle });
+          }
         });
       }
       return allMatches;
