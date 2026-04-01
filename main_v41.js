@@ -690,13 +690,13 @@ class App {
           reportsToDisplay.push({ id: latestDoc.slug || 'latest', data: latestDoc, isNew: isRecentlyFinished });
         }
 
-        const curLabel = latestDoc ? (latestDoc.dateRange || '') : '';
         const seenLabels = new Set();
-        if (isCompleted) seenLabels.add(latestDoc.dateRange);
+        if (latestDoc) seenLabels.add(latestDoc.dateRange || '');
 
         pastDocs.forEach(p => {
           const pTitle = p.data.dateRange || '';
-          if (!seenLabels.has(pTitle) && p.data.isAggregating === false) {
+          const isActuallyAgg = p.data.isAggregating !== false || pTitle.includes('작성중') || pTitle.includes('집계중') || pTitle.includes('Live');
+          if (!seenLabels.has(pTitle) && !isActuallyAgg) {
             reportsToDisplay.push(p);
             seenLabels.add(pTitle);
           }
