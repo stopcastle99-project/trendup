@@ -1,7 +1,7 @@
-## Phase 55: Stability Update & UI Refinement (v3.4.11)
-- **Bug Fix**: Implemented extreme null-guards in `App.refreshReportCards` and `App.updateGeminiUsage` to finally eliminate `TypeError: Cannot read properties of null (reading 'style')` at line 696.
+## Phase 55: Stability Update & UI Refinement (v3.4.12)
+- **Bug Fix**: Implemented a bulletproof `safeSetStyle` helper and fully refactored `App.refreshReportCards` with extreme null-guards and individual try-catch blocks to permanently eliminate `TypeError: Cannot read properties of null (reading 'style')`.
 - **UI Refinement**: Consolidated the "Aggregating" status labels to "📊 집계 중" across all report types for a cleaner, unified look.
-- **Version Alignment**: Synchronized the application version to **v3.4.11** across `index.html`, `main.js`, and `blueprint.md`.
+- **Version Alignment**: Synchronized the application version to **v3.4.12** across `index.html`, `main.js`, and `blueprint.md`.
 - **Connectivity**: Maintained Long Polling for Firestore to ensure stability in 2026 network environments.
 
 ## Phase 53: Bug Fix - historyCol ReferenceError (v3.2.35)
