@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.22 Loaded");
+console.log("GlobalTrendUp v3.4.23 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.22");
+    console.log("App Init: v3.4.23");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -480,7 +480,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.22) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.23) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -641,15 +641,17 @@ class App {
           const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
           let finalIsAgg = isAgg;
 
-          const kst = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
+          // Use standard KST conversion to avoid double-offsetting issues on local machines
+          const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
           const curM = kst.getMonth() + 1;
-          const curD = kst.getDate();
+          const curD = kst.getDate(); 
           const curDay = kst.getDay();
 
-          if (curD === 1) finalIsAgg = true;
+          // Force Aggregating status during the transition periods (end of month to start of month)
+          if (curD >= 28 || curD <= 3) finalIsAgg = true;
           if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
-          if (type === 'monthly' && (curD >= 28 || curD === 1)) finalIsAgg = true;
-          if (type === 'weekly' && (curDay === 0 || curD >= 28 || curD === 1)) finalIsAgg = true;
+          if (type === 'monthly' && (curD >= 28 || curD <= 3)) finalIsAgg = true;
+          if (type === 'weekly' && (curDay === 0 || curDay === 1 || curDay === 2 || curD >= 28 || curD <= 3)) finalIsAgg = true;
 
           if (finalIsAgg) {
             const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && (curD >= 30 || curD === 1)) || (type === 'weekly' && (curD >= 30 || curD === 1));
@@ -734,7 +736,7 @@ class App {
           safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) {
-        console.warn(`[v3.4.22] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.23] Failed to refresh ${type} report card:`, err);
       }
     }
   }
