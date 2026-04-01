@@ -311,16 +311,16 @@ class TrendModal extends HTMLElement {
     this.shadowRoot.getElementById('news-links').innerHTML = (trend.newsLinks || []).slice(0,3).map(l => `<a href="${l.url}" target="_blank" class="link"><span class="link-meta">${l.source}</span><span>📄 ${l.title}</span></a>`).join('');
     
     const reportsSection = this.shadowRoot.getElementById('reports-section');
-    reportsSection.style.display = 'none';
+    this.safeSetStyle(reportsSection, { display: 'none' });
     this.shadowRoot.getElementById('reports-links').innerHTML = '';
 
     const videoSection = this.shadowRoot.getElementById('video-section');
     if (trend.videoLinks && trend.videoLinks.length > 0) {
-      videoSection.style.display = 'block';
+      this.safeSetStyle(videoSection, { display: 'block' });
       this.shadowRoot.getElementById('video-title').textContent = `🎬 ${t.videos}`;
       this.shadowRoot.getElementById('video-links').innerHTML = trend.videoLinks.map(v => `<a href="${v.url}" target="_blank" class="link"><span class="link-meta">${v.source}</span><span>🎥 ${v.title}</span></a>`).join('');
     } else {
-      videoSection.style.display = 'none';
+      this.safeSetStyle(videoSection, { display: 'none' });
       this.shadowRoot.getElementById('video-links').innerHTML = '';
     }
     
@@ -331,7 +331,7 @@ class TrendModal extends HTMLElement {
     const t = i18n[lang] || i18n.en;
     const reportsSection = this.shadowRoot.getElementById('reports-section');
     if (matchedReports && matchedReports.length > 0) {
-      reportsSection.style.display = 'block';
+      this.safeSetStyle(reportsSection, { display: 'block' });
       this.shadowRoot.getElementById('reports-title').textContent = t.labels.featuredReports || "📅 리포트";
       this.shadowRoot.getElementById('reports-links').innerHTML = matchedReports.map(r => {
         let titleStr = r.reportTitle;
@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.12");
+    console.log("App Init: v3.4.13");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -441,7 +441,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.12) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.13) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -689,7 +689,7 @@ class App {
             this.safeSetStyle(pastCtn, { display: 'none' });
         }
       } catch (err) { 
-        console.warn(`[v3.4.12] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.13] Failed to refresh ${type} report card:`, err);
       }
     }
   }
@@ -704,9 +704,9 @@ class App {
         const data = usageDoc.data();
         const count = data.gemini_count || 0;
         usageEl.textContent = `(${count}/14400)`;
-        if (count > 14000) usageEl.style.color = 'var(--error)';
-        else if (count > 12000) usageEl.style.color = 'var(--warning)';
-        else usageEl.style.color = 'inherit';
+        if (count > 14000) this.safeSetStyle(usageEl, { color: 'var(--error)' });
+        else if (count > 12000) this.safeSetStyle(usageEl, { color: 'var(--warning)' });
+        else this.safeSetStyle(usageEl, { color: 'inherit' });
       }
     } catch (e) { console.warn("Failed to fetch AI usage:", e.message); }
   }
