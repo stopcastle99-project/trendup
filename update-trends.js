@@ -14,9 +14,13 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.1.15 <<<");
-console.log(">>> TARGET MODEL: Gemini 2.0 (Fallback: Gemma) <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.4.30 <<<");
+console.log(">>> TARGET: Gemma-Summaries / Gemini-Pro-Reports <<<");
 console.log("====================================================");
+
+// 2026 Optimized Model Configuration
+const SUMMARIZER_MODELS = ["gemma-2-9b", "gemma-2-27b", "gemini-2.0-flash", "gemini-1.5-flash"]; 
+const REPORT_MODELS = ["gemini-2.5-pro", "gemini-1.5-pro-002", "gemini-2.0-flash"];
 
 class TrendUpdater {
   constructor() {
@@ -112,8 +116,8 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
 
     try {
       let text = "";
-      let usedModel = "gemini-2.5-flash";
-      const modelsToTry = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"];
+      let usedModel = "";
+      const modelsToTry = SUMMARIZER_MODELS;
 
       for (const m of modelsToTry) {
         try {
@@ -470,7 +474,7 @@ ${keywordsList}
 }
 `;
 
-    const modelsToTry = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"];
+    const modelsToTry = REPORT_MODELS;
     let text = "";
     let usedModel = "";
 
