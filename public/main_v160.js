@@ -357,7 +357,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.14");
+    console.log("App Init: v3.4.15");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -441,7 +441,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.14) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.15) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -593,12 +593,6 @@ class App {
         });
 
         const statusEl = card.querySelector(`[data-status="${type}"]`);
-        const periodEl = card.querySelector(`[data-period="${type}"]`);
-
-        const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
-        let finalIsAgg = isAgg; 
-
-        // 1. Current Status Badge
         if (latestDoc) {
           const rawLabel = latestDoc.dateRange || '';
           let badgeHtml = '';
@@ -628,14 +622,7 @@ class App {
              this.safeSetStyle(statusEl, { display: 'block' });
           }
         } else {
-          this.safeSetStyle(statusEl, { display: 'none' });
-        }
-
-        // 2. Render Period Label
-        if (periodEl) {
-          let displayLabel = latestDoc ? latestDoc.dateRange : t.reports.comingSoon;
-          if (type === 'yearly') displayLabel = `2026.01.01 ~ 12.31`;
-          periodEl.textContent = displayLabel;
+          if (statusEl) this.safeSetStyle(statusEl, { display: 'none' });
         }
 
         // 3. Card interaction setup
@@ -651,45 +638,45 @@ class App {
         }
 
         const reportsToDisplay = [];
-        if (latestDoc && !finalIsAgg) {
+        const isCompleted = latestDoc && (latestDoc.isAggregating === false);
+        
+        if (isCompleted) {
           reportsToDisplay.push({ id: latestDoc.slug || 'latest', data: latestDoc, isNew: true });
         }
 
         const curLabel = latestDoc ? (latestDoc.dateRange || '') : '';
-        const monthMatch = curLabel.match(/(\d+)월/);
-        const weekMatch = curLabel.match(/(\d+)주차/);
-        const curMonthStr = monthMatch ? monthMatch[0] : '';
-        const curWeekStr = weekMatch ? weekMatch[0] : '';
         const seenLabels = new Set();
-        if (latestDoc && !finalIsAgg) seenLabels.add(latestDoc.dateRange);
+        if (isCompleted) seenLabels.add(latestDoc.dateRange);
 
         pastDocs.forEach(p => {
           const pTitle = p.data.dateRange || '';
-          const isOverlap = curMonthStr && curWeekStr && pTitle.includes(curMonthStr) && pTitle.includes(curWeekStr);
-          if (!seenLabels.has(pTitle) && !isOverlap && p.data.isAggregating === false) {
+          if (!seenLabels.has(pTitle) && p.data.isAggregating === false) {
              reportsToDisplay.push(p);
              seenLabels.add(pTitle);
           }
         });
 
         const finalDisplay = reportsToDisplay.slice(0, 4);
-        if (finalDisplay.length > 0 && pastCtn) {
+        if (finalDisplay.length > 0) {
             pastCtn.innerHTML = finalDisplay.map(p => {
               let pTitle = p.data.dateRange || p.id;
               if (p.data.reportTitle && p.data.reportTitle[this.currentLang]) {
                 pTitle = p.data.reportTitle[this.currentLang];
               }
               return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link">
-                ${p.isNew ? '<span class="new-badge">NEW</span>' : '📜'} 
-                <span>${pTitle}</span>
+                <span style="display:flex; align-items:center; gap:0.5rem;">
+                  ${p.isNew ? '<span class="new-badge">NEW</span>' : '📜'} 
+                  <span>${pTitle}</span>
+                </span>
               </a>`;
             }).join('');
-            this.safeSetStyle(pastCtn, { display: 'block' });
+            this.safeSetStyle(pastCtn, { display: 'flex' });
         } else {
-            this.safeSetStyle(pastCtn, { display: 'none' });
+            pastCtn.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; opacity:0.6;">${t.reports.comingSoon}</div>`;
+            this.safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) { 
-        console.warn(`[v3.4.13] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.15] Failed to refresh ${type} report card:`, err);
       }
     }
   }
