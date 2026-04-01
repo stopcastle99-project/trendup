@@ -314,6 +314,8 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const y = kst.getUTCFullYear();
     const m = kst.getUTCMonth() + 1;
     const d = kst.getUTCDate();
+    const currentWeekChunk = (d <= 7) ? 1 : (d <= 14) ? 2 : (d <= 21) ? 3 : 4;
+    const weeklyTarget = (currentWeekChunk === 1) ? 8 : (currentWeekChunk === 2) ? 15 : (currentWeekChunk === 3) ? 22 : 1;
 
     // Status Logic Helpers
     const getStatusSuffix = (currentDay, targetDay) => {
@@ -394,9 +396,6 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     }
 
     // 2. Generate Latest Drafts (Perform Drafts LAST so 'latest' doc is active)
-    const currentWeekChunk = (d <= 7) ? 1 : (d <= 14) ? 2 : (d <= 21) ? 3 : 4;
-    const weeklyTarget = (currentWeekChunk === 1) ? 8 : (currentWeekChunk === 2) ? 15 : (currentWeekChunk === 3) ? 22 : 1;
-
     const weeklyStartDay = currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22;
     const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(weeklyStartDay).padStart(2, '0')}`;
     const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -415,9 +414,10 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const moLabel = `${m}월 리포트 (${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(moEndDay).padStart(2, '0')}) ${moStatus}`;
     const yrLabel = `${y}년 리포트 (${y}.01.01 ~ 12.31) ${yrStatus}`;
 
+    const yearlyEnd = `${y}-12-31`;
     await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', wkLabel);
     await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', moLabel);
-    await this.generatePeriodReport(country, 'yearly', yearlyStart, todayStr, false, '', yrLabel);
+    await this.generatePeriodReport(country, 'yearly', yearlyStart, yearlyEnd, false, '', yrLabel);
   }
 
   async generateAIReportAnalysis(topItems, country, type, label) {

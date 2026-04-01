@@ -181,6 +181,10 @@ async function loadReport() {
                     const lastFinished = archivedSnap.docs.find(d => d.id !== 'latest' && d.data().isAggregating === false);
                     if (lastFinished) {
                         actualDocId = lastFinished.id;
+                    } else if (type === 'yearly') {
+                        // Fallback: expressly look for the previous year doc (e.g., 2025-yearly)
+                        const prevYear = (new Date().getFullYear() - 1);
+                        actualDocId = `${prevYear}-yearly`;
                     }
                 }
             }
@@ -233,7 +237,11 @@ function renderHero(data, showAggBanner = false) {
             if (s.length === 3 && e.length === 3) {
                 const sM = parseInt(s[1]), sD = parseInt(s[2]);
                 const eM = parseInt(e[1]), eD = parseInt(e[2]);
-                displayRange = `${sM}/${sD}-${eM}/${eD}`;
+                if (type === 'yearly') {
+                    displayRange = `${s[0]}.${sM}.${sD} ~ ${e[0]}.${eM}.${eD}`;
+                } else {
+                    displayRange = `${sM}/${sD} - ${eM}/${eD}`;
+                }
             }
         } catch (err) { console.warn("Date parse error:", err); }
     }
