@@ -597,6 +597,9 @@ class App {
           const rawLabel = latestDoc.dateRange || '';
           let badgeHtml = '';
           
+          const isAgg = latestDoc ? (latestDoc.isAggregating !== false) : true;
+          let finalIsAgg = isAgg; 
+
           const kst = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
           const curM = kst.getUTCMonth() + 1;
           const curD = kst.getUTCDate();
