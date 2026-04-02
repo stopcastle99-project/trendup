@@ -1,8 +1,5 @@
-// Trend Report Detail Logic - v3.4.68 (Final Stable with Minimal UI)
+// Trend Report Detail Logic - v3.4.68 (Header UI Revamp - Country Dropdown)
 const ICONS = {
-    sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
-    moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
-    system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20" opacity="0.5"></path><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"></path></svg>`,
     home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`
 };
 
@@ -25,7 +22,7 @@ const REPORT_I18N = {
         title: "トレンドレポート",
         weekly: "週間", monthly: "月間", yearly: "年間",
         period_summary: "", current_period: "現在の期間",
-        history: "過去의 履歴", related_news: "관련 ニュース", related_videos: "관련 動画",
+        history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         back_to_main: "メインに戻る",
         month: (m) => `${m}월`, year: (y) => `${y}년`,
         growth: "増加率", trend_report: "トレンド報告書",
@@ -81,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initPeriodNav();
     initCountrySelector();
     initHistoryDropdown();
-    initTheme();
     loadReport();
 
     // Safety fallback: If still not loaded after 3s, show aggregating screen
@@ -117,37 +113,6 @@ function applyTranslations() {
     });
 }
 
-function initTheme() {
-    const toggle = document.getElementById('theme-menu-toggle');
-    const dropdown = document.getElementById('theme-dropdown');
-    const opts = document.querySelectorAll('.theme-opt');
-    if (!toggle || !dropdown) return;
-    const triggerIcon = toggle.querySelector('.theme-trigger-icon');
-
-    const updateTriggerIcon = (mode) => {
-        const activeOpt = document.querySelector(`.theme-opt[data-theme="${mode}"]`);
-        if (activeOpt && triggerIcon) {
-            const iconClone = activeOpt.querySelector('.opt-icon').cloneNode(true);
-            triggerIcon.innerHTML = '';
-            triggerIcon.appendChild(iconClone);
-        }
-    };
-
-    const setTheme = (mode) => {
-        let theme = mode;
-        if (theme === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme-mode', mode);
-        updateTriggerIcon(mode);
-        opts.forEach(btn => btn.classList.toggle('active', btn.dataset.theme === mode));
-    };
-
-    toggle.onclick = (e) => { e.stopPropagation(); dropdown.classList.toggle('hidden'); };
-    opts.forEach(opt => { opt.onclick = () => { setTheme(opt.dataset.theme); dropdown.classList.add('hidden'); }; });
-    document.addEventListener('click', () => dropdown.classList.add('hidden'));
-    setTheme(localStorage.getItem('theme-mode') || 'system');
-}
-
 function initPeriodNav() {
     document.querySelectorAll('.period-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.type === type);
@@ -158,11 +123,34 @@ function initPeriodNav() {
 }
 
 function initCountrySelector() {
-    document.querySelectorAll('.country-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.country === country);
-        btn.onclick = () => {
-            window.location.href = `?type=${type}&country=${btn.dataset.country}&id=latest`;
+    const toggle = document.getElementById('country-dropdown-toggle');
+    const menu = document.getElementById('country-dropdown-menu');
+    const flagDisplay = document.getElementById('current-country-flag');
+    const opts = document.querySelectorAll('.country-opt');
+    
+    if (!toggle || !menu || !flagDisplay) return;
+
+    // Set initial flag based on country
+    const initialOpt = Array.from(opts).find(opt => opt.dataset.country === country);
+    if (initialOpt) {
+        flagDisplay.textContent = initialOpt.querySelector('.opt-flag').textContent;
+        initialOpt.classList.add('active');
+    }
+
+    toggle.onclick = (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+    };
+
+    opts.forEach(opt => {
+        opt.onclick = () => {
+            const selectedCountry = opt.dataset.country;
+            window.location.href = `?type=${type}&country=${selectedCountry}&id=latest`;
         };
+    });
+
+    document.addEventListener('click', () => {
+        menu.classList.add('hidden');
     });
 }
 
@@ -178,9 +166,6 @@ function initHistoryDropdown() {
 }
 
 function injectIcons() {
-    document.querySelectorAll('.sun-svg').forEach(el => el.innerHTML = ICONS.sun);
-    document.querySelectorAll('.moon-svg').forEach(el => el.innerHTML = ICONS.moon);
-    document.querySelectorAll('.system-svg').forEach(el => el.innerHTML = ICONS.system);
     document.querySelectorAll('.home-svg').forEach(el => el.innerHTML = ICONS.home);
 }
 

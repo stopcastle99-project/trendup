@@ -26,27 +26,22 @@
             <a href="../" class="logo-home-link" title="Home"><span class="home-svg"></span></a>
             <div id="global-title" class="report-main-title">Trend Report</div>
             <div class="header-right">
-                <div class="country-selector">
-                    <button class="country-btn" data-country="KR" title="South Korea">🇰🇷</button>
-                    <button class="country-btn" data-country="US" title="United States">🇺🇸</button>
-                    <button class="country-btn" data-country="JP" title="Japan">🇯🇵</button>
-                </div>
-                <div class="theme-menu">
-                    <button id="theme-menu-toggle" class="theme-menu-btn" aria-label="Select Theme">
-                        <span class="theme-trigger-icon"></span>
+                <div class="country-dropdown">
+                    <button id="country-dropdown-toggle" class="country-dropdown-btn" aria-label="Select Country">
+                        <span id="current-country-flag" class="country-trigger-flag"></span>
                     </button>
-                    <div id="theme-dropdown" class="theme-dropdown hidden">
-                        <button class="theme-opt" data-theme="light">
-                            <span class="opt-icon sun-svg"></span>
-                            <span class="opt-label">Light</span>
+                    <div id="country-dropdown-menu" class="country-dropdown-list hidden">
+                        <button class="country-opt" data-country="KR">
+                            <span class="opt-flag">🇰🇷</span>
+                            <span class="opt-label">South Korea</span>
                         </button>
-                        <button class="theme-opt" data-theme="dark">
-                            <span class="opt-icon moon-svg"></span>
-                            <span class="opt-label">Dark</span>
+                        <button class="country-opt" data-country="US">
+                            <span class="opt-flag">🇺🇸</span>
+                            <span class="opt-label">United States</span>
                         </button>
-                        <button class="theme-opt" data-theme="system">
-                            <span class="opt-icon system-svg"></span>
-                            <span class="opt-label">System</span>
+                        <button class="country-opt" data-country="JP">
+                            <span class="opt-flag">🇯🇵</span>
+                            <span class="opt-label">Japan</span>
                         </button>
                     </div>
                 </div>

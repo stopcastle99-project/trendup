@@ -194,42 +194,84 @@
     opacity: 0.8;
 }
 
-.country-selector {
-    display: flex;
-    background: var(--surface);
-    padding: 4px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
+.country-dropdown {
+    position: relative;
     margin-right: 1.2rem;
 }
 
-.country-btn {
-    border: none;
-    background: transparent;
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    font-size: 1.1rem;
+.country-dropdown-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.5;
-    filter: grayscale(1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 1.4rem;
 }
 
-.country-btn:hover {
-    opacity: 1;
-    filter: grayscale(0);
+.country-dropdown-btn:hover {
+    border-color: var(--primary);
+    background: var(--border);
+    transform: scale(1.05);
+}
+
+.country-dropdown-list {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    background: var(--surface-glass);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.6rem;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    z-index: 3000;
+    transform-origin: top right;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.country-dropdown-list.hidden {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    pointer-events: none;
+}
+
+.country-opt {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.9rem 1.1rem;
+    border: none;
+    background: transparent;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    text-align: left;
+    color: var(--text);
+}
+
+.country-opt:hover {
     background: var(--border);
 }
 
-.country-btn.active {
+.country-opt.active {
     background: var(--primary);
-    opacity: 1;
-    filter: grayscale(0);
-    box-shadow: 0 4px 12px oklch(0.5 0.2 260 / 0.2);
+    color: white !important;
+}
+
+.opt-flag {
+    font-size: 1.3rem;
 }
 
 .report-header-stack {
