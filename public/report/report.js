@@ -24,11 +24,11 @@ const REPORT_I18N = {
         period_summary: "", current_period: "選択レポート",
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         back_to_main: "メインに戻る",
-        month: (m) => `${m}月`, year: (y) => `${y}年`,
+        month: (m) => `${m}월`, year: (y) => `${y}년`,
         growth: "増加率", trend_report: "トレンド報告書",
         total_views: "総表示回数", avg_growth: "平均増加率", agg_period: "集計期間", please_wait: "お待ちください...",
         aggregating: "集計中",
-        wait: "2026年のデータを精密に分析および集計しています。 少々お待ちください。",
+        wait: "2026年の 데이터를 정밀하게 분석 및 집계하고 있습니다. 少々お待ちください。",
         yearly_label: "2026年度",
         yearly_range: "2026-01-01 ~ 2026-12-31"
     },

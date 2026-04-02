@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.67 Loaded");
+console.log("GlobalTrendUp v3.4.68 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.67");
+    console.log("App Init: v3.4.68");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -480,7 +480,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.67) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.68) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -631,7 +631,13 @@ class App {
           fetchedDocs.push({ id: docSnap.id, data: docSnap.data() });
         });
 
-        const completedPool = fetchedDocs.filter(d => d.data.isAggregating === false).sort((a, b) => {
+        const completedPool = fetchedDocs.filter(d => {
+          const data = d.data;
+          const isAggFlag = data.isAggregating === true;
+          const label = (data.dateRange || "").toLowerCase();
+          const hasDraftKeywords = label.includes('집계') || label.includes('작성') || label.includes('aggregating') || label.includes('draft');
+          return !isAggFlag && !hasDraftKeywords && d.id !== 'latest';
+        }).sort((a, b) => {
           const tA = (a.data.lastUpdated && a.data.lastUpdated.toMillis) ? a.data.lastUpdated.toMillis() : 0;
           const tB = (b.data.lastUpdated && b.data.lastUpdated.toMillis) ? b.data.lastUpdated.toMillis() : 0;
           return tB - tA;
@@ -639,18 +645,7 @@ class App {
 
         const latestCompleted = completedPool[0];
         const statusEl = card.querySelector(`[data-status="${type}"]`);
-        
-        if (latestCompleted) {
-          const displayLabel = (latestCompleted.data.dateRange || '').trim();
-          const badgeHtml = `<span class="status-badge completed">${t.reports.status.completed}</span>`;
-          
-          if (statusEl) {
-            statusEl.innerHTML = `${badgeHtml} <span class="status-text">${displayLabel}</span>`;
-            safeSetStyle(statusEl, { display: 'block' });
-          }
-        } else {
-          if (statusEl) safeSetStyle(statusEl, { display: 'none' });
-        }
+        if (statusEl) safeSetStyle(statusEl, { display: 'none' });
 
         card.classList.add('disabled');
         safeSetStyle(card, { cursor: 'default' });
@@ -662,7 +657,16 @@ class App {
           card.appendChild(pastCtn);
         }
 
-        const reportsToDisplay = completedPool.slice(0, 6);
+        const seenLabels = new Set();
+        const reportsToDisplay = [];
+        for (const p of completedPool) {
+          const pTitle = p.data.dateRange || p.id;
+          if (!seenLabels.has(pTitle)) {
+            reportsToDisplay.push(p);
+            seenLabels.add(pTitle);
+          }
+          if (reportsToDisplay.length >= 3) break;
+        }
 
         if (reportsToDisplay.length > 0) {
           pastCtn.innerHTML = reportsToDisplay.map(p => {
@@ -677,14 +681,14 @@ class App {
                   <span>${pTitle}</span>
                 </span>
               </a>`;
-          }).join('');
+          }).join('') + (reportsToDisplay.length >= 3 ? `<a href="/report/?type=${type}&country=${this.currentCountry}" class="more-link" style="padding: 0.5rem; font-size: 0.8rem; color: var(--primary); text-decoration: none; display: block; text-align: right; font-weight: 700;">더보기 ></a>` : '');
           safeSetStyle(pastCtn, { display: 'flex' });
         } else {
           pastCtn.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; opacity:0.6;">${t.reports.comingSoon}</div>`;
           safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) {
-        console.warn(`[v3.4.67] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.68] Failed to refresh ${type} report card:`, err);
       }
     }
   }
