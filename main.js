@@ -645,18 +645,7 @@ class App {
 
         const latestCompleted = completedPool[0];
         const statusEl = card.querySelector(`[data-status="${type}"]`);
-        
-        if (latestCompleted) {
-          const displayLabel = (latestCompleted.data.dateRange || '').trim();
-          const badgeHtml = `<span class="status-badge completed">${t.reports.status.completed}</span>`;
-          
-          if (statusEl) {
-            statusEl.innerHTML = `${badgeHtml} <span class="status-text">${displayLabel}</span>`;
-            safeSetStyle(statusEl, { display: 'block' });
-          }
-        } else {
-          if (statusEl) safeSetStyle(statusEl, { display: 'none' });
-        }
+        if (statusEl) safeSetStyle(statusEl, { display: 'none' });
 
         card.classList.add('disabled');
         safeSetStyle(card, { cursor: 'default' });
