@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.68 (Final Stable with Timeout & Yearly Info)
+// Trend Report Detail Logic - v3.4.68 (Final Stable with Corrected Period Display)
 const ICONS = {
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
@@ -9,7 +9,7 @@ const REPORT_I18N = {
     ko: {
         title: "실시간 글로벌 트렌드 리포트",
         weekly: "주간", monthly: "월간", yearly: "년간",
-        period_summary: "집계 기간 : ", current_period: "선택 리포트",
+        period_summary: "", current_period: "선택 리포트",
         history: "과거 내역", related_news: "관련 뉴스", related_videos: "관련 영상",
         back_to_main: "메인으로 돌아가기",
         month: (m) => `${m}월`, year: (y) => `${y}년`,
@@ -23,7 +23,7 @@ const REPORT_I18N = {
     ja: {
         title: "リアルタイム グローバルトレンドレポート",
         weekly: "週間", monthly: "月間", yearly: "年間",
-        period_summary: "集計期間 : ", current_period: "現在の期間",
+        period_summary: "", current_period: "現在の期間",
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         back_to_main: "メインに戻る",
         month: (m) => `${m}월`, year: (y) => `${y}년`,
@@ -37,7 +37,7 @@ const REPORT_I18N = {
     en: {
         title: "Global Trend Report",
         weekly: "Weekly", monthly: "Monthly", yearly: "Yearly",
-        period_summary: "Aggregation Period : ", current_period: "Current Period",
+        period_summary: "", current_period: "Current Period",
         history: "Past History", related_news: "Related News", related_videos: "Related Videos",
         back_to_main: "Back to Main",
         month: (m) => { const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return mon[m - 1]; },
@@ -245,7 +245,8 @@ function renderHero(data) {
     let displayRange = data.dateRange || 'Latest Update';
     
     if (periodSummary) {
-        periodSummary.innerHTML = `<span class="period-label-text">${t.period_summary} ${displayRange}</span>`;
+        // Redundancy removed: only showing displayRange as requested
+        periodSummary.innerHTML = `<span class="period-label-text">${displayRange}</span>`;
     }
     const displayElement = document.getElementById('current-period-display');
     if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
@@ -311,7 +312,8 @@ function renderAggregatingScreen() {
     }
     if (summary) {
         const range = (type === 'yearly') ? (t.yearly_range || '2026-01-01 ~ 2026-12-31') : '...';
-        summary.innerHTML = `<span class="period-label-text">${t.period_summary} ${range}</span>`;
+        // Redundancy removed: only showing range
+        summary.innerHTML = `<span class="period-label-text">${range}</span>`;
     }
     
     if (container) {
