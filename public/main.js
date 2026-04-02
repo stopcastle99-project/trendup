@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.67 Loaded");
+console.log("GlobalTrendUp v3.4.68 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.67");
+    console.log("App Init: v3.4.68");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
