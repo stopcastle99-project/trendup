@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.66 Loaded");
+console.log("GlobalTrendUp v3.4.67 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.66");
+    console.log("App Init: v3.4.67");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -480,7 +480,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.66) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.67) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -626,71 +626,35 @@ class App {
         const q = query(collection(this.db, "reports", type, this.currentCountry), limit(20));
         const snap = await getDocs(q);
 
-        let latestDoc = null;
         let fetchedDocs = [];
         snap.forEach(docSnap => {
-          if (docSnap.id === 'latest') latestDoc = docSnap.data();
-          else fetchedDocs.push({ id: docSnap.id, data: docSnap.data() });
+          fetchedDocs.push({ id: docSnap.id, data: docSnap.data() });
         });
 
-        // v3.4.66: In-memory sorting to avoid Firestore Composite Index requirement
-        const pastDocs = fetchedDocs.sort((a, b) => {
+        const completedPool = fetchedDocs.filter(d => d.data.isAggregating === false).sort((a, b) => {
           const tA = (a.data.lastUpdated && a.data.lastUpdated.toMillis) ? a.data.lastUpdated.toMillis() : 0;
           const tB = (b.data.lastUpdated && b.data.lastUpdated.toMillis) ? b.data.lastUpdated.toMillis() : 0;
           return tB - tA;
         });
 
+        const latestCompleted = completedPool[0];
         const statusEl = card.querySelector(`[data-status="${type}"]`);
-        if (latestDoc) {
-          const rawLabel = latestDoc.dateRange || '';
-          let badgeHtml = '';
-
-          const isAggDB = (latestDoc.isAggregating !== false);
-          let finalIsAgg = isAggDB;
-
-          // Use standard KST conversion to avoid double-offsetting issues on local machines
-          const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-          const curM = kst.getMonth() + 1;
-          const curD = kst.getDate(); 
-          const curDay = kst.getDay();
-
-          // v3.4.27: Mandatory Aggregating status for NEW PERIOD drafts only
-          // During the first 3 days of the month, force aggregation for any report starting this month
-          if (curD >= 1 && curD <= 3) {
-            const isNewMonthDoc = rawLabel.includes(`0${curM}.`) || rawLabel.includes(`${curM}월`);
-            if (isNewMonthDoc && isAggDB) {
-                finalIsAgg = true;
-            }
-          }
-
-          if (type === 'yearly' && (curM < 12 || (curM === 12 && curD < 29))) finalIsAgg = true;
-          if (type === 'monthly' && (curD >= 28 || curD <= 3)) finalIsAgg = true;
-          if (type === 'weekly' && (curDay === 0 || curDay === 1 || curDay === 2 || curD >= 28 || curD <= 3)) finalIsAgg = true;
-
-          if (finalIsAgg) {
-            const isWriting = rawLabel.includes('작성중') || (type === 'monthly' && (curD >= 30 || curD === 1)) || (type === 'weekly' && (curD >= 30 || curD === 1));
-            if (isWriting || type === 'yearly' || curD === 1) {
-              badgeHtml = `<span class="status-badge writing">${t.reports.status.writing}</span>`;
-            } else {
-              badgeHtml = `<span class="status-badge live">${t.reports.status.live}</span>`;
-            }
-          } else {
-            badgeHtml = `<span class="status-badge completed">${t.reports.status.completed}</span>`;
-          }
-
+        
+        if (latestCompleted) {
+          const displayLabel = (latestCompleted.data.dateRange || '').trim();
+          const badgeHtml = `<span class="status-badge completed">${t.reports.status.completed}</span>`;
+          
           if (statusEl) {
-            statusEl.innerHTML = `${badgeHtml} <span class="status-text">${rawLabel.replace('작성중', '').replace('데이터집계중', '').replace('집계중', '').trim()}</span>`;
+            statusEl.innerHTML = `${badgeHtml} <span class="status-text">${displayLabel}</span>`;
             safeSetStyle(statusEl, { display: 'block' });
           }
         } else {
           if (statusEl) safeSetStyle(statusEl, { display: 'none' });
         }
 
-        // 3. Card interaction setup
         card.classList.add('disabled');
         safeSetStyle(card, { cursor: 'default' });
 
-        // 4. Report List
         let pastCtn = card.querySelector('.past-reports-list');
         if (!pastCtn) {
           pastCtn = document.createElement('div');
@@ -698,48 +662,18 @@ class App {
           card.appendChild(pastCtn);
         }
 
-        const reportsToDisplay = [];
-        const isCompleted = latestDoc && 
-                            (latestDoc.isAggregating === false) && 
-                            !((latestDoc.dateRange || '').includes('집계') || (latestDoc.dateRange || '').includes('작성'));
-        const lastUpdatedMs = latestDoc?.lastUpdated?.toMillis() || 0;
-        const isRecentlyFinished = (Date.now() - lastUpdatedMs) < (48 * 60 * 60 * 1000); 
+        const reportsToDisplay = completedPool.slice(0, 6);
 
-        if (isCompleted) {
-          reportsToDisplay.push({ id: latestDoc.slug || 'latest', data: latestDoc, isNew: isRecentlyFinished });
-        }
-
-        const seenLabels = new Set();
-        if (latestDoc && !isCompleted) {
-          // If latest is a draft, we "see" its label to prevent the archived version of the same period from appearing
-          const lLabel = (latestDoc.dateRange || '').trim();
-          if (lLabel) seenLabels.add(lLabel);
-        }
-
-        pastDocs.forEach(p => {
-          const rawTitle = (p.data.dateRange || '').trim();
-          
-          // Strict Filter: ABSOLUTELY COMPLETED reports only
-          // Must have isAggregating: false AND no status keywords in the raw label
-          const isAggFlag = p.data.isAggregating !== false;
-          const containsDraftKeywords = rawTitle.includes('집계') || rawTitle.includes('작성') || rawTitle.includes('Live');
-
-          if (!isAggFlag && !containsDraftKeywords && !seenLabels.has(rawTitle)) {
-            reportsToDisplay.push(p);
-            seenLabels.add(rawTitle);
-          }
-        });
-
-        const finalDisplay = reportsToDisplay.slice(0, 6); // Increased visibility to 6
-        if (finalDisplay.length > 0) {
-          pastCtn.innerHTML = finalDisplay.map(p => {
+        if (reportsToDisplay.length > 0) {
+          pastCtn.innerHTML = reportsToDisplay.map(p => {
             let pTitle = p.data.dateRange || p.id;
             if (p.data.reportTitle && p.data.reportTitle[this.currentLang]) {
               pTitle = p.data.reportTitle[this.currentLang];
             }
+            const isRecentlyFinished = (Date.now() - (p.data.lastUpdated?.toMillis() || 0)) < (48 * 60 * 60 * 1000);
             return `<a href="report/?type=${type}&country=${this.currentCountry}&id=${p.id}" class="past-report-link">
                 <span style="display:flex; align-items:center; gap:0.5rem;">
-                  ${p.isNew ? '<span class="new-badge">NEW</span>' : '📜'} 
+                  ${isRecentlyFinished ? '<span class="new-badge">NEW</span>' : '📜'} 
                   <span>${pTitle}</span>
                 </span>
               </a>`;
@@ -750,7 +684,7 @@ class App {
           safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) {
-        console.warn(`[v3.4.66] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.4.67] Failed to refresh ${type} report card:`, err);
       }
     }
   }

@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.66 (Simplified - Completed Reports Only)
+// Trend Report Detail Logic - v3.4.67 (Strictly Finalized Reports Only)
 const ICONS = {
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
@@ -10,10 +10,8 @@ const REPORT_I18N = {
         title: "실시간 글로벌 트렌드 리포트",
         weekly: "주간", monthly: "월간", yearly: "년간",
         period_summary: "집계 기간 : ", current_period: "선택 리포트",
-        live_status: "현재 집계 중 : ",
         history: "과거 내역", related_news: "관련 뉴스", related_videos: "관련 영상",
-        aggregating: "트렌드 집계 중", back_to_main: "메인으로 돌아가기",
-        wait: "현재 데이터를 정밀 분석하고 있습니다. 잠시만 기다려 주세요.",
+        back_to_main: "메인으로 돌아가기",
         month: (m) => `${m}월`, year: (y) => `${y}년`,
         growth: "성장률", trend_report: "트렌드 보고서",
         total_views: "총 조회수", avg_growth: "평균 성장률", agg_period: "집계기간", please_wait: "기다려주세요...",
@@ -192,45 +190,27 @@ async function loadReport() {
 
         let finalDoc;
         if (reportId === 'latest') {
-            if (latestCompleteDoc) {
-                finalDoc = latestCompleteDoc;
-            } else {
-                const latestDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
-                finalDoc = latestDoc;
-            }
+            finalDoc = latestCompleteDoc;
         } else {
             const requestedDoc = await db.collection("reports").doc(type).collection(country).doc(reportId).get();
+            // If the specific requested report is still aggregating, fall back to latest completed
             if (requestedDoc.exists && (requestedDoc.data().isAggregating === true)) {
-                if (latestCompleteDoc) finalDoc = latestCompleteDoc;
-                else finalDoc = requestedDoc;
+                finalDoc = latestCompleteDoc;
             } else {
                 finalDoc = requestedDoc;
             }
         }
 
         if (!finalDoc || !finalDoc.exists) {
-            renderPlaceholder();
+            // Fallback to the absolute latest if no completed ones exist (rare)
+            finalDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
+        }
+
+        if (!finalDoc || !finalDoc.exists) {
             return;
         }
 
         const data = finalDoc.data();
-        
-        // Final sanity check before rendering – especially for Yearly at year-start
-        const docRange = data.dateRange || "";
-        const isNewMonthDoc = docRange.includes(`${curM}월`) || docRange.includes(`0${curM}.`) || 
-                             docRange.includes(`.${curM}.`) || docRange.includes(` ${curM}.`);
-
-        let isAgg = (data.isAggregating === true);
-        // Force placeholder ONLY if absolutely nothing completed is available
-        if (curD >= 1 && curD <= 3 && isNewMonthDoc && data.isAggregating !== false) {
-            isAgg = true;
-        }
-
-        if (isAgg) {
-            renderPlaceholder();
-            return;
-        }
-
         renderHero(data);
         renderTrends(data.items);
     } catch (e) {
@@ -239,22 +219,6 @@ async function loadReport() {
     }
 }
 
-function renderPlaceholder(customMessage) {
-    const main = document.getElementById('report-main');
-    const t = REPORT_I18N[lang] || REPORT_I18N.en;
-    const displayMsg = customMessage || `${t.aggregating}...`;
-
-    main.innerHTML = `
-        <div class="aggregating-placeholder">
-            <div class="aggregating-icon">📊</div>
-            <div class="aggregating-text">
-                <h2>${displayMsg}</h2>
-                <p>${t.wait}</p>
-            </div>
-            <a href="../" class="period-btn active" style="padding: 1.2rem 2.5rem; display: inline-block; border-radius: 100px; margin-top: 1rem;">${t.back_to_main}</a>
-        </div>
-    `;
-}
 
 function renderHero(data) {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
