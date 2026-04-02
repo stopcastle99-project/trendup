@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.67 (Strictly Finalized Reports Only)
+// Trend Report Detail Logic - v3.4.68 (Final Stable with Timeout)
 const ICONS = {
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
@@ -15,32 +15,36 @@ const REPORT_I18N = {
         month: (m) => `${m}월`, year: (y) => `${y}년`,
         growth: "성장률", trend_report: "트렌드 보고서",
         total_views: "총 조회수", avg_growth: "평균 성장률", agg_period: "집계기간", please_wait: "기다려주세요...",
-        agg_banner: (typeLabel, m) => typeLabel === "년간" ? `2026년 ${typeLabel} 리포트가 집계 중입니다. 최신 완료된 리포트를 보여드립니다.` : `${m}월 ${typeLabel} 리포트가 집계 중입니다. 최신 완료된 리포트를 보여드립니다.`
+        aggregating: "집계 중",
+        wait: "2026년 데이터를 정밀하게 분석 및 집계하고 있습니다. 잠시만 기다려 주세요.",
+        agg_banner: (typeLabel, m) => typeLabel === "년간" ? `2026년 ${typeLabel} 리포트가 집계 중입니다.` : `${m}월 ${typeLabel} 리포트가 집계 중입니다.`
     },
     ja: {
         title: "リアルタイム グローバルトレンドレポート",
         weekly: "週間", monthly: "月間", yearly: "年間",
         period_summary: "集計期間 : ", current_period: "現在の期間",
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
-        aggregating: "トレンド集計中", back_to_main: "メインに戻る",
-        wait: "現在, データを精密に分析しています. 少々お待ちください。",
+        back_to_main: "メインに戻る",
         month: (m) => `${m}月`, year: (y) => `${y}年`,
         growth: "成長率", trend_report: "トレンド報告書",
         total_views: "総閲覧数", avg_growth: "平均成長率", agg_period: "集計期間", please_wait: "お待ちください...",
-        agg_banner: (typeLabel, m) => typeLabel === "年間" ? `2026年 ${typeLabel}レポートが集計中です. 最新の完了レポートを表示します。` : `${m}월 ${typeLabel}レポートが集計中です. 最新の完了レポートを表示합니다。`
+        aggregating: "集計中",
+        wait: "2026年のデータを精密に分析及び集計しています。 少々お待ちください。",
+        agg_banner: (typeLabel, m) => typeLabel === "年間" ? `2026年 ${typeLabel}レポートが集計中です.` : `${m}월 ${typeLabel}レポートが集計中です.`
     },
     en: {
         title: "Global Trend Report",
         weekly: "Weekly", monthly: "Monthly", yearly: "Yearly",
         period_summary: "Aggregation Period : ", current_period: "Current Period",
         history: "Past History", related_news: "Related News", related_videos: "Related Videos",
-        aggregating: "Trend Aggregating", back_to_main: "Back to Main",
-        wait: "We are carefully analyzing the current data. Please wait a moment.",
+        back_to_main: "Back to Main",
         month: (m) => { const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return mon[m - 1]; },
         year: (y) => `${y}`,
         growth: "Growth", trend_report: "Trend Report",
         total_views: "Total Views", avg_growth: "Avg Growth", agg_period: "Aggregation Period", please_wait: "Please wait...",
-        agg_banner: (typeLabel, m) => typeLabel === "Yearly" ? `2026 ${typeLabel} report is aggregating. Showing latest finalized.` : `${m} ${typeLabel} report is aggregating. Showing latest finalized.`
+        aggregating: "Aggregating",
+        wait: "We are carefully analyzing and aggregating 2026 data. Please wait a moment.",
+        agg_banner: (typeLabel, m) => typeLabel === "Yearly" ? `2026 ${typeLabel} report is aggregating.` : `${m} ${typeLabel} report is aggregating.`
     }
 };
 
@@ -54,6 +58,7 @@ let type = params.get('type') || 'weekly';
 let country = params.get('country') || 'KR';
 let reportId = params.get('id') || 'latest';
 let lang = localStorage.getItem('lang') || params.get('lang') || (country === 'KR' ? 'ko' : country === 'JP' ? 'ja' : 'en');
+let isReportLoaded = false;
 
 const pathParts = window.location.pathname.split('/').filter(p => p);
 const lastPart = pathParts[pathParts.length - 1];
@@ -74,7 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initHistoryDropdown();
     initTheme();
     loadReport();
-    // v3.4.66: loadLiveStatus removed to keep UI simple as requested
+
+    // Safety fallback: If still not loaded after 3s, show aggregating screen
+    setTimeout(() => {
+        if (!isReportLoaded) {
+            console.warn("Report loading timed out. Showing aggregating screen.");
+            renderAggregatingScreen();
+        }
+    }, 3000);
 });
 
 function applyTranslations() {
@@ -169,22 +181,23 @@ function injectIcons() {
 
 async function loadReport() {
     try {
-        const t = REPORT_I18N[lang] || REPORT_I18N.en;
         loadHistory();
 
-        const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-        const curM = kst.getMonth() + 1;
-        const curD = kst.getDate();
-
-        // v3.4.66: Fetch without server-side orderBy to avoid Composite Index dependency
-        const completeSnapRaw = await db.collection("reports").doc(type).collection(country)
-            .where("isAggregating", "==", false).get();
-        
-        const sortedCompleteDocs = completeSnapRaw.docs.sort((a, b) => {
-            const tA = a.data().lastUpdated ? a.data().lastUpdated.toMillis() : 0;
-            const tB = b.data().lastUpdated ? b.data().lastUpdated.toMillis() : 0;
-            return tB - tA;
-        });
+        const allSnap = await db.collection("reports").doc(type).collection(country).get();
+        const sortedCompleteDocs = allSnap.docs
+            .map(d => ({ id: d.id, data: d.data() }))
+            .filter(d => {
+                const data = d.data;
+                const isAggFlag = data.isAggregating === true;
+                const label = (data.dateRange || "").toLowerCase();
+                const hasDraftKeywords = label.includes('집계') || label.includes('작성') || label.includes('aggregating') || label.includes('draft');
+                return !isAggFlag && !hasDraftKeywords && d.id !== 'latest';
+            })
+            .sort((a, b) => {
+                const tA = a.data.lastUpdated ? a.data.lastUpdated.toMillis() : 0;
+                const tB = b.data.lastUpdated ? b.data.lastUpdated.toMillis() : 0;
+                return tB - tA;
+            });
         
         const latestCompleteDoc = sortedCompleteDocs[0];
 
@@ -193,32 +206,35 @@ async function loadReport() {
             finalDoc = latestCompleteDoc;
         } else {
             const requestedDoc = await db.collection("reports").doc(type).collection(country).doc(reportId).get();
-            // If the specific requested report is still aggregating, fall back to latest completed
-            if (requestedDoc.exists && (requestedDoc.data().isAggregating === true)) {
-                finalDoc = latestCompleteDoc;
+            if (requestedDoc.exists) {
+                const data = requestedDoc.data();
+                const isAggFlag = data.isAggregating === true;
+                const label = (data.dateRange || "").toLowerCase();
+                const hasDraftKeywords = label.includes('집계') || label.includes('작성');
+                if (isAggFlag || hasDraftKeywords) {
+                    finalDoc = latestCompleteDoc;
+                } else {
+                    finalDoc = requestedDoc;
+                }
             } else {
-                finalDoc = requestedDoc;
+                finalDoc = latestCompleteDoc;
             }
         }
 
-        if (!finalDoc || !finalDoc.exists) {
-            // Fallback to the absolute latest if no completed ones exist (rare)
-            finalDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
-        }
-
-        if (!finalDoc || !finalDoc.exists) {
+        if (!finalDoc) {
+            renderAggregatingScreen();
             return;
         }
 
-        const data = finalDoc.data();
+        const data = (typeof finalDoc.data === 'function') ? finalDoc.data() : finalDoc.data;
+        isReportLoaded = true;
         renderHero(data);
         renderTrends(data.items);
     } catch (e) {
         console.error("Report load error:", e);
-        renderPlaceholder();
+        renderAggregatingScreen();
     }
 }
-
 
 function renderHero(data) {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
@@ -278,26 +294,69 @@ function renderTrends(items) {
     });
 }
 
+function renderAggregatingScreen() {
+    if (isReportLoaded) return;
+    const container = document.getElementById('trend-list');
+    const hero = document.getElementById('current-period-display');
+    const t = REPORT_I18N[lang] || REPORT_I18N.en;
+    const typeLabel = t[type] || type;
+    
+    if (hero) hero.textContent = typeLabel;
+    
+    if (container) {
+        container.innerHTML = `
+            <div class="aggregating-container" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 6rem 2rem; text-align:center; background: var(--surface); border-radius: 32px; border: 1px solid var(--border); margin-top: 2rem; min-height: 400px; box-shadow: var(--shadow-sm);">
+                <div class="pulse-loader" style="width: 100px; height: 100px; background: var(--primary); border-radius: 50%; opacity: 0.15; animation: report-pulse 2s infinite ease-in-out; margin-bottom: 2.5rem; position: relative; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 2.5rem;">📊</span>
+                </div>
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 1.2rem; color: var(--text-primary); letter-spacing: -0.02em;">
+                    ${typeLabel} ${t.trend_report} ${t.aggregating || (lang === 'ko' ? '집계 중' : 'Aggregating')}
+                </h2>
+                <p style="color: var(--text-secondary); max-width: 450px; line-height: 1.7; font-size: 1.05rem; margin-bottom: 2.5rem;">
+                    ${t.wait || (lang === 'ko' ? '2026년 데이터를 정밀하게 분석 및 집계하고 있습니다. 잠시만 기다려 주세요.' : 'We are carefully analyzing and aggregating 2026 data. Please wait a moment.')}
+                </p>
+                <a href="/" style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; color: var(--text-primary); text-decoration: none; font-weight: 700; transition: 0.2s; box-shadow: var(--shadow-sm);">
+                    <span>←</span> ${t.back_to_main}
+                </a>
+            </div>
+            <style>
+                @keyframes report-pulse {
+                    0% { transform: scale(0.9); opacity: 0.1; }
+                    50% { transform: scale(1.1); opacity: 0.25; }
+                    100% { transform: scale(0.9); opacity: 0.1; }
+                }
+                .aggregating-container:hover { border-color: var(--primary); transform: translateY(-5px); transition: 0.3s; }
+            </style>
+        `;
+    }
+}
+
 async function loadHistory() {
     const list = document.getElementById('history-dropdown-list');
     if (!list) return;
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     try {
-        // v3.4.66: Filter history to ONLY show completed reports (Sorted in JS)
-        const snapRaw = await db.collection("reports").doc(type).collection(country)
-            .where("isAggregating", "==", false).get(); 
-
-        const sortedDocs = snapRaw.docs.sort((a, b) => {
-            const tA = a.data().lastUpdated ? a.data().lastUpdated.toMillis() : 0;
-            const tB = b.data().lastUpdated ? b.data().lastUpdated.toMillis() : 0;
-            return tB - tA;
-        }).slice(0, 20);
+        const allSnapHistory = await db.collection("reports").doc(type).collection(country).get();
+        const sortedDocs = allSnapHistory.docs
+            .map(d => ({ id: d.id, data: d.data() }))
+            .filter(d => {
+                const data = d.data;
+                const isAggFlag = data.isAggregating === true;
+                const label = (data.dateRange || "").toLowerCase();
+                const hasDraftKeywords = label.includes('집계') || label.includes('작성') || label.includes('aggregating') || label.includes('draft');
+                return !isAggFlag && !hasDraftKeywords && d.id !== 'latest';
+            })
+            .sort((a, b) => {
+                const tA = a.data.lastUpdated ? a.data.lastUpdated.toMillis() : 0;
+                const tB = b.data.lastUpdated ? b.data.lastUpdated.toMillis() : 0;
+                return tB - tA;
+            }).slice(0, 20);
 
         list.innerHTML = '';
         const seenTitles = new Set();
 
         sortedDocs.forEach(doc => {
-            const data = doc.data();
+            const data = doc.data;
             const periodKey = data.dateRange || doc.id;
             if (seenTitles.has(periodKey)) return;
             seenTitles.add(periodKey);
@@ -310,7 +369,6 @@ async function loadHistory() {
 
             if (historyTitle.includes('리포트')) historyTitle = historyTitle.replace('리포트', t.trend_report);
             else if (!historyTitle.includes(t.trend_report)) historyTitle += ` ${t.trend_report}`;
-            // v3.4.66 aggregation label removed
 
             item.textContent = historyTitle;
             item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
@@ -319,8 +377,4 @@ async function loadHistory() {
     } catch (e) {
         console.warn("History load failed:", e);
     }
-}
-
-async function loadLiveStatus() {
-    // Function exists but not called in v3.4.66 as per simplification request
 }
