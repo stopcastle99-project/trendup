@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.68 (Header UI Revamp - Country Dropdown)
+// Trend Report Detail Logic - v3.4.68 (Full I18N Fix - Terminology & Dates)
 const ICONS = {
     home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`
 };
@@ -24,11 +24,11 @@ const REPORT_I18N = {
         period_summary: "", current_period: "現在の期間",
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         back_to_main: "メインに戻る",
-        month: (m) => `${m}월`, year: (y) => `${y}년`,
+        month: (m) => `${m}月`, year: (y) => `${y}年`,
         growth: "増加率", trend_report: "トレンド報告書",
-        total_views: "총 조회수", avg_growth: "平均増加率", agg_period: "集計期間", please_wait: "お待ちください...",
+        total_views: "総表示回数", avg_growth: "平均増加率", agg_period: "集計期間", please_wait: "お待ちください...",
         aggregating: "集計中",
-        wait: "2026年のデータを精密에 분석 및 집계하고 있습니다. 少々お待ちください。",
+        wait: "2026年のデータを精密に分析および集計しています. 少々お待ちください。",
         yearly_label: "2026年度",
         yearly_range: "2026-01-01 ~ 2026-12-31"
     },
@@ -89,6 +89,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
 });
 
+function translateDateRange(str) {
+    if (!str || lang === 'ko') return str;
+    const t = REPORT_I18N[lang] || REPORT_I18N.en;
+    let res = str;
+    // Handle "2026년 3월" style
+    res = res.replace(/(\d+)년/g, (m, y) => t.year ? t.year(y) : y);
+    res = res.replace(/(\d+)월/g, (m, mon) => {
+        if (lang === 'en') {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months[parseInt(mon) - 1] || mon;
+        }
+        return t.month ? t.month(mon) : mon;
+    });
+    // Handle "11주" style
+    res = res.replace(/(\d+)주/g, (m, w) => {
+        if (lang === 'ja') return `${w}週`;
+        if (lang === 'en') return `Week ${w}`;
+        return m;
+    });
+    // Cleanup English ordering if needed
+    if (lang === 'en' && res.includes(' ')) {
+        const parts = res.split(' ');
+        if (parts.length === 2 && parts[0].length === 4) { // Year first
+            return `${parts[1]}, ${parts[0]}`;
+        }
+    }
+    // Final replace common terms just in case
+    res = res.replace(/리포트/g, t.trend_report || 'Report');
+    return res;
+}
+
 function applyTranslations() {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     document.documentElement.setAttribute('lang', lang);
@@ -130,7 +161,6 @@ function initCountrySelector() {
     
     if (!toggle || !menu || !flagDisplay) return;
 
-    // Set initial flag based on country
     const initialOpt = Array.from(opts).find(opt => opt.dataset.country === country);
     if (initialOpt) {
         flagDisplay.textContent = initialOpt.querySelector('.opt-flag').textContent;
@@ -229,13 +259,16 @@ async function loadReport() {
 function renderHero(data) {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const periodSummary = document.getElementById('current-period-summary');
-    let displayRange = data.dateRange || 'Latest Update';
+    let displayRange = translateDateRange(data.dateRange) || 'Latest Update';
     
     if (periodSummary) {
         periodSummary.innerHTML = `<span class="period-label-text">${displayRange}</span>`;
     }
     const displayElement = document.getElementById('current-period-display');
-    if (displayElement) displayElement.textContent = data.dateRange || 'Current Period';
+    if (displayElement) {
+        let heroRange = translateDateRange(data.dateRange) || 'Current Period';
+        displayElement.textContent = heroRange;
+    }
 }
 
 function renderTrends(items) {
@@ -292,7 +325,6 @@ function renderAggregatingScreen() {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const typeLabel = t[type] || type;
     
-    // Update labels for aggregating state 
     if (hero) {
         hero.textContent = (type === 'yearly') ? (t.yearly_label || '2026년도') : typeLabel;
     }
@@ -363,10 +395,11 @@ async function loadHistory() {
             const item = document.createElement('div');
             item.className = `history-sidebar-item ${isActive ? 'active' : ''}`;
 
-            let historyTitle = data.dateRange || doc.id;
+            let historyTitle = translateDateRange(data.dateRange || doc.id);
 
-            if (historyTitle.includes('리포트')) historyTitle = historyTitle.replace('리포트', t.trend_report);
-            else if (!historyTitle.includes(t.trend_report)) historyTitle += ` ${t.trend_report}`;
+            if (!historyTitle.includes(t.trend_report)) {
+                 historyTitle += ` ${t.trend_report}`;
+            }
 
             item.textContent = historyTitle;
             item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
