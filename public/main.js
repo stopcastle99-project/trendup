@@ -686,7 +686,7 @@ class App {
                   <span>${pTitle}</span>
                 </span>
               </a>`;
-          }).join('')+ `<a href="/report/?type=${type}&country=${this.currentCountry}" class="past-report-link view-all-link"><span>📂 과거 내역 보기</span></a>`;
+          }).join('');
           safeSetStyle(pastCtn, { display: 'flex' });
         } else {
           pastCtn.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; opacity:0.6;">${t.reports.comingSoon}</div>`;
