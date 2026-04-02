@@ -161,45 +161,75 @@
     justify-content: space-between;
 }
 
+.logo-home-link {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo-home-link:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px oklch(0.5 0.2 260 / 0.1);
+}
+
+.logo-home-link svg {
+    width: 20px;
+    height: 20px;
+}
+
 .report-main-title {
-    font-size: 1.2rem;
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    color: var(--text);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-muted);
+    opacity: 0.8;
 }
 
 .country-selector {
     display: flex;
-    background: var(--border);
-    padding: 3px;
-    border-radius: 100px;
-    margin-right: 1.5rem;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin-right: 1.2rem;
 }
 
 .country-btn {
     border: none;
     background: transparent;
-    padding: 8px 12px;
-    border-radius: 100px;
-    font-size: 1.2rem; /* Larger flag emoji */
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 1.1rem;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.6;
+    opacity: 0.5;
+    filter: grayscale(1);
 }
 
 .country-btn:hover {
     opacity: 1;
-    transform: scale(1.1);
+    filter: grayscale(0);
+    background: var(--border);
 }
 
 .country-btn.active {
-    background: var(--surface);
+    background: var(--primary);
     opacity: 1;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Stronger shadow for active state */
-    transform: scale(1.1);
+    filter: grayscale(0);
+    box-shadow: 0 4px 12px oklch(0.5 0.2 260 / 0.2);
 }
 
 .report-header-stack {
