@@ -665,7 +665,7 @@ class App {
             reportsToDisplay.push(p);
             seenLabels.add(pTitle);
           }
-          if (reportsToDisplay.length >= 6) break;
+          if (reportsToDisplay.length >= 3) break;
         }
 
         if (reportsToDisplay.length > 0) {
@@ -681,7 +681,7 @@ class App {
                   <span>${pTitle}</span>
                 </span>
               </a>`;
-          }).join('');
+          }).join('') + `<a href="/report/?type=${type}&country=${this.currentCountry}" class="more-link" style="padding: 0.5rem; font-size: 0.8rem; color: var(--primary); text-decoration: none; display: block; text-align: right; font-weight: 700;">더보기 ></a>`;
           safeSetStyle(pastCtn, { display: 'flex' });
         } else {
           pastCtn.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; opacity:0.6;">${t.reports.comingSoon}</div>`;
