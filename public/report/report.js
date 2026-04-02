@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.32 (Simplified - Completed Reports Only)
+// Trend Report Detail Logic - v3.4.66 (Simplified - Completed Reports Only)
 const ICONS = {
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHistoryDropdown();
     initTheme();
     loadReport();
-    // v3.4.31: loadLiveStatus removed to keep UI simple as requested
+    // v3.4.66: loadLiveStatus removed to keep UI simple as requested
 });
 
 function applyTranslations() {
@@ -178,7 +178,7 @@ async function loadReport() {
         const curM = kst.getMonth() + 1;
         const curD = kst.getDate();
 
-        // v3.4.32: Fetch without server-side orderBy to avoid Composite Index dependency
+        // v3.4.66: Fetch without server-side orderBy to avoid Composite Index dependency
         const completeSnapRaw = await db.collection("reports").doc(type).collection(country)
             .where("isAggregating", "==", false).get();
         
@@ -319,7 +319,7 @@ async function loadHistory() {
     if (!list) return;
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     try {
-        // v3.4.32: Filter history to ONLY show completed reports (Sorted in JS)
+        // v3.4.66: Filter history to ONLY show completed reports (Sorted in JS)
         const snapRaw = await db.collection("reports").doc(type).collection(country)
             .where("isAggregating", "==", false).get(); 
 
@@ -346,7 +346,7 @@ async function loadHistory() {
 
             if (historyTitle.includes('리포트')) historyTitle = historyTitle.replace('리포트', t.trend_report);
             else if (!historyTitle.includes(t.trend_report)) historyTitle += ` ${t.trend_report}`;
-            // v3.4.31 aggregation label removed
+            // v3.4.66 aggregation label removed
 
             item.textContent = historyTitle;
             item.onclick = () => { window.location.href = `?type=${type}&country=${country}&id=${doc.id}`; };
@@ -358,5 +358,5 @@ async function loadHistory() {
 }
 
 async function loadLiveStatus() {
-    // Function exists but not called in v3.4.31 as per simplification request
+    // Function exists but not called in v3.4.66 as per simplification request
 }
