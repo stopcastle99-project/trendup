@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.68 (Full I18N Fix - Terminology & Dates)
+// Trend Report Detail Logic - v3.4.68 (Full I18N Fix - Final Polish)
 const ICONS = {
     home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`
 };
@@ -21,7 +21,7 @@ const REPORT_I18N = {
     ja: {
         title: "トレンドレポート",
         weekly: "週間", monthly: "月間", yearly: "年間",
-        period_summary: "", current_period: "現在の期間",
+        period_summary: "", current_period: "選択レポート",
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         back_to_main: "メインに戻る",
         month: (m) => `${m}月`, year: (y) => `${y}年`,
@@ -35,7 +35,7 @@ const REPORT_I18N = {
     en: {
         title: "Trend Report",
         weekly: "Weekly", monthly: "Monthly", yearly: "Yearly",
-        period_summary: "", current_period: "Current Period",
+        period_summary: "", current_period: "Selected Report",
         history: "Past History", related_news: "Related News", related_videos: "Related Videos",
         back_to_main: "Back to Main",
         month: (m) => { const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return mon[m - 1]; },
@@ -259,14 +259,14 @@ async function loadReport() {
 function renderHero(data) {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const periodSummary = document.getElementById('current-period-summary');
-    let displayRange = translateDateRange(data.dateRange) || 'Latest Update';
+    let displayRange = translateDateRange(data.dateRange) || (lang === 'ko' ? '최신 업데이트' : 'Latest Update');
     
     if (periodSummary) {
         periodSummary.innerHTML = `<span class="period-label-text">${displayRange}</span>`;
     }
     const displayElement = document.getElementById('current-period-display');
     if (displayElement) {
-        let heroRange = translateDateRange(data.dateRange) || 'Current Period';
+        let heroRange = translateDateRange(data.dateRange) || t.current_period;
         displayElement.textContent = heroRange;
     }
 }
@@ -397,7 +397,6 @@ async function loadHistory() {
 
             let historyTitle = translateDateRange(data.dateRange || doc.id);
 
-            // Append trend report suffix if missing
             if (!historyTitle.includes(t.trend_report)) {
                  historyTitle += ` ${t.trend_report}`;
             }
