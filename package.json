@@ -1,6 +1,6 @@
 {
   "name": "trendup-updater",
-  "version": "3.1.51",
+  "version": "3.4.32",
   "description": "TrendUp Global Trends Background Updater",
   "main": "update-trends.js",
   "type": "module",

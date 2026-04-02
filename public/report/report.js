@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.31 (Simplified - Completed Reports Only)
+// Trend Report Detail Logic - v3.4.32 (Simplified - Completed Reports Only)
 const ICONS = {
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
@@ -178,15 +178,22 @@ async function loadReport() {
         const curM = kst.getMonth() + 1;
         const curD = kst.getDate();
 
-        // v3.4.31: Always try to fetch the most recent COMPLETED report first
-        const completeSnap = await db.collection("reports").doc(type).collection(country)
-            .where("isAggregating", "==", false)
-            .orderBy("lastUpdated", "desc").limit(1).get();
+        // v3.4.32: Fetch without server-side orderBy to avoid Composite Index dependency
+        const completeSnapRaw = await db.collection("reports").doc(type).collection(country)
+            .where("isAggregating", "==", false).get();
+        
+        const sortedCompleteDocs = completeSnapRaw.docs.sort((a, b) => {
+            const tA = a.data().lastUpdated ? a.data().lastUpdated.toMillis() : 0;
+            const tB = b.data().lastUpdated ? b.data().lastUpdated.toMillis() : 0;
+            return tB - tA;
+        });
+        
+        const latestCompleteDoc = sortedCompleteDocs[0];
 
         let finalDoc;
         if (reportId === 'latest') {
-            if (!completeSnap.empty) {
-                finalDoc = completeSnap.docs[0];
+            if (latestCompleteDoc) {
+                finalDoc = latestCompleteDoc;
             } else {
                 // If no completed reports exist (Yearly case), fall back to draft
                 const latestDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
@@ -196,7 +203,7 @@ async function loadReport() {
             const requestedDoc = await db.collection("reports").doc(type).collection(country).doc(reportId).get();
             // If the specific requested report is still aggregating, fall back to latest completed
             if (requestedDoc.exists && (requestedDoc.data().isAggregating === true)) {
-                if (!completeSnap.empty) finalDoc = completeSnap.docs[0];
+                if (latestCompleteDoc) finalDoc = latestCompleteDoc;
                 else finalDoc = requestedDoc;
             } else {
                 finalDoc = requestedDoc;
@@ -314,15 +321,20 @@ async function loadHistory() {
     if (!list) return;
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     try {
-        // v3.4.31: filter history to ONLY show completed reports
-        const snapshot = await db.collection("reports").doc(type).collection(country)
-            .where("isAggregating", "==", false)
-            .orderBy("lastUpdated", "desc").limit(20).get(); 
+        // v3.4.32: Filter history to ONLY show completed reports (Sorted in JS)
+        const snapRaw = await db.collection("reports").doc(type).collection(country)
+            .where("isAggregating", "==", false).get(); 
+
+        const sortedDocs = snapRaw.docs.sort((a, b) => {
+            const tA = a.data().lastUpdated ? a.data().lastUpdated.toMillis() : 0;
+            const tB = b.data().lastUpdated ? b.data().lastUpdated.toMillis() : 0;
+            return tB - tA;
+        }).slice(0, 20);
 
         list.innerHTML = '';
         const seenTitles = new Set();
 
-        snapshot.forEach(doc => {
+        sortedDocs.forEach(doc => {
             const data = doc.data();
             const periodKey = data.dateRange || doc.id;
             if (seenTitles.has(periodKey)) return;
