@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.4.68 (Final Stable with Corrected Period Display)
+// Trend Report Detail Logic - v3.4.68 (Final Stable with Incremental I18N Fix)
 const ICONS = {
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`,
@@ -13,8 +13,8 @@ const REPORT_I18N = {
         history: "과거 내역", related_news: "관련 뉴스", related_videos: "관련 영상",
         back_to_main: "메인으로 돌아가기",
         month: (m) => `${m}월`, year: (y) => `${y}년`,
-        growth: "성장률", trend_report: "트렌드 보고서",
-        total_views: "총 조회수", avg_growth: "평균 성장률", agg_period: "집계기간", please_wait: "기다려주세요...",
+        growth: "증가율", trend_report: "트렌드 보고서",
+        total_views: "총 조회수", avg_growth: "평균 증가율", agg_period: "집계기간", please_wait: "기다려주세요...",
         aggregating: "집계 중",
         wait: "2026년 데이터를 정밀하게 분석 및 집계하고 있습니다. 잠시만 기다려 주세요.",
         yearly_label: "2026년도",
@@ -27,8 +27,8 @@ const REPORT_I18N = {
         history: "過去の履歴", related_news: "関連ニュース", related_videos: "関連動画",
         back_to_main: "メインに戻る",
         month: (m) => `${m}월`, year: (y) => `${y}년`,
-        growth: "成長率", trend_report: "トレンド報告書",
-        total_views: "총 조회수", avg_growth: "平均成長率", agg_period: "集計期間", please_wait: "お待ちください...",
+        growth: "増加率", trend_report: "トレンド報告書",
+        total_views: "총 조회수", avg_growth: "平均増加率", agg_period: "集計期間", please_wait: "お待ちください...",
         aggregating: "集計中",
         wait: "2026年のデータを精密에 분석 및 집계하고 있습니다. 少々お待ちください。",
         yearly_label: "2026年度",
@@ -42,8 +42,8 @@ const REPORT_I18N = {
         back_to_main: "Back to Main",
         month: (m) => { const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return mon[m - 1]; },
         year: (y) => `${y}`,
-        growth: "Growth", trend_report: "Trend Report",
-        total_views: "Total Views", avg_growth: "Avg Growth", agg_period: "Aggregation Period", please_wait: "Please wait...",
+        growth: "Increase Rate", trend_report: "Trend Report",
+        total_views: "Total Views", avg_growth: "Avg Increase Rate", agg_period: "Aggregation Period", please_wait: "Please wait...",
         aggregating: "Aggregating",
         wait: "We are carefully analyzing and aggregating 2026 data. Please wait a moment.",
         yearly_label: "Year 2026",
@@ -245,7 +245,6 @@ function renderHero(data) {
     let displayRange = data.dateRange || 'Latest Update';
     
     if (periodSummary) {
-        // Redundancy removed: only showing displayRange as requested
         periodSummary.innerHTML = `<span class="period-label-text">${displayRange}</span>`;
     }
     const displayElement = document.getElementById('current-period-display');
@@ -312,7 +311,6 @@ function renderAggregatingScreen() {
     }
     if (summary) {
         const range = (type === 'yearly') ? (t.yearly_range || '2026-01-01 ~ 2026-12-31') : '...';
-        // Redundancy removed: only showing range
         summary.innerHTML = `<span class="period-label-text">${range}</span>`;
     }
     
