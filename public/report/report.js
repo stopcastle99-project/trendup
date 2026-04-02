@@ -195,13 +195,11 @@ async function loadReport() {
             if (latestCompleteDoc) {
                 finalDoc = latestCompleteDoc;
             } else {
-                // If no completed reports exist (Yearly case), fall back to draft
                 const latestDoc = await db.collection("reports").doc(type).collection(country).doc('latest').get();
                 finalDoc = latestDoc;
             }
         } else {
             const requestedDoc = await db.collection("reports").doc(type).collection(country).doc(reportId).get();
-            // If the specific requested report is still aggregating, fall back to latest completed
             if (requestedDoc.exists && (requestedDoc.data().isAggregating === true)) {
                 if (latestCompleteDoc) finalDoc = latestCompleteDoc;
                 else finalDoc = requestedDoc;
