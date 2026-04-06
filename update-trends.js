@@ -353,12 +353,13 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     const isYearly = process.argv.includes('--yearly');
     const forceAll = force || process.argv.includes('--force-all');
 
-    // 1. Archival Boundaries (Deep Analysis with Gemini Pro)
+    // 1. Archival Boundaries (Perform Archiving FIRST)
+    // v3.4.32: Sunday-only compatibility (d === target logic replaced with ranges)
     if (isWeekly || forceAll) {
-      const isWk1End = (d === 8);
-      const isWk2End = (d === 15);
-      const isWk3End = (d === 22);
-      const isWk4End = (d === 1 || isLastDayOfMonth);
+      const isWk1End = (d >= 8 && d <= 14);
+      const isWk2End = (d >= 15 && d <= 21);
+      const isWk3End = (d >= 22);
+      const isWk4End = (d <= 7); // Covers previous month week 4 archive during first Sunday of new month
       
       let archStart, archEnd, archSlug, archLabel;
       if (isWk1End || (forceAll && currentWeekChunk === 1)) {
@@ -368,20 +369,14 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
       } else if (isWk3End || (forceAll && currentWeekChunk === 3)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-15`; archEnd = `${y}-${String(m).padStart(2, '0')}-21`; archSlug = `${y}-${String(m).padStart(2, '0')}-week3`; archLabel = `${y}년 ${m}월 3주차 리포트`;
       } else if (isWk4End || (forceAll && currentWeekChunk === 4)) {
-        if (d === 1) {
-          const prevM = m === 1 ? 12 : m - 1;
-          const prevY = m === 1 ? y - 1 : y;
-          const lastDay = new Date(prevY, prevM, 0).getDate();
-          archStart = `${prevY}-${String(prevM).padStart(2, '0')}-22`;
-          archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-          archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-week4`;
-          archLabel = `${prevY}년 ${prevM}월 4주차 리포트`;
-        } else {
-          archStart = `${y}-${String(m).padStart(2, '0')}-22`;
-          archEnd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-          archSlug = `${y}-${String(m).padStart(2, '0')}-week4`;
-          archLabel = `${y}년 ${m}월 4주차 리포트`;
-        }
+        // Find previous month info
+        const prevM = m === 1 ? 12 : m - 1;
+        const prevY = m === 1 ? y - 1 : y;
+        const lastDay = new Date(prevY, prevM, 0).getDate();
+        archStart = `${prevY}-${String(prevM).padStart(2, '0')}-22`;
+        archEnd = `${prevY}-${String(prevM).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+        archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-week4`;
+        archLabel = `${prevY}년 ${prevM}월 4주차 리포트`;
       }
       if (archStart) await this.generatePeriodReport(country, 'weekly', archStart, archEnd, true, archSlug, archLabel);
     }
