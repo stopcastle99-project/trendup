@@ -14,7 +14,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.1 <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.2 <<<");
 console.log(">>> TARGET: Gemma-4-AntiLazy / Gemini-2.0+-Stable <<<");
 console.log("====================================================");
 
@@ -656,10 +656,10 @@ ${keywordsWithNews}
       });
     }
 
-    const top5 = Object.entries(globalScores)
+    const top10 = Object.entries(globalScores)
       .map(([keyword, data]) => ({ keyword, score: data.score }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
+      .slice(0, 10);
 
     if (top10.length > 0) {
       await rankingsRef.set({ type, country, startDate, endDate, slug, top10, lastUpdated: admin.firestore.Timestamp.now() });
