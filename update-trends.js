@@ -14,8 +14,8 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.5 <<<");
-console.log(">>> TARGET: Gemma-4-HighPerf / Gemini-Flash-Stable <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.6 <<<");
+console.log(">>> TARGET: Gemma-4-Robust / Gemini-Flash-Stable <<<");
 console.log("====================================================");
 
 // 2026 Optimized Model Configuration (Gemma 4 High-Perf Verified)
@@ -151,8 +151,15 @@ ${itemsToProcess.map(i => {
         throw new Error("All AI models failed to generate content.");
       }
 
-      if (text.startsWith("\`\`\`json")) text = text.replace(/^\`\`\`json/g, "").replace(/\`\`\`$/g, "").trim();
-      else if (text.startsWith("\`\`\`")) text = text.replace(/^\`\`\`/g, "").replace(/\`\`\`$/g, "").trim();
+      // Robust JSON Extraction (Heal conversational prefix/suffix)
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+          text = jsonMatch[0];
+      } else {
+          // If no array found, try object match
+          const objMatch = text.match(/\{[\s\S]*\}/);
+          if (objMatch) text = objMatch[0];
+      }
 
       const parsed = JSON.parse(text);
       if (parsed) {
@@ -161,10 +168,11 @@ ${itemsToProcess.map(i => {
       }
 
       const reportMap = {};
-      parsed.forEach(p => { reportMap[p.keyword] = p.summary; });
+      const itemsToIterate = Array.isArray(parsed) ? parsed : (parsed.items || []);
+      itemsToIterate.forEach(p => { if (p.keyword) reportMap[p.keyword] = p.summary; });
       return reportMap;
     } catch (e) {
-      console.error(`🚨 [v3.1.48 ERROR] AI Batch Error for ${country}:`, e.message);
+      console.error(`🚨 [v3.5.6 ERROR] AI Batch Error for ${country}:`, e.message);
       if (e.response) console.error(`  - Error Details:`, JSON.stringify(e.response));
       return {};
     }
