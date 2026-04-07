@@ -14,19 +14,22 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.8 <<<");
-console.log(">>> TARGET: Gemini-Stable-Pro / Gemma-4-Pure (Daily) <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.9 <<<");
+console.log(">>> TARGET: Gemini-3.1-Pro-Peak / Gemma-4-Pure (Daily) <<<");
 console.log("====================================================");
 
-// 2026 Dual-Core AI Architecture (v3.6.8)
+// 2026 Next-Gen Pro AI Architecture (v3.6.9)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-26b-a4b-it", // Peak Efficiency
-  "models/gemma-4-31b-it"      // Fallback
+  "models/gemma-4-26b-a4b-it", 
+  "models/gemma-4-31b-it"      
 ];
 const REPORT_MODELS = [
-  "models/gemini-2.0-pro-exp",       // High-Performance Pro (Stable Experimental)
-  "models/gemini-1.5-pro",           // Reliable Fallback (Latest Stability)
-  "models/gemini-2.0-flash"          // Performance Fallback
+  "models/gemini-3.1-pro-preview",    // Peak Reasoning
+  "models/gemini-3-flash-preview",     // Next-Gen Speed/Quality
+  "models/gemini-2.5-pro",            // Stable High-Perf
+  "models/gemini-2.5-flash",
+  "models/gemini-2.5-flash-lite", 
+  "models/gemini-2.0-pro-exp"         // Safety Fallback (2.0)
 ];
 
 class TrendUpdater {
