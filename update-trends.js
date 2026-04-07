@@ -14,18 +14,17 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.6 <<<");
-console.log(">>> TARGET: Gemini-2.5-Pro (Reports) / Gemma-4 (Daily) <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.7 <<<");
+console.log(">>> TARGET: Gemini-2.5-Pro (Reports) / Gemma-4-Pure (Daily) <<<");
 console.log("====================================================");
 
-// 2026 Dual-Core AI Architecture (v3.6.6)
+// 2026 Pure Gemma Architecture for Daily (v3.6.7)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-26b-a4b-it", // High-efficiency for Daily Analysis
-  "models/gemma-4-31b-it",
-  "models/gemini-2.0-flash"     // Fallback only
+  "models/gemma-4-26b-a4b-it", // Peak Efficiency
+  "models/gemma-4-31b-it"      // Fallback
 ];
 const REPORT_MODELS = [
-  "models/gemini-2.5-pro",           // Next-Gen Peak for Weekly Reports
+  "models/gemini-2.5-pro",           // Peak Insights for Weekly Reports
   "models/gemini-2.1-pro-preview", 
   "models/gemini-2.0-pro-exp-02-05" 
 ];
@@ -39,29 +38,38 @@ class TrendUpdater {
 
   async translateBatch(texts, targetLang) {
     if (!texts || texts.length === 0) return [];
-    const translateSingle = async (text, tl) => {
-      try {
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`, {
-          headers: { "User-Agent": "Mozilla/5.0" }
-        });
-        const data = await res.json();
-        return data[0].map(x => x[0]).join("").trim();
-      } catch (e) { return text; }
-    };
-    try {
-      // Free translate API can block giant URLs, so for translations we just use single promises if it's too big, or rely on small chunks.
-      const combinedText = texts.join(" ||| ");
-      if (combinedText.length > 1500) {
-        return await Promise.all(texts.map(t => translateSingle(t, targetLang)));
-      }
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`, {
-        headers: { "User-Agent": "Mozilla/5.0" }
-      });
-      const data = await res.json();
-      const combinedResult = data[0].map(x => x[0]).join("");
-      const results = combinedResult.split(/\s*\|[ |]*\|[ |]*\|\s*/).map(s => s.trim());
-      return results.length === texts.length ? results : await Promise.all(texts.map(t => translateSingle(t, targetLang)));
-    } catch (e) { return await Promise.all(texts.map(t => translateSingle(t, targetLang))); }
+    if (!this.genAI) return texts;
+
+    const langNames = { ko: 'Korean', en: 'English', ja: 'Japanese' };
+    const targetLangName = langNames[targetLang] || targetLang;
+
+    // Use Gemma 4 for high-quality, integrated AI translation
+    const model = this.genAI.getGenerativeModel({ model: SUMMARIZER_MODELS[0] });
+    
+    // Chunking to respect model limits
+    const chunks = [];
+    for (let i = 0; i < texts.length; i += 10) {
+        chunks.push(texts.slice(i, i + 10));
+    }
+
+    let allResults = [];
+    for (const chunk of chunks) {
+        const prompt = `Translate this JSON array of strings into ${targetLangName}. 
+Maintain original formatting and order. Return ONLY the resulting JSON array of strings.
+Input: ${JSON.stringify(chunk)}`;
+
+        try {
+            const result = await model.generateContent(prompt);
+            const rawText = result.response.text().replace(/json|```/g, "").trim();
+            const parsed = JSON.parse(rawText);
+            if (Array.isArray(parsed)) allResults = allResults.concat(parsed);
+            else allResults = allResults.concat(chunk);
+        } catch (e) {
+            console.warn("  - Gemma 4 Translation Fallback:", e.message);
+            allResults = allResults.concat(chunk);
+        }
+    }
+    return allResults;
   }
 
   async getGeminiUsageCount() {
@@ -203,8 +211,12 @@ ${itemsToProcess.map(i => {
 
       if (!parsed) throw new Error("Failed to parse AI response even after self-healing.");
 
-      console.log(`  - AI Batch Success: ${usedModel} processed ${itemsToProcess.length} items (${currentUsage + 1}/14400)`);
-      await this.incrementGeminiUsage();
+      console.log(`  - AI Batch Success: ${usedModel} processed ${itemsToProcess.length} items`);
+
+      // Only increment Firestore counter if we used an actual Gemini model (not Gemma)
+      if (usedModel.toLowerCase().includes("gemini")) {
+        await this.incrementGeminiUsage();
+      }
 
       const reportMap = {};
       const itemsToIterate = Array.isArray(parsed) ? parsed : (parsed.items || []);
