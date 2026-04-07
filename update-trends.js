@@ -14,8 +14,8 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.0 <<<");
-console.log(">>> TARGET: Gemma-4-Surgical / Gemini-2.0+-Stable <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.1 <<<");
+console.log(">>> TARGET: Gemma-4-AntiLazy / Gemini-2.0+-Stable <<<");
 console.log("====================================================");
 
 // 2026 Optimized Model Configuration (Gemma 4 High-Perf Verified)
@@ -113,7 +113,9 @@ class TrendUpdater {
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
     const countryName = countryNames[country] || country;
 
-    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 3문장 내외의 한국어로 명료하게 요약해주세요. 특히 실시간 뉴스의 맥락을 파악하여 '어떤 사건'이나 '이유' 때문에 뜨고 있는지 구체적으로 설명해야 합니다.
+    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 3문장 내외의 한국어로 명료하게 요약해주세요. 
+절대로 중간에 내용을 생략하거나 '...', '***' 등 상징적인 기호를 사용하여 요약을 대체하지 마세요. 모든 리스트에 대해 완전한 JSON 데이터를 작성해야 합니다.
+
 반드시 아래의 JSON 배열 형식으로만 응답해야 하며, JSON 외의 다른 부연 설명은 절대 덧붙이지 마세요.
 [
   { "keyword": "키워드1", "summary": "요약 내용..." },
@@ -138,7 +140,11 @@ ${itemsToProcess.map(i => {
           const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
           const response = await result.response;
-          text = response.text().trim();
+          let rawText = response.text().trim();
+          
+          // Pre-parse Scrub: Remove invalid AI shorthands
+          text = rawText.replace(/,\s*\.\.\.\s*\]/g, "]").replace(/\.\.\.\s*\}/g, "}").replace(/\*\*\*/g, "").replace(/json/g, "").trim();
+          
           usedModel = m;
           break;
         } catch (err) {
