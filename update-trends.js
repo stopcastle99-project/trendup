@@ -14,16 +14,16 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.4 <<<");
-console.log(">>> TARGET: Gemma-4-E-Series / Gemini-Flash-Stable <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.5 <<<");
+console.log(">>> TARGET: Gemma-4-HighPerf / Gemini-Flash-Stable <<<");
 console.log("====================================================");
 
-// 2026 Optimized Model Configuration (Gemma 4 E-Series Verified)
+// 2026 Optimized Model Configuration (Gemma 4 High-Perf Verified)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-e4b-it",     // User Recommend (Best Balance)
-  "models/gemma-4-26b-a4b-it", // High Intelligence
-  "models/gemma-4-31b-it",    // Peak Performance
-  "models/gemma-4-e2b-it",     // Ultra-light
+  "models/gemma-4-26b-a4b-it", // High-performance News Analysis (v1beta Recommended)
+  "models/gemma-4-31b-it",    // Peak Reasoning Performance
+  "models/gemma-4-e4b-it",     // Edge-optimized Fallback
+  "models/gemma-4-e2b-it", 
   "models/gemini-2.0-flash", 
   "models/gemini-1.5-flash"
 ];
