@@ -14,8 +14,8 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.9 <<<");
-console.log(">>> TARGET: Gemma-4-SelfHeal / Gemini-2.0+-Stable <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.0 <<<");
+console.log(">>> TARGET: Gemma-4-Surgical / Gemini-2.0+-Stable <<<");
 console.log("====================================================");
 
 // 2026 Optimized Model Configuration (Gemma 4 High-Perf Verified)
@@ -151,40 +151,49 @@ ${itemsToProcess.map(i => {
       }
 
       // Robust JSON Extraction (Heal conversational prefix/suffix)
-      let jsonContent = text;
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      const objMatch = text.match(/\{[\s\S]*\}/);
-
-      if (jsonMatch) {
-          jsonContent = jsonMatch[0];
-      } else if (objMatch) {
-          jsonContent = objMatch[0];
+      let jsonContent = text.trim();
+      
+      // Try to find the first block that looks like JSON array or object
+      const startBracket = text.indexOf('[');
+      const startBrace = text.indexOf('{');
+      const firstStart = (startBracket !== -1 && (startBrace === -1 || startBracket < startBrace)) ? startBracket : startBrace;
+      
+      if (firstStart !== -1) {
+          const lastBracket = text.lastIndexOf(']');
+          const lastBrace = text.lastIndexOf('}');
+          const lastEnd = Math.max(lastBracket, lastBrace);
+          if (lastEnd > firstStart) {
+              jsonContent = text.substring(firstStart, lastEnd + 1).trim();
+          }
       }
 
       let parsed = null;
       try {
           parsed = JSON.parse(jsonContent);
       } catch (parseErr) {
-          // Self-healing: if "Unexpected non-whitespace character after JSON", 
-          // try to find the last valid closure by trimming from the end
-          console.warn(`  - AI JSON Parse failed, attempting self-healing... (${parseErr.message})`);
+          // Self-healing: progressively trim from the end until valid JSON is found
           let tempContent = jsonContent.trim();
-          while (tempContent.length > 0) {
+          let healed = false;
+          while (tempContent.length > 2) {
               try {
                   parsed = JSON.parse(tempContent);
-                  break; // Success!
+                  healed = true;
+                  break; 
               } catch (e) {
-                  // Remove last character and try again if it's a trailing junk issue
                   const lastBracketIdx = tempContent.lastIndexOf(']');
                   const lastBraceIdx = tempContent.lastIndexOf('}');
                   const lastIdx = Math.max(lastBracketIdx, lastBraceIdx);
-                  if (lastIdx === -1 || lastIdx === tempContent.length - 1) {
+                  
+                  if (lastIdx === -1) break;
+                  if (lastIdx === tempContent.length - 1) {
                       tempContent = tempContent.slice(0, -1).trim();
                   } else {
                       tempContent = tempContent.substring(0, lastIdx + 1).trim();
                   }
-                  if (tempContent.length < 2) break;
               }
+          }
+          if (healed) {
+              console.log(`  - [HEALED] AI JSON parse succeeded after cleaning trailing characters.`);
           }
       }
 
@@ -198,7 +207,7 @@ ${itemsToProcess.map(i => {
       itemsToIterate.forEach(p => { if (p.keyword) reportMap[p.keyword] = p.summary; });
       return reportMap;
     } catch (e) {
-      console.error(`🚨 [v3.5.9 ERROR] AI Batch Error for ${country}:`, e.message);
+      console.error(`🚨 [v3.6.0 ERROR] AI Batch Error for ${country}:`, e.message);
       if (e.response) console.error(`  - Error Details:`, JSON.stringify(e.response));
       return {};
     }
