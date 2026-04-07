@@ -14,8 +14,8 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.6 <<<");
-console.log(">>> TARGET: Gemma-4-Robust / Gemini-Flash-Stable <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.8 <<<");
+console.log(">>> TARGET: Gemma-4-HighPerf / Gemini-2.0+-Stable <<<");
 console.log("====================================================");
 
 // 2026 Optimized Model Configuration (Gemma 4 High-Perf Verified)
@@ -24,13 +24,12 @@ const SUMMARIZER_MODELS = [
   "models/gemma-4-31b-it",    // Peak Reasoning Performance
   "models/gemma-4-e4b-it",     // Edge-optimized Fallback
   "models/gemma-4-e2b-it", 
-  "models/gemini-2.0-flash", 
-  "models/gemini-1.5-flash"
+  "models/gemini-2.0-flash"
 ];
 const REPORT_MODELS = [
-  "models/gemini-2.0-pro-exp",
-  "models/gemini-2.0-flash",
-  "models/gemini-1.5-pro"
+  "models/gemini-2.0-pro-exp", 
+  "models/gemini-2.1-pro-preview",
+  "models/gemini-2.0-flash"
 ];
 
 class TrendUpdater {
@@ -114,7 +113,7 @@ class TrendUpdater {
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
     const countryName = countryNames[country] || country;
 
-    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 2문장 내외의 한국어로 명료하게 요약해주세요. 특히 실시간 뉴스의 맥락을 파악하여 '어떤 사건'이나 '이유' 때문에 뜨고 있는지 구체적으로 설명해야 합니다.
+    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 3문장 내외의 한국어로 명료하게 요약해주세요. 특히 실시간 뉴스의 맥락을 파악하여 '어떤 사건'이나 '이유' 때문에 뜨고 있는지 구체적으로 설명해야 합니다.
 반드시 아래의 JSON 배열 형식으로만 응답해야 하며, JSON 외의 다른 부연 설명은 절대 덧붙이지 마세요.
 [
   { "keyword": "키워드1", "summary": "요약 내용..." },
@@ -172,7 +171,7 @@ ${itemsToProcess.map(i => {
       itemsToIterate.forEach(p => { if (p.keyword) reportMap[p.keyword] = p.summary; });
       return reportMap;
     } catch (e) {
-      console.error(`🚨 [v3.5.6 ERROR] AI Batch Error for ${country}:`, e.message);
+      console.error(`🚨 [v3.5.8 ERROR] AI Batch Error for ${country}:`, e.message);
       if (e.response) console.error(`  - Error Details:`, JSON.stringify(e.response));
       return {};
     }
