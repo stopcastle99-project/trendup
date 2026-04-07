@@ -14,21 +14,21 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.1 <<<");
-console.log(">>> TARGET: Gemma-4-Summaries / Gemini-Pro-Reports <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.3 <<<");
+console.log(">>> TARGET: Gemma-4-User-Verified / Gemini-Flash-Stable <<<");
 console.log("====================================================");
 
-// 2026 Optimized Model Configuration (Gemma 4 Verified IDs)
+// 2026 Optimized Model Configuration (Gemma 4 User-Verified)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-26b-it", 
-  "models/gemma-4-31b-it", 
-  "models/gemma-4-4b-it",
-  "models/gemma-4-2b-it",
-  "models/gemini-2.0-flash", // High-efficiency fallback
-  "models/gemma-2-9b-it" 
-]; 
+  "models/gemma-4-31b",
+  "models/gemma-4-26b-a4b", 
+  "models/gemma-4-e4b",
+  "models/gemma-4-e2b",
+  "models/gemini-2.0-flash", 
+  "models/gemma-2-9b-it"
+];
 const REPORT_MODELS = [
-  "models/gemini-2.0-pro-exp", 
+  "models/gemini-2.0-pro-exp",
   "models/gemini-2.0-flash",
   "models/gemini-1.5-pro"
 ];
@@ -123,10 +123,10 @@ class TrendUpdater {
 
 분석할 키워드 리스트:
 ${itemsToProcess.map(i => {
-  const rssNews = i.newsTitles.slice(0, 2).join(' / ');
-  const extraNews = (i.supplementaryNews || []).join(' / ');
-  return `- 키워드: ${i.originalTitle}\n  관련 기사: ${rssNews}${extraNews ? ' / ' + extraNews : ''}`;
-}).join('\n\n')}
+      const rssNews = i.newsTitles.slice(0, 2).join(' / ');
+      const extraNews = (i.supplementaryNews || []).join(' / ');
+      return `- 키워드: ${i.originalTitle}\n  관련 기사: ${rssNews}${extraNews ? ' / ' + extraNews : ''}`;
+    }).join('\n\n')}
 `;
 
     try {
@@ -367,7 +367,7 @@ ${itemsToProcess.map(i => {
       const isWk2End = (d >= 15 && d <= 21);
       const isWk3End = (d >= 22);
       const isWk4End = (d <= 7); // Covers previous month week 4 archive during first Sunday of new month
-      
+
       let archStart, archEnd, archSlug, archLabel;
       if (isWk1End || (forceAll && currentWeekChunk === 1)) {
         archStart = `${y}-${String(m).padStart(2, '0')}-01`; archEnd = `${y}-${String(m).padStart(2, '0')}-07`; archSlug = `${y}-${String(m).padStart(2, '0')}-week1`; archLabel = `${y}년 ${m}월 1주차 리포트`;
@@ -677,7 +677,7 @@ ${keywordsWithNews}
         // Live Draft: Still Top 10 for visibility, or match Archival?
         // User Vision: Archival uses Rank 1-5.
         const fullRanking = await this.getLiveDraftRanking(country, startDate, endDate);
-        top5 = fullRanking.slice(0, 5); 
+        top5 = fullRanking.slice(0, 5);
       }
 
       if (top5.length === 0) {
