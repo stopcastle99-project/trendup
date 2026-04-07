@@ -14,14 +14,17 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.0 <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.1 <<<");
 console.log(">>> TARGET: Gemma-4-Summaries / Gemini-Pro-Reports <<<");
 console.log("====================================================");
 
-// 2026 Optimized Model Configuration (Gemma 4 Upgrade)
+// 2026 Optimized Model Configuration (Gemma 4 Verified IDs)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-9b-it", 
-  "models/gemma-4-27b-it", 
+  "models/gemma-4-26b-it", 
+  "models/gemma-4-31b-it", 
+  "models/gemma-4-4b-it",
+  "models/gemma-4-2b-it",
+  "models/gemini-2.0-flash", // High-efficiency fallback
   "models/gemma-2-9b-it" 
 ]; 
 const REPORT_MODELS = [
