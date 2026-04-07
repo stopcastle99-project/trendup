@@ -14,20 +14,20 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.4.68 <<<");
-console.log(">>> TARGET: Gemma-Summaries / Gemini-Pro-Reports <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.0 <<<");
+console.log(">>> TARGET: Gemma-4-Summaries / Gemini-Pro-Reports <<<");
 console.log("====================================================");
 
-// 2026 Optimized Model Configuration (Final Verified IDs)
+// 2026 Optimized Model Configuration (Gemma 4 Upgrade)
 const SUMMARIZER_MODELS = [
-  "models/gemma-3-27b-it", 
-  "models/gemma-3-12b-it", 
-  "models/gemma-3-4b-it"
+  "models/gemma-4-9b-it", 
+  "models/gemma-4-27b-it", 
+  "models/gemma-2-9b-it" 
 ]; 
 const REPORT_MODELS = [
-  "models/gemini-3-pro-preview", 
-  "models/gemini-3.1-pro-preview", 
-  "models/gemini-2.5-pro-preview-tts"
+  "models/gemini-2.0-pro-exp", 
+  "models/gemini-2.0-flash",
+  "models/gemini-1.5-pro"
 ];
 
 class TrendUpdater {
@@ -111,7 +111,7 @@ class TrendUpdater {
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
     const countryName = countryNames[country] || country;
 
-    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 2문장 내외의 한국어로 명료하게 요약해주세요.
+    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 2문장 내외의 한국어로 명료하게 요약해주세요. 특히 실시간 뉴스의 맥락을 파악하여 '어떤 사건'이나 '이유' 때문에 뜨고 있는지 구체적으로 설명해야 합니다.
 반드시 아래의 JSON 배열 형식으로만 응답해야 하며, JSON 외의 다른 부연 설명은 절대 덧붙이지 마세요.
 [
   { "keyword": "키워드1", "summary": "요약 내용..." },
@@ -119,7 +119,11 @@ class TrendUpdater {
 ]
 
 분석할 키워드 리스트:
-${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i.newsTitles.join(' / ')}`).join('\n\n')}
+${itemsToProcess.map(i => {
+  const rssNews = i.newsTitles.slice(0, 2).join(' / ');
+  const extraNews = (i.supplementaryNews || []).join(' / ');
+  return `- 키워드: ${i.originalTitle}\n  관련 기사: ${rssNews}${extraNews ? ' / ' + extraNews : ''}`;
+}).join('\n\n')}
 `;
 
     try {
@@ -287,7 +291,7 @@ ${itemsToProcess.map(i => `- 키워드: ${i.originalTitle}\n  관련 뉴스: ${i
     } catch (e) {
       console.error("Failed to bump version", e);
     }
-    return "v3.1.50";
+    return "v3.5.0";
   }
 
 
@@ -786,6 +790,12 @@ ${keywordsWithNews}
 
       let newReportsMap = {};
       if (itemsToProcess.length > 0) {
+        console.log(`  - Fetching supplementary news for ${itemsToProcess.length} keywords in ${code}...`);
+        await Promise.all(itemsToProcess.map(async (item) => {
+          // Token Optimization: Limit to top 2 news titles
+          const extra = await this.getSupplementaryNews(item.originalTitle, code);
+          item.supplementaryNews = extra.slice(0, 2).map(n => n.title);
+        }));
         newReportsMap = await this.generateBatchAIReports(itemsToProcess, code, previousItems);
       }
 
