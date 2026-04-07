@@ -14,8 +14,8 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.8 <<<");
-console.log(">>> TARGET: Gemma-4-HighPerf / Gemini-2.0+-Stable <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.9 <<<");
+console.log(">>> TARGET: Gemma-4-SelfHeal / Gemini-2.0+-Stable <<<");
 console.log("====================================================");
 
 // 2026 Optimized Model Configuration (Gemma 4 High-Perf Verified)
@@ -151,27 +151,54 @@ ${itemsToProcess.map(i => {
       }
 
       // Robust JSON Extraction (Heal conversational prefix/suffix)
+      let jsonContent = text;
       const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const objMatch = text.match(/\{[\s\S]*\}/);
+
       if (jsonMatch) {
-          text = jsonMatch[0];
-      } else {
-          // If no array found, try object match
-          const objMatch = text.match(/\{[\s\S]*\}/);
-          if (objMatch) text = objMatch[0];
+          jsonContent = jsonMatch[0];
+      } else if (objMatch) {
+          jsonContent = objMatch[0];
       }
 
-      const parsed = JSON.parse(text);
-      if (parsed) {
-        console.log(`  - AI Batch Success: ${usedModel} processed ${itemsToProcess.length} items (${currentUsage + 1}/14400)`);
-        await this.incrementGeminiUsage();
+      let parsed = null;
+      try {
+          parsed = JSON.parse(jsonContent);
+      } catch (parseErr) {
+          // Self-healing: if "Unexpected non-whitespace character after JSON", 
+          // try to find the last valid closure by trimming from the end
+          console.warn(`  - AI JSON Parse failed, attempting self-healing... (${parseErr.message})`);
+          let tempContent = jsonContent.trim();
+          while (tempContent.length > 0) {
+              try {
+                  parsed = JSON.parse(tempContent);
+                  break; // Success!
+              } catch (e) {
+                  // Remove last character and try again if it's a trailing junk issue
+                  const lastBracketIdx = tempContent.lastIndexOf(']');
+                  const lastBraceIdx = tempContent.lastIndexOf('}');
+                  const lastIdx = Math.max(lastBracketIdx, lastBraceIdx);
+                  if (lastIdx === -1 || lastIdx === tempContent.length - 1) {
+                      tempContent = tempContent.slice(0, -1).trim();
+                  } else {
+                      tempContent = tempContent.substring(0, lastIdx + 1).trim();
+                  }
+                  if (tempContent.length < 2) break;
+              }
+          }
       }
+
+      if (!parsed) throw new Error("Failed to parse AI response even after self-healing.");
+
+      console.log(`  - AI Batch Success: ${usedModel} processed ${itemsToProcess.length} items (${currentUsage + 1}/14400)`);
+      await this.incrementGeminiUsage();
 
       const reportMap = {};
       const itemsToIterate = Array.isArray(parsed) ? parsed : (parsed.items || []);
       itemsToIterate.forEach(p => { if (p.keyword) reportMap[p.keyword] = p.summary; });
       return reportMap;
     } catch (e) {
-      console.error(`🚨 [v3.5.8 ERROR] AI Batch Error for ${country}:`, e.message);
+      console.error(`🚨 [v3.5.9 ERROR] AI Batch Error for ${country}:`, e.message);
       if (e.response) console.error(`  - Error Details:`, JSON.stringify(e.response));
       return {};
     }
