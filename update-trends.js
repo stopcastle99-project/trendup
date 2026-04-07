@@ -14,22 +14,20 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.3 <<<");
-console.log(">>> TARGET: Gemma-4-AntiLazy / Gemini-2.0+-Stable <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.6 <<<");
+console.log(">>> TARGET: Gemini-2.5-Pro (Reports) / Gemma-4 (Daily) <<<");
 console.log("====================================================");
 
-// 2026 Optimized Model Configuration (Gemma 4 High-Perf Verified)
+// 2026 Dual-Core AI Architecture (v3.6.6)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-26b-a4b-it", // High-performance News Analysis (v1beta Recommended)
-  "models/gemma-4-31b-it",    // Peak Reasoning Performance
-  "models/gemma-4-e4b-it",     // Edge-optimized Fallback
-  "models/gemma-4-e2b-it", 
-  "models/gemini-2.0-flash"
+  "models/gemma-4-26b-a4b-it", // High-efficiency for Daily Analysis
+  "models/gemma-4-31b-it",
+  "models/gemini-2.0-flash"     // Fallback only
 ];
 const REPORT_MODELS = [
-  "models/gemini-2.0-pro-exp", 
-  "models/gemini-2.1-pro-preview",
-  "models/gemini-2.0-flash"
+  "models/gemini-2.5-pro",           // Next-Gen Peak for Weekly Reports
+  "models/gemini-2.1-pro-preview", 
+  "models/gemini-2.0-pro-exp-02-05" 
 ];
 
 class TrendUpdater {
@@ -141,10 +139,10 @@ ${itemsToProcess.map(i => {
           const result = await model.generateContent(prompt);
           const response = await result.response;
           let rawText = response.text().trim();
-          
+
           // Pre-parse Scrub: Remove invalid AI shorthands
           text = rawText.replace(/,\s*\.\.\.\s*\]/g, "]").replace(/\.\.\.\s*\}/g, "}").replace(/\*\*\*/g, "").replace(/json/g, "").trim();
-          
+
           usedModel = m;
           break;
         } catch (err) {
@@ -158,49 +156,49 @@ ${itemsToProcess.map(i => {
 
       // Robust JSON Extraction (Heal conversational prefix/suffix)
       let jsonContent = text.trim();
-      
+
       // Try to find the first block that looks like JSON array or object
       const startBracket = text.indexOf('[');
       const startBrace = text.indexOf('{');
       const firstStart = (startBracket !== -1 && (startBrace === -1 || startBracket < startBrace)) ? startBracket : startBrace;
-      
+
       if (firstStart !== -1) {
-          const lastBracket = text.lastIndexOf(']');
-          const lastBrace = text.lastIndexOf('}');
-          const lastEnd = Math.max(lastBracket, lastBrace);
-          if (lastEnd > firstStart) {
-              jsonContent = text.substring(firstStart, lastEnd + 1).trim();
-          }
+        const lastBracket = text.lastIndexOf(']');
+        const lastBrace = text.lastIndexOf('}');
+        const lastEnd = Math.max(lastBracket, lastBrace);
+        if (lastEnd > firstStart) {
+          jsonContent = text.substring(firstStart, lastEnd + 1).trim();
+        }
       }
 
       let parsed = null;
       try {
-          parsed = JSON.parse(jsonContent);
+        parsed = JSON.parse(jsonContent);
       } catch (parseErr) {
-          // Self-healing: progressively trim from the end until valid JSON is found
-          let tempContent = jsonContent.trim();
-          let healed = false;
-          while (tempContent.length > 2) {
-              try {
-                  parsed = JSON.parse(tempContent);
-                  healed = true;
-                  break; 
-              } catch (e) {
-                  const lastBracketIdx = tempContent.lastIndexOf(']');
-                  const lastBraceIdx = tempContent.lastIndexOf('}');
-                  const lastIdx = Math.max(lastBracketIdx, lastBraceIdx);
-                  
-                  if (lastIdx === -1) break;
-                  if (lastIdx === tempContent.length - 1) {
-                      tempContent = tempContent.slice(0, -1).trim();
-                  } else {
-                      tempContent = tempContent.substring(0, lastIdx + 1).trim();
-                  }
-              }
+        // Self-healing: progressively trim from the end until valid JSON is found
+        let tempContent = jsonContent.trim();
+        let healed = false;
+        while (tempContent.length > 2) {
+          try {
+            parsed = JSON.parse(tempContent);
+            healed = true;
+            break;
+          } catch (e) {
+            const lastBracketIdx = tempContent.lastIndexOf(']');
+            const lastBraceIdx = tempContent.lastIndexOf('}');
+            const lastIdx = Math.max(lastBracketIdx, lastBraceIdx);
+
+            if (lastIdx === -1) break;
+            if (lastIdx === tempContent.length - 1) {
+              tempContent = tempContent.slice(0, -1).trim();
+            } else {
+              tempContent = tempContent.substring(0, lastIdx + 1).trim();
+            }
           }
-          if (healed) {
-              console.log(`  - [HEALED] AI JSON parse succeeded after cleaning trailing characters.`);
-          }
+        }
+        if (healed) {
+          console.log(`  - [HEALED] AI JSON parse succeeded after cleaning trailing characters.`);
+        }
       }
 
       if (!parsed) throw new Error("Failed to parse AI response even after self-healing.");
