@@ -158,7 +158,7 @@ function initCountrySelector() {
     const menu = document.getElementById('country-dropdown-menu');
     const flagDisplay = document.getElementById('current-country-flag');
     const opts = document.querySelectorAll('.country-opt');
-    
+
     if (!toggle || !menu || !flagDisplay) return;
 
     const initialOpt = Array.from(opts).find(opt => opt.dataset.country === country);
@@ -218,7 +218,7 @@ async function loadReport() {
                 const tB = b.data.lastUpdated ? b.data.lastUpdated.toMillis() : 0;
                 return tB - tA;
             });
-        
+
         const latestCompleteDoc = sortedCompleteDocs[0];
 
         let finalDoc;
@@ -260,7 +260,7 @@ function renderHero(data) {
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const periodSummary = document.getElementById('current-period-summary');
     let displayRange = translateDateRange(data.dateRange) || (lang === 'ko' ? '최신 업데이트' : 'Latest Update');
-    
+
     if (periodSummary) {
         periodSummary.innerHTML = `<span class="period-label-text">${displayRange}</span>`;
     }
@@ -285,7 +285,7 @@ function renderTrends(items) {
         const growth = item.growth || (Math.floor(Math.random() * 15) + 5);
         const gaugeWidth = item.score ? Math.min(100, Math.max(30, item.score / 10)) : (Math.floor(Math.random() * 40) + 60);
         const displayKeyword = (item.translations && item.translations[lang]) || item.keyword;
-        
+
         let displayAnalysis = '';
         if (item.aiReports && item.aiReports[lang]) displayAnalysis = item.aiReports[lang];
         else if (item.depth && typeof item.depth === 'object') displayAnalysis = item.depth[lang] || item.depth.ko || '';
@@ -324,7 +324,7 @@ function renderAggregatingScreen() {
     const summary = document.getElementById('current-period-summary');
     const t = REPORT_I18N[lang] || REPORT_I18N.en;
     const typeLabel = t[type] || type;
-    
+
     if (hero) {
         hero.textContent = (type === 'yearly') ? (t.yearly_label || '2026년도') : typeLabel;
     }
@@ -332,7 +332,7 @@ function renderAggregatingScreen() {
         const range = (type === 'yearly') ? (t.yearly_range || '2026-01-01 ~ 2026-12-31') : '...';
         summary.innerHTML = `<span class="period-label-text">${range}</span>`;
     }
-    
+
     if (container) {
         container.innerHTML = `
             <div class="aggregating-container" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 6rem 2rem; text-align:center; background: var(--surface); border-radius: 32px; border: 1px solid var(--border); margin-top: 2rem; min-height: 400px; box-shadow: var(--shadow-sm);">
@@ -398,7 +398,7 @@ async function loadHistory() {
             let historyTitle = translateDateRange(data.dateRange || doc.id);
 
             if (!historyTitle.includes(t.trend_report)) {
-                 historyTitle += ` ${t.trend_report}`;
+                historyTitle += ` ${t.trend_report}`;
             }
 
             item.textContent = historyTitle;

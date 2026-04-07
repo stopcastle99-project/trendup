@@ -18,15 +18,15 @@ console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.5.3 <<<");
 console.log(">>> TARGET: Gemma-4-User-Verified / Gemini-Flash-Stable <<<");
 console.log("====================================================");
 
-// 2026 Optimized Model Configuration (Gemma 4 User-Verified)
+// 2026 Optimized Model Configuration (Gemma 4 User-Verified -it)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-31b",
-  "models/gemma-4-26b-a4b", 
-  "models/gemma-4-e4b",
-  "models/gemma-4-e2b",
+  "models/gemma-4-4b-it",     // User Recommend (e4b-it)
+  "models/gemma-4-31b-it",    // High-performance
+  "models/gemma-4-26b-a4b-it", 
+  "models/gemma-4-2b-it",     // Ultra-light (e2b-it)
   "models/gemini-2.0-flash", 
   "models/gemma-2-9b-it"
-];
+]; 
 const REPORT_MODELS = [
   "models/gemini-2.0-pro-exp",
   "models/gemini-2.0-flash",
