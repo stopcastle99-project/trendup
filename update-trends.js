@@ -14,7 +14,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.2 <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.3 <<<");
 console.log(">>> TARGET: Gemma-4-AntiLazy / Gemini-2.0+-Stable <<<");
 console.log("====================================================");
 
@@ -718,10 +718,12 @@ ${keywordsWithNews}
       lastUpdated: admin.firestore.Timestamp.now()
     }, { merge: true });
 
+    let top5 = [];
     try {
       // NEW: 2-Tier Ranking Fetch
       if (isArchival && reportSlug) {
-        top5 = await this.extractRanking(country, type, startDate, endDate, reportSlug);
+        const fullRanking = await this.extractRanking(country, type, startDate, endDate, reportSlug);
+        top5 = fullRanking.slice(0, 5);
       } else {
         // Live Draft: Still Top 10 for visibility, or match Archival?
         // User Vision: Archival uses Rank 1-5.
