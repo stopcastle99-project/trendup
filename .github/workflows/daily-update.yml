@@ -1,8 +1,6 @@
 name: Daily Trend Update
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
   schedule:
     - cron: '45 * * * *' # Every hour at 45 min
