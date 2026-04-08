@@ -1,4 +1,4 @@
-// Trend Report Detail Logic - v3.8.0 (AdSense & SEO Optimized)
+// Trend Report Detail Logic - v3.5.9 (Gemma 4 & Robust JSON Update)
 const ICONS = {
     home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`
 };
@@ -269,35 +269,6 @@ function renderHero(data) {
         let heroRange = translateDateRange(data.dateRange) || t.current_period;
         displayElement.textContent = heroRange;
     }
-
-    // v3.8.0 Dynamic SEO & Breadcrumbs
-    updateSEO(data, displayRange);
-    updateBreadcrumbs(displayRange);
-}
-
-function updateSEO(data, displayRange) {
-    const t = REPORT_I18N[lang] || REPORT_I18N.en;
-    const countryName = country === 'KR' ? 'South Korea' : country === 'JP' ? 'Japan' : 'United States';
-    const reportTitle = `${displayRange} | ${countryName} ${t.title} | GlobalTrendUp`;
-    document.title = reportTitle;
-
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-        metaDesc = document.createElement('meta');
-        metaDesc.name = "description";
-        document.head.appendChild(metaDesc);
-    }
-    const topKeywords = data.items ? data.items.slice(0, 3).map(i => i.keyword).join(', ') : '';
-    metaDesc.content = `${countryName} ${displayRange} deep analysis. Top trends: ${topKeywords}. Powered by AI.`;
-}
-
-function updateBreadcrumbs(displayRange) {
-    const typeLabel = document.getElementById('breadcrumb-type');
-    const countryLabel = document.getElementById('breadcrumb-country');
-    const t = REPORT_I18N[lang] || REPORT_I18N.en;
-    
-    if (typeLabel) typeLabel.textContent = t[type] || type;
-    if (countryLabel) countryLabel.textContent = country === 'KR' ? 'South Korea' : country === 'JP' ? 'Japan' : 'United States';
 }
 
 function renderTrends(items) {
