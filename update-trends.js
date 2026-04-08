@@ -24,7 +24,8 @@ const SUMMARIZER_MODELS = [
   "models/gemma-4-31b-it"      
 ];
 const REPORT_MODELS = [
-  "models/gemini-3.1-pro-preview",    // Peak Reasoning
+  "models/gemini-3.1-pro-preview", 
+  "models/gemma-3-27b-it",        // Gemma 3 added for reasoning    // Peak Reasoning
   "models/gemini-3-flash-preview",     // Next-Gen Speed/Quality
   "models/gemini-2.5-pro",            // Stable High-Perf
   "models/gemini-2.5-flash",
