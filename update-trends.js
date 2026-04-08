@@ -14,11 +14,11 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 
 const db = admin.firestore();
 console.log("====================================================");
-console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.6.9 <<<");
+console.log(">>> CRITICAL: RUNNING UPDATE SCRIPT v3.7.1 <<<");
 console.log(">>> TARGET: Gemini-3.1-Pro-Peak / Gemma-4-Pure (Daily) <<<");
 console.log("====================================================");
 
-// 2026 Next-Gen Pro AI Architecture (v3.6.9)
+// 2026 Next-Gen Pro AI Architecture (v3.7.1)
 const SUMMARIZER_MODELS = [
   "models/gemma-4-26b-a4b-it", 
   "models/gemma-4-31b-it"      
@@ -37,6 +37,19 @@ class TrendUpdater {
     this.genAI = null;
     const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) this.genAI = new GoogleGenerativeAI(apiKey);
+  }
+
+  extractJSON(text) {
+    if (!text) return null;
+    try {
+      const arrayMatch = text.match(/\[[\s\S]*\]/);
+      if (arrayMatch) return JSON.parse(arrayMatch[0]);
+      const objectMatch = text.match(/\{[\s\S]*\}/);
+      if (objectMatch) return JSON.parse(objectMatch[0]);
+      return JSON.parse(text);
+    } catch (e) {
+      return null;
+    }
   }
 
   async translateBatch(texts, targetLang) {
@@ -63,8 +76,8 @@ Input: ${JSON.stringify(chunk)}`;
 
         try {
             const result = await model.generateContent(prompt);
-            const rawText = result.response.text().replace(/json|```/g, "").trim();
-            const parsed = JSON.parse(rawText);
+            const rawText = result.response.text();
+            const parsed = this.extractJSON(rawText);
             if (Array.isArray(parsed)) allResults = allResults.concat(parsed);
             else allResults = allResults.concat(chunk);
         } catch (e) {
