@@ -50,6 +50,14 @@
     </header>
 
     <div class="report-wrapper container">
+        <!-- New: Breadcrumbs and Ad Slots for AdSense optimization -->
+        <nav class="breadcrumbs" id="breadcrumbs">
+            <a href="/">Home</a> &gt; <span id="breadcrumb-type">Report</span> &gt; <span id="breadcrumb-country">Global</span>
+        </nav>
+
+        <div class="ad-container top-ad" id="adsense-top">
+            <div class="ad-placeholder">Advertisement Space</div>
+        </div>
         <aside id="report-sidebar">
             <div class="sidebar-top-nav">
                 <button class="period-btn active" data-type="weekly">Weekly</button>
@@ -96,12 +104,17 @@
     </div>
 
     <footer>
-        <div class="container">
-            <p>&copy; 2026 GlobalTrendUp. (v3.4.68) Powered by Analytical Intelligence.</p>
+        <div class="container footer-content-fixed">
+            <div class="footer-regulatory-links">
+                <a href="/privacy-policy">Privacy Policy</a> | 
+                <a href="/terms-of-service">Terms of Service</a> | 
+                <a href="/contact">Contact</a>
+            </div>
+            <p>&copy; 2026 GlobalTrendUp (v3.8.0). Powered by Analytical Intelligence.</p>
         </div>
     </footer>
 
-    <script type="module" src="/report/report.js?v=3.4.68"></script>
+    <script type="module" src="/report/report.js?v=3.8.0"></script>
 </body>
 
 </html>
