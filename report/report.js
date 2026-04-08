@@ -265,9 +265,31 @@ function renderHero(data) {
         periodSummary.innerHTML = `<span class="period-label-text">${displayRange}</span>`;
     }
     const displayElement = document.getElementById('current-period-display');
+    let heroRange = translateDateRange(data.dateRange) || t.current_period;
     if (displayElement) {
-        let heroRange = translateDateRange(data.dateRange) || t.current_period;
         displayElement.textContent = heroRange;
+    }
+
+    // --- SEO Metadata Dynamic Update ---
+    const pageTitle = `${country} ${heroRange} ${t.trend_report || 'Trend Report'} | GlobalTrendUp`;
+    const pageDesc = `${country} ${heroRange}: AI-powered deep analysis of top trending keywords and global insights.`;
+    
+    document.title = pageTitle;
+    
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', pageDesc);
+    
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', pageTitle);
+    
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', pageDesc);
+
+    // --- Update Breadcrumb ---
+    const breadcrumbCurrent = document.getElementById('breadcrumb-current-period');
+    if (breadcrumbCurrent) {
+        let typeLabel = Object.keys(REPORT_I18N.ko).includes(type) ? t[type] : type;
+        breadcrumbCurrent.textContent = `${country} - ${typeLabel} (${heroRange})`;
     }
 }
 
