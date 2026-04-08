@@ -493,7 +493,7 @@ ${itemsToProcess.map(i => {
     }
 
     // 2. Generate Latest Drafts (Live Aggregation - Daily Update Only)
-    if (isDaily || forceAll) {
+    if (isDaily || isWeekly || isMonthly || isYearly || forceAll) {
       const weeklyStartDay = currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22;
       const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(weeklyStartDay).padStart(2, '0')}`;
       const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -511,9 +511,9 @@ ${itemsToProcess.map(i => {
       const moLabel = `${m}월 리포트 (${String(m).padStart(2, '0')}.01 ~ ${String(m).padStart(2, '0')}.${String(moEndDay).padStart(2, '0')}) ${moStatus}`;
       const yrLabel = `${y}년 리포트 (${y}.01.01 ~ 12.31) ${yrStatus}`;
 
-      await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', wkLabel);
-      await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', moLabel);
-      await this.generatePeriodReport(country, 'yearly', yearlyStart, `${y}-12-31`, false, '', yrLabel);
+      await this.generatePeriodReport(country, 'weekly', weeklyStart, todayStr, false, '', wkLabel, forceArg);
+      await this.generatePeriodReport(country, 'monthly', monthlyStart, todayStr, false, '', moLabel, forceArg);
+      await this.generatePeriodReport(country, 'yearly', yearlyStart, `${y}-12-31`, false, '', yrLabel, forceArg);
     }
   }
 
