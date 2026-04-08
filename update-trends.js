@@ -403,6 +403,7 @@ ${itemsToProcess.map(i => {
   }
 
   async aggregateReports(country, force = false) {
+    const forceArg = force || process.argv.includes("--force-reports") || process.argv.includes("--force-weekly");
     const now = new Date();
     const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000));
     const y = kst.getUTCFullYear();
@@ -460,7 +461,7 @@ ${itemsToProcess.map(i => {
         archSlug = `${prevY}-${String(prevM).padStart(2, '0')}-week4`;
         archLabel = `${prevY}년 ${prevM}월 4주차 리포트`;
       }
-      if (archStart) await this.generatePeriodReport(country, 'weekly', archStart, archEnd, true, archSlug, archLabel);
+      if (archStart) await this.generatePeriodReport(country, 'weekly', archStart, archEnd, true, archSlug, archLabel, forceArg);
     }
 
     if (isMonthly || forceAll) {
@@ -479,7 +480,7 @@ ${itemsToProcess.map(i => {
         archSlug = `${y}-${String(m).padStart(2, '0')}-monthly`;
         archLabel = `${y}년 ${m}월 리포트`;
       }
-      if (archStart) await this.generatePeriodReport(country, 'monthly', archStart, archEnd, true, archSlug, archLabel);
+      if (archStart) await this.generatePeriodReport(country, 'monthly', archStart, archEnd, true, archSlug, archLabel, forceArg);
     }
 
     if (isYearly || (forceAll && d === 1 && m === 1)) {
@@ -488,7 +489,7 @@ ${itemsToProcess.map(i => {
       const archEnd = `${prevY}-12-31`;
       const archSlug = `${prevY}-yearly`;
       const archLabel = `${prevY}년 리포트`;
-      await this.generatePeriodReport(country, 'yearly', archStart, archEnd, true, archSlug, archLabel);
+      await this.generatePeriodReport(country, 'yearly', archStart, archEnd, true, archSlug, archLabel, forceArg);
     }
 
     // 2. Generate Latest Drafts (Live Aggregation - Daily Update Only)
@@ -715,7 +716,7 @@ ${keywordsWithNews}
   }
 
   // Phase 2: Reporting Engine
-  async generatePeriodReport(country, type, startDate, endDate, isArchival, slugIdentifier, label) {
+  async generatePeriodReport(country, type, startDate, endDate, isArchival, slugIdentifier, label, force = false) {
     const db = admin.firestore();
     const latestDocRef = db.collection("reports").doc(type).collection(country).doc("latest");
     const reportSlug = slugIdentifier || `${startDate.replace(/-/g, '')}_${endDate.replace(/-/g, '')}_${type}`;
@@ -728,7 +729,7 @@ ${keywordsWithNews}
         const contentStr = JSON.stringify(archData.leadSummary || {});
         const isCorrupted = contentStr.includes('정체되어') || contentStr.includes('집계 중입니다') || contentStr.includes('발행됩니다');
 
-        if (!isCorrupted) {
+        if (!isCorrupted && !force) {
           console.log(`  - [STABLE ARCHIVE] ${type} for ${reportSlug} is already finalized. Syncing to latest.`);
           await latestDocRef.set({ ...archData, lastUpdated: admin.firestore.Timestamp.now() });
           return;
