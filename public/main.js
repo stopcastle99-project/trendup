@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.7.5 Loaded");
+console.log("GlobalTrendUp v3.7.7 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.7.5");
+    console.log("App Init: v3.7.7");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -480,7 +480,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.7.5) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.7.7) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -688,7 +688,7 @@ class App {
           safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) {
-        console.warn(`[v3.7.5] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.7.7] Failed to refresh ${type} report card:`, err);
       }
     }
   }
