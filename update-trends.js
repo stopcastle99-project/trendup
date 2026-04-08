@@ -816,7 +816,17 @@ ${keywordsWithNews}
 
   async healExistingReports() {
     console.log(">>> HEALING EXISTING 2026 REPORTS (v3.4.2) <<<");
-    const countries = ["KR", "JP", "US"];
+
+    let countries = ["KR", "JP", "US"];
+    const countryArg = process.argv.find(arg => arg.startsWith('--country='));
+    if (countryArg) {
+      const target = countryArg.split('=')[1].toUpperCase();
+      if (countries.includes(target)) {
+        countries = [target];
+        console.log(`>>> Filtering for single country: ${target} <<<`);
+      }
+    }
+
     const types = ["weekly", "monthly", "yearly"];
 
     for (const code of countries) {
@@ -853,7 +863,17 @@ ${keywordsWithNews}
 
   async updateAll() {
     await this.healExistingReports(); // v3.4.2 Migration
-    const countries = ["KR", "JP", "US"];
+
+    let countries = ["KR", "JP", "US"];
+    const countryArg = process.argv.find(arg => arg.startsWith('--country='));
+    if (countryArg) {
+      const target = countryArg.split('=')[1].toUpperCase();
+      if (countries.includes(target)) {
+        countries = [target];
+        console.log(`>>> Filtering for single country: ${target} <<<`);
+      }
+    }
+
     const langs = ["ko", "ja", "en"];
     let allKeywords = [];
     for (const code of countries) {
@@ -919,7 +939,17 @@ ${keywordsWithNews}
   async runReportOnly() {
     await this.healExistingReports(); // v3.4.2 Migration
     console.log(">>> RUNNING IN REPORT-ONLY MODE (NO CRAWLING) <<<");
-    const countries = ["KR", "JP", "US"];
+
+    let countries = ["KR", "JP", "US"];
+    const countryArg = process.argv.find(arg => arg.startsWith('--country='));
+    if (countryArg) {
+      const target = countryArg.split('=')[1].toUpperCase();
+      if (countries.includes(target)) {
+        countries = [target];
+        console.log(`>>> Filtering for single country: ${target} <<<`);
+      }
+    }
+
     const forceReports = process.argv.includes('--force-reports');
     const forceWeekly = process.argv.includes('--force-weekly');
 
