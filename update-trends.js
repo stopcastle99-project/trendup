@@ -493,7 +493,14 @@ ${itemsToProcess.map(i => {
     }
 
     // 2. Generate Latest Drafts (Live Aggregation - Daily Update Only)
-    if (isDaily || isWeekly || isMonthly || isYearly || forceAll) {
+    const kstDay = kst.getUTCDay(); // 0:Sun, 3:Wed, 4:Thu
+    const isTransitionDay = (kstDay === 3 || kstDay === 4);
+    
+    // v3.7.6 Smart Sync: If we just performed a FORCED archival run (forceArg) on a transition day,
+    // skip the 'Aggregating' draft generation to keep the finalized report visible on the dashboard.
+    const skipDraftSync = forceArg && isTransitionDay && (isWeekly || isMonthly || isYearly);
+    
+    if ((isDaily || isWeekly || isMonthly || isYearly || forceAll) && !skipDraftSync) {
       const weeklyStartDay = currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22;
       const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(weeklyStartDay).padStart(2, '0')}`;
       const todayStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -540,7 +547,7 @@ ${itemsToProcess.map(i => {
 대상 키워드 및 관련 뉴스 리스트:
 ${keywordsWithNews}
 
-아래 [구성]을 모든 키워드에 대해 반드시 지켜주세요 (제공된 관련 뉴스 내용을 참고하여 왜 이 트렌드가 뜨는지 심층 분석하세요):
+아래 [구성]을 모든 키워드에 대해 반드시 지켜주세요 (제공된 관련 뉴스 내용을 참고하여 왜 이 트렌드가 뜨는지 심층 분석하세요. 만약 일본(ja) 등 특정 지역의 뉴스 데이터가 부족하더라도 키워드 자체의 의미와 사회적 맥락을 고려하여 반드시 풍부한 문장으로 요약과 분석을 작성해야 합니다.):
 1. 한줄 요약 (왜 이 트렌드가 뜨는지 핵심 한줄)
 2. 트렌드 분석 (최근 상황 및 사회/문화적 배경 설명)
 3. 핵심 인사이트 (3가지 포인트를 bullet으로 정리)
