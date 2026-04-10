@@ -21,7 +21,11 @@ console.log("====================================================");
 // 2026 Next-Gen Pro AI Architecture (v3.7.1)
 const SUMMARIZER_MODELS = [
   "models/gemma-4-26b-a4b-it",
-  "models/gemma-4-31b-it"
+  "models/gemma-4-31b-it",
+  "models/gemma-3-27b-it",
+  "models/gemma-2-27b-it",
+  "models/gemini-3-flash-preview",
+  "models/gemini-2.5-flash"
 ];
 const REPORT_MODELS = [
   "models/gemini-3.1-pro-preview",
@@ -83,7 +87,7 @@ class TrendUpdater {
     let allResults = [];
     for (const chunk of chunks) {
       const prompt = `Translate this JSON array of strings into ${targetLangName}. 
-Maintain original formatting and order. Return ONLY the resulting JSON array of strings.
+CRITICAL: You must return ONLY a raw JSON array of translated strings. Do not include markdown code blocks, explanations, or any other text.
 Input: ${JSON.stringify(chunk)}`;
 
       let chunkResult = null;
@@ -92,10 +96,28 @@ Input: ${JSON.stringify(chunk)}`;
           const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
           const rawText = result.response.text();
-          const parsed = this.extractJSON(rawText);
-          if (Array.isArray(parsed)) {
+          let parsed = this.extractJSON(rawText);
+          
+          if (!Array.isArray(parsed)) {
+            // Aggressive fallback extraction for JSON array of strings
+            const items = [...rawText.matchAll(/"([^"\\]*(?:\\.[^"\\]*)*)"/g)].map(m => m[1]);
+            if (items.length > 0) {
+              console.log(`  - [HEALED] Aggressively parsed translation array from ${m}`);
+              parsed = items;
+            }
+          }
+
+          if (Array.isArray(parsed) && parsed.length === chunk.length) {
             chunkResult = parsed;
             break;
+          } else if (Array.isArray(parsed) && parsed.length > 0) {
+             console.warn(`  - [WARNING] Length mismatch from ${m}. Expected ${chunk.length}, got ${parsed.length}. Using partial/excess data.`);
+             chunkResult = parsed.slice(-chunk.length); // Try to salvage from the END (Gemma puts true output last)
+             // Pad if missing
+             while (chunkResult.length < chunk.length) {
+                 chunkResult.unshift(chunk[0]); // fallback if absolutely needed
+             }
+             break;
           } else {
             console.warn(`  - Gemma Translation: ${m} returned unparseable text: \n${rawText}`);
           }
