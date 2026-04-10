@@ -89,16 +89,15 @@ Input: ${JSON.stringify(chunk)}`;
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
         try {
-          const model = this.genAI.getGenerativeModel({ 
-            model: m,
-            generationConfig: { responseMimeType: "application/json" }
-          });
+          const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
           const rawText = result.response.text();
           const parsed = this.extractJSON(rawText);
           if (Array.isArray(parsed)) {
             chunkResult = parsed;
             break;
+          } else {
+            console.warn(`  - Gemma Translation: ${m} returned unparseable text: \n${rawText}`);
           }
         } catch (e) {
           console.warn(`  - Gemma Translation Fallback: ${m} failed (${e.message}). Trying next...`);
@@ -186,10 +185,7 @@ ${itemsToProcess.map(i => {
 
       for (const m of modelsToTry) {
         try {
-          const model = this.genAI.getGenerativeModel({ 
-            model: m,
-            generationConfig: { responseMimeType: "application/json" }
-          });
+          const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
           const response = await result.response;
           let rawText = response.text().trim();
@@ -255,7 +251,10 @@ ${itemsToProcess.map(i => {
         }
       }
 
-      if (!parsed) throw new Error("Failed to parse AI response even after self-healing.");
+      if (!parsed) {
+        console.error(`  - Raw Unparseable Text from Gemma:\n${text}`);
+        throw new Error("Failed to parse AI response even after self-healing.");
+      }
 
       console.log(`  - AI Batch Success: ${usedModel} processed ${itemsToProcess.length} items`);
 
@@ -619,10 +618,7 @@ ${keywordsWithNews}
       for (const m of modelsToTry) {
         try {
           console.log(`  - Trying AI analysis with ${m}...`);
-          const model = this.genAI.getGenerativeModel({ 
-            model: m,
-            generationConfig: { responseMimeType: "application/json" }
-          });
+          const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
           text = result.response.text().replace(/\u0060\u0060\u0060json|\u0060\u0060\u0060/g, "").trim();
           usedModel = m;
