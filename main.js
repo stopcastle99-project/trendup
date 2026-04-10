@@ -402,7 +402,6 @@ class App {
       document.body.appendChild(this.modal);
       this.initSideMenu();
       this.initThemeMenu();
-      this.initInfoModals();
       this.initCookieBanner();
       this.renderNavs();
       this.refreshUIText();
@@ -580,19 +579,7 @@ class App {
     banner.classList.remove('hidden');
     banner.querySelector('button')?.addEventListener('click', () => { localStorage.setItem('cookies-accepted', 'true'); banner.classList.add('hidden'); });
   }
-  initInfoModals() {
-    const overlay = document.getElementById('info-modal');
-    const body = document.getElementById('info-modal-body');
-    document.querySelectorAll('.info-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const t = i18n[this.currentLang] || i18n.en;
-        if (t.pages && t.pages[link.dataset.page] && body && overlay) { body.innerHTML = t.pages[link.dataset.page].content; overlay.classList.remove('hidden'); }
-      });
-    });
-    document.querySelector('.info-modal-close')?.addEventListener('click', () => overlay.classList.add('hidden'));
-    overlay?.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.add('hidden'); });
-  }
+
   renderNavs() {
     try {
       const renderGroup = (id, items, current, onSelect) => {

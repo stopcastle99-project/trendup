@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    (function () {
+      const mode = localStorage.getItem('theme-mode') || 'system';
+      let theme = mode;
+      if (mode === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | GlobalTrendUp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1388346009777764" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="container">
+        <div class="header-left">
+          <a href="/" style="text-decoration:none; color:inherit;">
+            <div class="logo">
+              <h1>GlobalTrendUp</h1>
+            </div>
+          </a>
+        </div>
+      </div>
+    </header>
+    <main class="container" style="padding: 4rem 1.5rem; max-width: 800px; min-height: 70vh;">
+      <div style="margin-bottom: 4rem;">
+        <div style="display:flex; justify-content:center; gap:0.5rem; margin-bottom:2rem;">
+          <span style="background:var(--surface); padding:4px 12px; border-radius:12px; font-size:0.8rem; font-weight:bold; color:var(--text-muted);">EN</span>
+        </div>
+        <div style="background:var(--surface); padding:2rem; border-radius:16px; border:1px solid var(--border); overflow-wrap: break-word;">
+          <h2 style="margin-bottom:1.5rem;">TrendUp: Global Trend Intelligence</h2>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUp is a next-generation platform utilizing advanced Big Data workflows and AI (Google Gemini 2.5) to analyze real-time search trends from major countries, including the US, Japan, and South Korea.</p>
+          <ul style="margin-bottom:1.2rem; padding-left:1.5rem; list-style:disc; line-height:1.8;">
+            <li><strong>Real-time Global Pipeline:</strong> Trends updated every 10 minutes.</li>
+            <li><strong>Contextual AI Summaries:</strong> Synthesizing news and reactions into intelligent reports.</li>
+            <li><strong>Multilingual Insights:</strong> Localization enabling dynamic understanding of global issues.</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div>
+        <div style="display:flex; justify-content:center; gap:0.5rem; margin-bottom:2rem;">
+          <span style="background:var(--surface); padding:4px 12px; border-radius:12px; font-size:0.8rem; font-weight:bold; color:var(--text-muted);">KO</span>
+        </div>
+        <div style="background:var(--surface); padding:2rem; border-radius:16px; border:1px solid var(--border); overflow-wrap: break-word;">
+          <h2 style="margin-bottom:1.5rem;">세상을 읽는 가장 빠른 인텔리전스, TrendUp</h2>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">TrendUp은 고도의 빅데이터 처리 기술과 최신 AI 엔진(Google Gemini 2.5)을 융합하여 한국, 일본, 미국 등 주요 국가의 실시간 검색 트렌드를 분석하고 시각화하는 차세대 데이터 인텔리전스 플랫폼입니다.</p>
+          <h3 style="margin:1.5rem 0 0.8rem; border-left:4px solid var(--primary); padding-left:0.8rem; font-size:1.1rem;">우리의 미션</h3>
+          <p style="margin-bottom:1.2rem; line-height:1.8;">정보의 홍수 속에서 가장 가치 있는 '맥락'을 찾아내는 것이 우리의 목표입니다. 단순한 키워드 나열이 아닌, 왜 이 키워드가 지금 뜨고 있는지, 어떤 사회적 배경이 있는지 심층 분석하여 사용자에게 전달합니다.</p>
+          <h3 style="margin:1.5rem 0 0.8rem; border-left:4px solid var(--primary); padding-left:0.8rem; font-size:1.1rem;">주요 기술력</h3>
+          <ul style="margin-bottom:1.2rem; padding-left:1.5rem; list-style:disc; line-height:1.8;">
+            <li><strong>실시간 글로벌 파이프라인:</strong> 신뢰도 높은 소스로부터 10분 단위로 데이터를 수집·정규화합니다.</li>
+            <li><strong>문맥 기반 AI 요약:</strong> 뉴스 조각들과 소셜 반응을 종합하여 리포트 형태로 재구성합니다.</li>
+            <li><strong>다국어 인사이트:</strong> 언어의 장벽을 넘어 각국의 트렌드를 모국어로 이해할 수 있도록 정교한 번역을 지원합니다.</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <div class="container">
+        <div class="footer-content" style="text-align: center;">
+          <p>&copy; 2026 GlobalTrendUp. All rights reserved.</p>
+          <ul class="footer-links" style="display:flex; justify-content:center; gap:1.5rem; list-style:none; padding:0; margin-top:1rem;">
+            <li><a href="/about.html" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">About Us</a></li>
+            <li><a href="/privacy.html" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">Privacy Policy</a></li>
+            <li><a href="/terms.html" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">Terms of Service</a></li>
+            <li><a href="/contact.html" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

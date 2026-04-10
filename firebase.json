@@ -8,6 +8,7 @@
       "cp main.js public/main.js",
       "cp style.css public/",
       "mkdir -p public/report && cp report/index.html public/report/ && cp report/report.js public/report/",
+      "cp about.html public/ && cp privacy.html public/ && cp terms.html public/ && cp contact.html public/",
       "cp naver1141b796dc8b921333cb22d8a36d78d6.html public/",
       "cp ads.txt public/",
       "cp sitemap.xml public/",
