@@ -163,8 +163,21 @@
   <script>
     function handleSubmit(e, lang) {
       e.preventDefault();
+      
+      const form = document.getElementById('contactForm-' + lang);
+      const name = form.querySelector('[name="name"]').value;
+      const email = form.querySelector('[name="email"]').value;
+      const subject = form.querySelector('[name="subject"]').value;
+      const message = form.querySelector('[name="message"]').value;
+      
+      const emailSubject = encodeURIComponent(`[${subject ? subject.toUpperCase() : 'CONTACT'}] Inquiry from ${name}`);
+      const emailBody = encodeURIComponent(`${message}\n\n---\nSender Name: ${name}\nSender Email: ${email}`);
+      const mailtoLink = `mailto:stopcastle99@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+      
+      window.location.href = mailtoLink;
+
       document.getElementById('successMsg-' + lang).style.display = 'block';
-      document.getElementById('contactForm-' + lang).querySelector('button').disabled = true;
+      form.querySelector('button').disabled = true;
     }
     
     (function() {
