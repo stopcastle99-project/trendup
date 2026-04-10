@@ -88,12 +88,12 @@ class TrendUpdater {
     for (const chunk of chunks) {
       const prompt = `You are a translation API. Translate the following ${chunk.length} distinct texts into ${targetLangName}.
 CRITICAL RULES:
-1. You MUST separate each translated text with the delimiter "|||".
-2. Output EXACTLY ${chunk.length} translated texts.
-3. DO NOT output JSON, JSON arrays, brackets, or any conversational text. ONLY the translated texts separated by |||.
+1. You MUST enclose each translated text within <item>...</item> tags.
+2. Output EXACTLY ${chunk.length} <item> blocks.
+3. DO NOT output any conversational text or formatting outside the XML tags.
 
 INPUT TEXTS TO TRANSLATE:
-${chunk.join('\n\n|||\n\n')}`;
+${chunk.map((t, idx) => `<item id="${idx + 1}">\n${t}\n</item>`).join('\n')}`;
 
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
@@ -101,15 +101,9 @@ ${chunk.join('\n\n|||\n\n')}`;
           const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
           let rawText = result.response.text().trim();
-          
-          if (rawText.startsWith('```')) {
-            rawText = rawText.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '');
-          }
 
-          let parsed = rawText.split('|||').map(t => t.trim());
-
-          // Clean numbering if AI hallucinated lists despite instructions
-          parsed = parsed.map(t => t.replace(/^[0-9]+[\.\)]\s*/, ''));
+          const matches = [...rawText.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi)];
+          let parsed = matches.map(m => m[1].trim());
 
           if (parsed.length === chunk.length) {
             chunkResult = parsed;
