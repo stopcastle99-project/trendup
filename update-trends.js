@@ -43,14 +43,28 @@ class TrendUpdater {
   extractJSON(text) {
     if (!text) return null;
     try {
-      const arrayMatch = text.match(/\[[\s\S]*\]/);
-      if (arrayMatch) return JSON.parse(arrayMatch[0]);
-      const objectMatch = text.match(/\{[\s\S]*\}/);
-      if (objectMatch) return JSON.parse(objectMatch[0]);
       return JSON.parse(text);
-    } catch (e) {
-      return null;
+    } catch (e1) {
+      try {
+        const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+        if (match) return JSON.parse(match[1]);
+        
+        const startBracket = text.indexOf('[');
+        const lastBracket = text.lastIndexOf(']');
+        const startBrace = text.indexOf('{');
+        const lastBrace = text.lastIndexOf('}');
+        
+        const firstStart = (startBracket !== -1 && (startBrace === -1 || startBracket < startBrace)) ? startBracket : startBrace;
+        const lastEnd = (firstStart === startBracket) ? lastBracket : lastBrace;
+        
+        if (firstStart !== -1 && lastEnd > firstStart) {
+          return JSON.parse(text.substring(firstStart, lastEnd + 1));
+        }
+      } catch (e2) {
+        return null;
+      }
     }
+    return null;
   }
 
   async translateBatch(texts, targetLang) {
@@ -75,7 +89,10 @@ Input: ${JSON.stringify(chunk)}`;
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
         try {
-          const model = this.genAI.getGenerativeModel({ model: m });
+          const model = this.genAI.getGenerativeModel({ 
+            model: m,
+            generationConfig: { responseMimeType: "application/json" }
+          });
           const result = await model.generateContent(prompt);
           const rawText = result.response.text();
           const parsed = this.extractJSON(rawText);
@@ -169,13 +186,16 @@ ${itemsToProcess.map(i => {
 
       for (const m of modelsToTry) {
         try {
-          const model = this.genAI.getGenerativeModel({ model: m });
+          const model = this.genAI.getGenerativeModel({ 
+            model: m,
+            generationConfig: { responseMimeType: "application/json" }
+          });
           const result = await model.generateContent(prompt);
           const response = await result.response;
           let rawText = response.text().trim();
 
-          // Pre-parse Scrub: Remove invalid AI shorthands
-          text = rawText.replace(/,\s*\.\.\.\s*\]/g, "]").replace(/\.\.\.\s*\}/g, "}").replace(/\*\*\*/g, "").replace(/json/g, "").trim();
+          // Pre-parse Scrub: Remove invalid AI shorthands (Safe version)
+          text = rawText.replace(/,\s*\.\.\.\s*\]/g, "]").replace(/\.\.\.\s*\}/g, "}").replace(/\*\*\*/g, "").trim();
 
           usedModel = m;
           break;
@@ -599,7 +619,10 @@ ${keywordsWithNews}
       for (const m of modelsToTry) {
         try {
           console.log(`  - Trying AI analysis with ${m}...`);
-          const model = this.genAI.getGenerativeModel({ model: m });
+          const model = this.genAI.getGenerativeModel({ 
+            model: m,
+            generationConfig: { responseMimeType: "application/json" }
+          });
           const result = await model.generateContent(prompt);
           text = result.response.text().replace(/\u0060\u0060\u0060json|\u0060\u0060\u0060/g, "").trim();
           usedModel = m;
