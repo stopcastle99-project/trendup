@@ -86,94 +86,40 @@ class TrendUpdater {
 
     let allResults = [];
     for (const chunk of chunks) {
-      const exampleArr = new Array(chunk.length).fill("translated string");
-      const prompt = `You are a strict translation API. Translate the items in this JSON array into ${targetLangName}.
+      const prompt = `You are a translation API. Translate the following ${chunk.length} distinct texts into ${targetLangName}.
 CRITICAL RULES:
-1. ONLY return a JSON array of strings. NO objects or keys.
-2. Output MUST contain EXACTLY the same number of items as the input array (${chunk.length} items).
-3. NO markdown formatting or explanations.
-Input: ${JSON.stringify(chunk)}
-Example Format: ${JSON.stringify(exampleArr)}`;
+1. You MUST separate each translated text with the delimiter "|||".
+2. Output EXACTLY ${chunk.length} translated texts.
+3. DO NOT output JSON, JSON arrays, brackets, or any conversational text. ONLY the translated texts separated by |||.
+
+INPUT TEXTS TO TRANSLATE:
+${chunk.join('\n\n|||\n\n')}`;
 
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
         try {
-          const model = this.genAI.getGenerativeModel({ 
-            model: m,
-            generationConfig: { responseMimeType: "application/json" }
-          });
+          const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
-          const rawText = result.response.text();
-          let parsed = this.extractJSON(rawText);
+          let rawText = result.response.text().trim();
           
-          if (!Array.isArray(parsed) || parsed.length !== chunk.length) {
-            if (parsed && typeof parsed === 'object') {
-              const arrays = Object.values(parsed).filter(v => Array.isArray(v));
-              const exactMatch = arrays.find(arr => arr.length === chunk.length);
-              if (exactMatch) {
-                parsed = exactMatch;
-              } else {
-                const vals = Object.values(parsed);
-                if (vals.length === chunk.length) parsed = vals;
-              }
-            }
+          if (rawText.startsWith('```')) {
+            rawText = rawText.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '');
           }
 
-          if (!Array.isArray(parsed) || parsed.length !== chunk.length) {
-            let startIdx = rawText.indexOf('[');
-            while (startIdx !== -1) {
-              let endIdx = rawText.indexOf(']', startIdx);
-              while (endIdx !== -1) {
-                try {
-                  const arr = JSON.parse(rawText.substring(startIdx, endIdx + 1));
-                  if (Array.isArray(arr) && arr.length === chunk.length) {
-                    parsed = arr;
-                    break;
-                  }
-                } catch(e) {}
-                endIdx = rawText.indexOf(']', endIdx + 1);
-              }
-              if (Array.isArray(parsed) && parsed.length === chunk.length) break;
-              startIdx = rawText.indexOf('[', startIdx + 1);
-            }
-          }
+          let parsed = rawText.split('|||').map(t => t.trim());
 
-          if (!Array.isArray(parsed) || parsed.length !== chunk.length) {
-            let textToSearch = rawText;
-            const firstBracket = rawText.indexOf('[');
-            const firstCloseBracket = rawText.indexOf(']', firstBracket);
-            if (firstBracket !== -1 && firstCloseBracket !== -1) {
-              textToSearch = rawText.substring(firstBracket, firstCloseBracket + 1);
-            }
-            const items = [...textToSearch.matchAll(/"([^"\\]*(?:\\.[^"\\]*)*)"/g)].map(m => m[1]);
-            
-            if (items.length === chunk.length) {
-              console.log(`  - [HEALED] Aggressively parsed translation array from ${m}`);
-              parsed = items;
-            } else if (items.length > 0) {
-              parsed = items; // Used to trigger mismatch warning
-            }
-          }
+          // Clean numbering if AI hallucinated lists despite instructions
+          parsed = parsed.map(t => t.replace(/^[0-9]+[\.\)]\s*/, ''));
 
-          // Safety mapping if model returned an array of objects correctly sized
-          if (Array.isArray(parsed) && parsed.length === chunk.length && typeof parsed[0] === 'object' && parsed[0] !== null) {
-            parsed = parsed.map(obj => {
-              const vals = Object.values(obj).filter(v => typeof v === 'string');
-              return vals.length > 0 ? vals[vals.length - 1] : "";
-            });
-            console.log(`  - [HEALED] Flattened objects to strings from ${m}`);
-          }
-
-          if (Array.isArray(parsed) && parsed.length === chunk.length) {
+          if (parsed.length === chunk.length) {
             chunkResult = parsed;
+            console.log(`  - Translation Success from ${m} using ||| delimiter.`);
             break;
-          } else if (Array.isArray(parsed) && parsed.length > 0) {
-             console.warn(`  - [WARNING] Length mismatch from ${m}. Expected ${chunk.length}, got ${parsed.length}. Array REJECTED, falling back to next model.`);
-          } else {
-            console.warn(`  - Gemma Translation: ${m} returned unparseable text: \n${rawText}`);
+          } else if (parsed.length > 0) {
+            console.warn(`  - [WARNING] Length mismatch from ${m}. Expected ${chunk.length}, got ${parsed.length}. REJECTED.`);
           }
         } catch (e) {
-          console.warn(`  - Gemma Translation Fallback: ${m} failed (${e.message}). Trying next...`);
+          console.warn(`  - Gemma Translation Fallback: ${m} failed (${e.message}).`);
         }
       }
 
