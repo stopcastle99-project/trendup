@@ -108,7 +108,12 @@ Input: ${JSON.stringify(chunk)}`;
             if (parsed && typeof parsed === 'object') {
               const arrays = Object.values(parsed).filter(v => Array.isArray(v));
               const exactMatch = arrays.find(arr => arr.length === chunk.length);
-              if (exactMatch) parsed = exactMatch;
+              if (exactMatch) {
+                parsed = exactMatch;
+              } else {
+                const vals = Object.values(parsed);
+                if (vals.length === chunk.length) parsed = vals;
+              }
             }
           }
 
@@ -1017,7 +1022,12 @@ ${keywordsWithNews}
         if (hasValidReport) {
           item.aiReports.ko = existing.aiReports.ko;
         } else {
-          item.aiReports.ko = newReportsMap[item.originalTitle] || `${code} Hot Trend: ${item.originalTitle}`;
+          const itemTitleClean = item.originalTitle.trim().toLowerCase();
+          const matchKey = Object.keys(newReportsMap).find(k => {
+             const kClean = k.trim().toLowerCase();
+             return kClean === itemTitleClean || kClean.includes(itemTitleClean) || itemTitleClean.includes(kClean);
+          });
+          item.aiReports.ko = matchKey ? newReportsMap[matchKey] : `${code} Hot Trend: ${item.originalTitle}`;
         }
       }
       for (const lang of langs) {
