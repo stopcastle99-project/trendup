@@ -268,7 +268,11 @@ ${itemsToProcess.map(i => {
           if (itemsToIterate.length > 0) {
             usedModel = m;
             success = true;
-            itemsToIterate.forEach(p => { if (p.keyword) reportMap[p.keyword] = p.summary; });
+            itemsToIterate.forEach(p => { 
+              const kw = p.keyword || p.Keyword || p.KEYWORD || p.title || p.Name || p["키워드"] || (typeof p === 'object' ? Object.values(p)[0] : null);
+              const sm = p.summary || p.Summary || p.SUMMARY || p.description || p["요약"] || (typeof p === 'object' ? Object.values(p)[1] : null);
+              if (kw && sm) reportMap[kw] = sm; 
+            });
             break;
           } else {
             console.warn(`  - [WARNING] AI Summary JSON parse failed or empty from ${m}. Trying next model...`);
