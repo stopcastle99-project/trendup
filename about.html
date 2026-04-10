@@ -1,154 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
+  <script>
+    (function () {
+      const mode = localStorage.getItem('theme-mode') || 'system';
+      let theme = mode;
+      if (mode === 'system') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us | GlobalTrendUp</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      color: #1a1a1a;
-      background: #fff;
-      line-height: 1.7;
-    }
-
-    .container {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 60px 24px;
-    }
-
-    h1 {
-      font-size: 32px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin: 40px 0 12px;
-    }
-
-    p {
-      font-size: 16px;
-      color: #333;
-      margin-bottom: 16px;
-    }
-
-    .tagline {
-      font-size: 18px;
-      color: #555;
-      margin-bottom: 40px;
-      border-left: 3px solid #4a90d9;
-      padding-left: 16px;
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin: 24px 0 40px;
-    }
-
-    .card {
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 20px;
-    }
-
-    .card .icon {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    .card h3 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .card p {
-      font-size: 14px;
-      color: #555;
-      margin: 0;
-    }
-
-    .divider {
-      border: none;
-      border-top: 1px solid #eee;
-      margin: 40px 0;
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1388346009777764" crossorigin="anonymous"></script>
 </head>
-
 <body>
-  <div class="container">
-
-    <h1>About GlobalTrendUp</h1>
-    <p class="tagline">We make the world's trending topics accessible, understandable, and useful — in real time.</p>
-
-    <h2>What We Do</h2>
-    <p>GlobalTrendUp is a real-time trend intelligence platform that aggregates and analyzes trending topics from across
-      the globe. We collect data from major search engines, social platforms, and news sources to give you a clear
-      picture of what the world is talking about right now.</p>
-    <p>Whether you're a content creator, marketer, researcher, or simply curious about the world, GlobalTrendUp helps
-      you stay ahead of the curve with AI-powered analysis and weekly, monthly, and yearly trend reports.</p>
-
-    <h2>Why We Built This</h2>
-    <p>Trend data is everywhere — but it's fragmented, hard to compare across countries, and rarely explained in
-      context. We built GlobalTrendUp to solve that problem: one place to see what's trending in South Korea, the United
-      States, Japan, and beyond, with meaningful analysis that helps you understand the "why" behind the numbers.</p>
-
-    <hr class="divider">
-
-    <h2>What Makes Us Different</h2>
-    <div class="card-grid">
-      <div class="card">
-        <div class="icon">🌍</div>
-        <h3>Global Coverage</h3>
-        <p>Track trends across multiple countries and languages from a single dashboard.</p>
+  <div id="app">
+    <header>
+      <div class="container">
+        <div class="header-left">
+          <a href="/" style="text-decoration:none; color:inherit;">
+            <div class="logo">
+              <h1>GlobalTrendUp</h1>
+            </div>
+          </a>
+        </div>
       </div>
-      <div class="card">
-        <div class="icon">🤖</div>
-        <h3>AI Analysis</h3>
-        <p>Our AI summarizes and contextualizes trends so you understand what's driving them.</p>
+    </header>
+    <main class="container" style="padding: 2rem 1.5rem; max-width: 800px; min-height: 70vh;">
+      <div class="breadcrumb" style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--text-muted);">
+          <a href="/" style="color:var(--text-muted); text-decoration:none;">Home</a> &gt; <span style="color:var(--primary); font-weight:600;">About Us</span>
       </div>
-      <div class="card">
-        <div class="icon">📊</div>
-        <h3>Time-Based Reports</h3>
-        <p>Weekly, monthly, and yearly reports let you spot patterns over time, not just in the moment.</p>
+      
+      <div class="lang-content lang-en" style="margin-bottom: 4rem;">
+        <div style="background:var(--surface); padding:2rem; border-radius:16px; border:1px solid var(--border); overflow-wrap: break-word;">
+          <h2 style="margin-bottom:1.5rem; font-size:2rem;">About GlobalTrendUp</h2>
+          <p style="margin-bottom:2rem; font-size:1.1rem; color:var(--text-muted); border-left:3px solid var(--primary); padding-left:1rem;">We make the world's trending topics accessible, understandable, and useful — in real time.</p>
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">What We Do</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">GlobalTrendUp is a real-time trend intelligence platform that aggregates and analyzes trending topics from across the globe. We collect data from major search engines, social platforms, and news sources to give you a clear picture of what the world is talking about right now.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">Whether you're a content creator, marketer, researcher, or simply curious about the world, GlobalTrendUp helps you stay ahead of the curve with AI-powered analysis and weekly, monthly, and yearly trend reports.</p>
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">Why We Built This</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">Trend data is everywhere — but it's fragmented, hard to compare across countries, and rarely explained in context. We built GlobalTrendUp to solve that problem: one place to see what's trending in South Korea, the United States, Japan, and beyond, with meaningful analysis that helps you understand the "why" behind the numbers.</p>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:2rem 0;">
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">What Makes Us Different</h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:2rem;">
+            <div style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:12px;">
+              <div style="font-size:1.5rem; margin-bottom:0.5rem;">🌍</div>
+              <h4 style="margin-bottom:0.5rem; font-size:1rem;">Global Coverage</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.4;">Track trends across multiple countries and languages from a single dashboard.</p>
+            </div>
+            <div style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:12px;">
+              <div style="font-size:1.5rem; margin-bottom:0.5rem;">🤖</div>
+              <h4 style="margin-bottom:0.5rem; font-size:1rem;">AI Analysis</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.4;">Our AI summarizes and contextualizes trends so you understand what's driving them.</p>
+            </div>
+            <div style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:12px;">
+              <div style="font-size:1.5rem; margin-bottom:0.5rem;">📊</div>
+              <h4 style="margin-bottom:0.5rem; font-size:1rem;">Time-Based Reports</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.4;">Weekly, monthly, and yearly reports let you spot patterns over time, not just in the moment.</p>
+            </div>
+            <div style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:12px;">
+              <div style="font-size:1.5rem; margin-bottom:0.5rem;">⚡</div>
+              <h4 style="margin-bottom:0.5rem; font-size:1rem;">Real-Time Updates</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.4;">Data refreshes continuously so you're always looking at what's happening now.</p>
+            </div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:2rem 0;">
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">Our Mission</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">We believe that understanding what people care about — across cultures and languages — leads to better decisions, better content, and better conversations. Our mission is to make global trend intelligence accessible to everyone, not just large enterprises with big data budgets.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">GlobalTrendUp launched in 2026 and is currently in Beta. We're actively improving the platform based on user feedback and expanding our country coverage every month.</p>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:2rem 0;">
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">Get in Touch</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">Have a question, a feature request, or just want to say hello? We'd love to hear from you. Visit our <a href="/contact.html" style="color:var(--primary);">Contact page</a> to reach the team.</p>
+        </div>
       </div>
-      <div class="card">
-        <div class="icon">⚡</div>
-        <h3>Real-Time Updates</h3>
-        <p>Data refreshes continuously so you're always looking at what's happening now.</p>
+      
+      <div class="lang-content lang-ko">
+        <div style="background:var(--surface); padding:2rem; border-radius:16px; border:1px solid var(--border); overflow-wrap: break-word;">
+          <h2 style="margin-bottom:1.5rem; font-size:2rem;">GlobalTrendUp 소개</h2>
+          <p style="margin-bottom:2rem; font-size:1.1rem; color:var(--text-muted); border-left:3px solid var(--primary); padding-left:1rem;">전 세계의 핫한 트렌드를 누구나 쉽게 접근하고, 이해하고, 활용할 수 있도록 실시간으로 제공합니다.</p>
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">우리가 하는 일</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">GlobalTrendUp은 전 세계 지역의 인기 주제를 수집하고 분석하는 실시간 트렌드 인텔리전스 플랫폼입니다. 주요 검색 엔진, 소셜 미디어 플랫폼, 뉴스 소스로부터 데이터를 수집하여 현재 세상 사람들이 어떤 이슈에 주목하고 있는지 명확하게 보여줍니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">콘텐츠 크리에이터, 마케터, 연구원은 물론 세계의 흐름이 궁금한 누구에게나, 당사의 AI 기반 이슈 분석과 주간, 월간, 연간 트렌드 리포트는 남들보다 한발 앞서 나갈 수 있는 훌륭한 길잡이가 될 것입니다.</p>
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">왜 이 서비스를 구축했나요?</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">트렌드 데이터는 어디에나 존재합니다. 하지만 대부분 파편화되어 있고, 국가별로 한 눈에 비교하기 어려우며, 그 맥락을 설명해 주는 경우는 거의 없습니다. 우리는 바로 이 문제를 해결하기 위해 GlobalTrendUp을 만들었습니다. 한국, 미국, 일본 등의 실시간 트렌드를 한 곳에서 확인하고, 단순한 데이터 뒤에 숨겨진 "왜 떴을까?"라는 이유를 의미 있는 리포트로 쉽게 파악할 수 있도록 돕습니다.</p>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:2rem 0;">
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">우리의 특별한 점</h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:2rem;">
+            <div style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:12px;">
+              <div style="font-size:1.5rem; margin-bottom:0.5rem;">🌍</div>
+              <h4 style="margin-bottom:0.5rem; font-size:1rem;">글로벌 커버리지</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.4;">단일 뷰 대시보드에서 다양한 국가와 다국어 트렌드를 쉽게 추적하세요.</p>
+            </div>
+            <div style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:12px;">
+              <div style="font-size:1.5rem; margin-bottom:0.5rem;">🤖</div>
+              <h4 style="margin-bottom:0.5rem; font-size:1rem;">지능형 AI 분석</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.4;">AI가 복잡한 데이터 구조를 요약하고 맥락화하여 그 원동력이 무엇인지 이해시킵니다.</p>
+            </div>
+            <div style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:12px;">
+              <div style="font-size:1.5rem; margin-bottom:0.5rem;">📊</div>
+              <h4 style="margin-bottom:0.5rem; font-size:1rem;">주기 단위의 리포트</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.4;">단순한 현재 수치뿐만 아니라, 주간, 월간, 연간 단위의 데이터 패턴 추이 점검이 가능합니다.</p>
+            </div>
+            <div style="background:var(--bg); border:1px solid var(--border); padding:1rem; border-radius:12px;">
+              <div style="font-size:1.5rem; margin-bottom:0.5rem;">⚡</div>
+              <h4 style="margin-bottom:0.5rem; font-size:1rem;">실시간 데이터</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.4;">데이터들이 지속적으로 리프레시되어 지금 일어나고 있는 최신 소식에 늘 연결되어 있습니다.</p>
+            </div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:2rem 0;">
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">우리의 사명</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">우리는 언어와 문화의 장벽을 넘어 다수 대중의 관심사를 이해하는 것이, 더 좋은 생각과 유익한 콘텐츠, 그리고 의미 있는 결정으로 이어진다고 믿습니다. 막대한 데이터 분석 자원이 요구되는 대기업만의 전유물이 아닌, 누구나 이러한 글로벌 트렌드의 흐름을 읽고 활용할 수 있게 하는 것이 우리의 미션입니다.</p>
+          <p style="margin-bottom:1rem; line-height:1.6;">GlobalTrendUp은 2026년에 출범하여 현재 개방형 베타 서비스 중입니다. 사용자분들의 소중한 피드백을 수집하여 활발하게 플랫폼을 고도화하고 대상 국가를 지속적으로 넓혀나가고 있습니다.</p>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:2rem 0;">
+
+          <h3 style="margin:1.5rem 0 0.8rem; font-size:1.2rem;">문의하기</h3>
+          <p style="margin-bottom:1rem; line-height:1.6;">질문이나 추가 기능 제안이 있으시거나 단순 인사를 남기고 싶으신가요? 늘 환영합니다. <a href="/contact.html" style="color:var(--primary);">Contact 메뉴</a>를 통해 저희 팀에게 직접 편하게 알려주세요.</p>
+        </div>
       </div>
-    </div>
-
-    <hr class="divider">
-
-    <h2>Our Mission</h2>
-    <p>We believe that understanding what people care about — across cultures and languages — leads to better decisions,
-      better content, and better conversations. Our mission is to make global trend intelligence accessible to everyone,
-      not just large enterprises with big data budgets.</p>
-    <p>GlobalTrendUp launched in 2026 and is currently in Beta. We're actively improving the platform based on user
-      feedback and expanding our country coverage every month.</p>
-
-    <hr class="divider">
-
-    <h2>Get in Touch</h2>
-    <p>Have a question, a feature request, or just want to say hello? We'd love to hear from you. Visit our <a
-        href="/contact/" style="color:#4a90d9;">Contact page</a> to reach the team.</p>
-
+    </main>
+    <footer>
+      <div class="container">
+        <div class="footer-content" style="text-align: center;">
+          <p>&copy; 2026 GlobalTrendUp. All rights reserved.</p>
+          <ul class="footer-links" style="display:flex; justify-content:center; gap:1.5rem; list-style:none; padding:0; margin-top:1rem;">
+            <li><a href="/about.html" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">About Us</a></li>
+            <li><a href="/privacy.html" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">Privacy Policy</a></li>
+            <li><a href="/terms.html" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">Terms of Service</a></li>
+            <li><a href="/contact.html" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
   </div>
+  <script>
+    (function() {
+      const country = localStorage.getItem('country') || 'US';
+      const lang = localStorage.getItem('lang') || (country === 'KR' ? 'ko' : country === 'JP' ? 'ja' : 'en');
+      if (lang === 'ko') {
+        document.querySelectorAll('.lang-en').forEach(el => el.style.display = 'none');
+      } else {
+        document.querySelectorAll('.lang-ko').forEach(el => el.style.display = 'none');
+      }
+    })();
+  </script>
 </body>
-
 </html>
