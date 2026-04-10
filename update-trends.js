@@ -231,7 +231,7 @@ Example Format: ["translated text 1", "translated text 2"]`;
     const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 3문장 내외의 한국어로 명료하게 요약해주세요. 
 절대로 중간에 내용을 생략하거나 '...', '***' 등 상징적인 기호를 사용하여 요약을 대체하지 마세요. 모든 리스트에 대해 완전한 JSON 데이터를 작성해야 합니다.
 
-반드시 아래의 JSON 배열 형식으로만 응답해야 하며, JSON 외의 다른 부연 설명은 절대 덧붙이지 마세요.
+반드시 아래의 JSON 배열 형식으로만 응답해야 하며, 절대 요약을 생략하지 마세요. 객체의 키(key) 이름은 "keyword", "summary"를 반드시 지켜야 합니다.
 [
   { "keyword": "키워드1", "summary": "요약 내용..." },
   { "keyword": "키워드2", "summary": "요약 내용..." }
@@ -246,8 +246,9 @@ ${itemsToProcess.map(i => {
 `;
 
     try {
-      let text = "";
+      let reportMap = {};
       let usedModel = "";
+      let success = false;
       const modelsToTry = SUMMARIZER_MODELS;
 
       for (const m of modelsToTry) {
@@ -258,69 +259,64 @@ ${itemsToProcess.map(i => {
           let rawText = response.text().trim();
 
           // Pre-parse Scrub: Remove invalid AI shorthands (Safe version)
-          text = rawText.replace(/,\s*\.\.\.\s*\]/g, "]").replace(/\.\.\.\s*\}/g, "}").replace(/\*\*\*/g, "").trim();
+          let text = rawText.replace(/,\s*\.\.\.\s*\]/g, "]").replace(/\.\.\.\s*\}/g, "}").replace(/\*\*\*/g, "").trim();
 
-          usedModel = m;
-          break;
+          // Robust JSON Extraction (Heal conversational prefix/suffix)
+          let jsonContent = text;
+          const startBracket = text.indexOf('[');
+          const startBrace = text.indexOf('{');
+          const firstStart = (startBracket !== -1 && (startBrace === -1 || startBracket < startBrace)) ? startBracket : startBrace;
+
+          if (firstStart !== -1) {
+            const lastBracket = text.lastIndexOf(']');
+            const lastBrace = text.lastIndexOf('}');
+            const lastEnd = Math.max(lastBracket, lastBrace);
+            if (lastEnd > firstStart) {
+              jsonContent = text.substring(firstStart, lastEnd + 1).trim();
+            }
+          }
+
+          let parsed = null;
+          try {
+            parsed = JSON.parse(jsonContent);
+          } catch (parseErr) {
+            let tempContent = jsonContent.trim();
+            while (tempContent.length > 2) {
+              try {
+                parsed = JSON.parse(tempContent);
+                break;
+              } catch (e) {
+                const lastIdx = Math.max(tempContent.lastIndexOf(']'), tempContent.lastIndexOf('}'));
+                if (lastIdx === -1) break;
+                if (lastIdx === tempContent.length - 1) {
+                  tempContent = tempContent.slice(0, -1).trim();
+                } else {
+                  tempContent = tempContent.substring(0, lastIdx + 1).trim();
+                }
+              }
+            }
+            if (parsed) {
+               console.log(`  - [HEALED] AI JSON parse succeeded after cleaning trailing characters.`);
+            }
+          }
+
+          const itemsToIterate = Array.isArray(parsed) ? parsed : (parsed?.items || []);
+          
+          if (itemsToIterate.length > 0) {
+            usedModel = m;
+            success = true;
+            itemsToIterate.forEach(p => { if (p.keyword) reportMap[p.keyword] = p.summary; });
+            break;
+          } else {
+            console.warn(`  - [WARNING] AI Summary JSON parse failed or empty from ${m}. Trying next model...`);
+          }
         } catch (err) {
           console.log(`  - Model fallback: ${m} failed (${err.message}). Trying next...`);
         }
       }
 
-      if (!text) {
-        throw new Error("All AI models failed to generate content.");
-      }
-
-      // Robust JSON Extraction (Heal conversational prefix/suffix)
-      let jsonContent = text.trim();
-
-      // Try to find the first block that looks like JSON array or object
-      const startBracket = text.indexOf('[');
-      const startBrace = text.indexOf('{');
-      const firstStart = (startBracket !== -1 && (startBrace === -1 || startBracket < startBrace)) ? startBracket : startBrace;
-
-      if (firstStart !== -1) {
-        const lastBracket = text.lastIndexOf(']');
-        const lastBrace = text.lastIndexOf('}');
-        const lastEnd = Math.max(lastBracket, lastBrace);
-        if (lastEnd > firstStart) {
-          jsonContent = text.substring(firstStart, lastEnd + 1).trim();
-        }
-      }
-
-      let parsed = null;
-      try {
-        parsed = JSON.parse(jsonContent);
-      } catch (parseErr) {
-        // Self-healing: progressively trim from the end until valid JSON is found
-        let tempContent = jsonContent.trim();
-        let healed = false;
-        while (tempContent.length > 2) {
-          try {
-            parsed = JSON.parse(tempContent);
-            healed = true;
-            break;
-          } catch (e) {
-            const lastBracketIdx = tempContent.lastIndexOf(']');
-            const lastBraceIdx = tempContent.lastIndexOf('}');
-            const lastIdx = Math.max(lastBracketIdx, lastBraceIdx);
-
-            if (lastIdx === -1) break;
-            if (lastIdx === tempContent.length - 1) {
-              tempContent = tempContent.slice(0, -1).trim();
-            } else {
-              tempContent = tempContent.substring(0, lastIdx + 1).trim();
-            }
-          }
-        }
-        if (healed) {
-          console.log(`  - [HEALED] AI JSON parse succeeded after cleaning trailing characters.`);
-        }
-      }
-
-      if (!parsed) {
-        console.error(`  - Raw Unparseable Text from Gemma:\n${text}`);
-        throw new Error("Failed to parse AI response even after self-healing.");
+      if (!success) {
+        throw new Error("Failed to parse AI response across all models.");
       }
 
       console.log(`  - AI Batch Success: ${usedModel} processed ${itemsToProcess.length} items`);
