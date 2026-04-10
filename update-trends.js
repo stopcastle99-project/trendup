@@ -89,10 +89,9 @@ class TrendUpdater {
       const prompt = `You are a strict translation API. Translate the items in this JSON array into ${targetLangName}.
 CRITICAL RULES:
 1. ONLY return a JSON array of strings. NO objects or keys.
-2. Output MUST contain EXACTLY ${chunk.length} items.
+2. Output MUST contain EXACTLY the same number of items as the input array (${chunk.length} items).
 3. NO markdown formatting or explanations.
-Input: ${JSON.stringify(chunk)}
-Example Format: ["translated text 1", "translated text 2"]`;
+Input: ${JSON.stringify(chunk)}`;
 
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
@@ -231,10 +230,9 @@ Example Format: ["translated text 1", "translated text 2"]`;
     const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 3문장 내외의 한국어로 명료하게 요약해주세요. 
 절대로 중간에 내용을 생략하거나 '...', '***' 등 상징적인 기호를 사용하여 요약을 대체하지 마세요. 모든 리스트에 대해 완전한 JSON 데이터를 작성해야 합니다.
 
-반드시 아래의 JSON 배열 형식으로만 응답해야 하며, 절대 요약을 생략하지 마세요. 객체의 키(key) 이름은 "keyword", "summary"를 반드시 지켜야 합니다.
+반드시 아래의 JSON 배열 형식으로만 응답해야 하며, 절대 요약을 생략하지 마세요. "keyword"는 분석할 키워드의 원문 그대로 대소문자까지 유지해야 합니다.
 [
-  { "keyword": "키워드1", "summary": "요약 내용..." },
-  { "keyword": "키워드2", "summary": "요약 내용..." }
+  { "keyword": "입력받은 키워드 원문 그대로", "summary": "이슈에 대한 3문장 요약..." }
 ]
 
 분석할 키워드 리스트:
@@ -300,7 +298,22 @@ ${itemsToProcess.map(i => {
             }
           }
 
-          const itemsToIterate = Array.isArray(parsed) ? parsed : (parsed?.items || []);
+          let itemsToIterate = [];
+          if (Array.isArray(parsed)) {
+            itemsToIterate = parsed;
+          } else if (parsed && typeof parsed === 'object') {
+            if (parsed.items && Array.isArray(parsed.items)) {
+              itemsToIterate = parsed.items;
+            } else if (parsed.analyses && Array.isArray(parsed.analyses)) {
+              itemsToIterate = parsed.analyses;
+            } else {
+              // Heuristic: The LLM might have returned a key-value dict { "Keyword": "Summary" }
+              itemsToIterate = Object.entries(parsed).map(([k, v]) => ({
+                keyword: k,
+                summary: typeof v === 'string' ? v : JSON.stringify(v)
+              }));
+            }
+          }
           
           if (itemsToIterate.length > 0) {
             usedModel = m;
