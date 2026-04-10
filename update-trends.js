@@ -88,12 +88,12 @@ class TrendUpdater {
     for (const chunk of chunks) {
       const prompt = `You are a translation API. Translate the following ${chunk.length} distinct texts into ${targetLangName}.
 CRITICAL RULES:
-1. You MUST enclose each translated text within <item>...</item> tags.
-2. Output EXACTLY ${chunk.length} <item> blocks.
-3. DO NOT output any conversational text or formatting outside the XML tags.
+1. You MUST enclose each translated text with its specific numbered START and END tags (e.g., [TEXT_1_START] and [TEXT_1_END]).
+2. Do not split paragraphs into multiple tags. Keep the entire translated text inside its corresponding tag block.
+3. Output EXACTLY ${chunk.length} translated blocks.
 
 INPUT TEXTS TO TRANSLATE:
-${chunk.map((t, idx) => `<item id="${idx + 1}">\n${t}\n</item>`).join('\n')}`;
+${chunk.map((t, idx) => `[TEXT_${idx + 1}_START]\n${t}\n[TEXT_${idx + 1}_END]`).join('\n\n')}`;
 
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
@@ -102,8 +102,11 @@ ${chunk.map((t, idx) => `<item id="${idx + 1}">\n${t}\n</item>`).join('\n')}`;
           const result = await model.generateContent(prompt);
           let rawText = result.response.text().trim();
 
-          const matches = [...rawText.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi)];
-          let parsed = matches.map(m => m[1].trim());
+          let parsed = [];
+          for (let i = 1; i <= chunk.length; i++) {
+            const match = rawText.match(new RegExp(`\\[TEXT_${i}_START\\]([\\s\\S]*?)\\[TEXT_${i}_END\\]`, 'i'));
+            if (match) parsed.push(match[1].trim());
+          }
 
           if (parsed.length === chunk.length) {
             chunkResult = parsed;
