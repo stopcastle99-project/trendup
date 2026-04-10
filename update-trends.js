@@ -20,16 +20,16 @@ console.log("====================================================");
 
 // 2026 Next-Gen Pro AI Architecture (v3.7.1)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-26b-a4b-it", 
-  "models/gemma-4-31b-it"      
+  "models/gemma-4-26b-a4b-it",
+  "models/gemma-4-31b-it"
 ];
 const REPORT_MODELS = [
-  "models/gemini-3.1-pro-preview", 
+  "models/gemini-3.1-pro-preview",
   "models/gemma-3-27b-it",        // Gemma 3 added for reasoning    // Peak Reasoning
   "models/gemini-3-flash-preview",     // Next-Gen Speed/Quality
   "models/gemini-2.5-pro",            // Stable High-Perf
   "models/gemini-2.5-flash",
-  "models/gemini-2.5-flash-lite", 
+  "models/gemini-2.5-flash-lite",
   "models/gemini-2.0-pro-exp"         // Safety Fallback (2.0)
 ];
 
@@ -60,31 +60,40 @@ class TrendUpdater {
     const langNames = { ko: 'Korean', en: 'English', ja: 'Japanese' };
     const targetLangName = langNames[targetLang] || targetLang;
 
-    // Use Gemma 4 for high-quality, integrated AI translation
-    const model = this.genAI.getGenerativeModel({ model: SUMMARIZER_MODELS[0] });
-    
     // Chunking to respect model limits
     const chunks = [];
     for (let i = 0; i < texts.length; i += 10) {
-        chunks.push(texts.slice(i, i + 10));
+      chunks.push(texts.slice(i, i + 10));
     }
 
     let allResults = [];
     for (const chunk of chunks) {
-        const prompt = `Translate this JSON array of strings into ${targetLangName}. 
+      const prompt = `Translate this JSON array of strings into ${targetLangName}. 
 Maintain original formatting and order. Return ONLY the resulting JSON array of strings.
 Input: ${JSON.stringify(chunk)}`;
 
+      let chunkResult = null;
+      for (const m of SUMMARIZER_MODELS) {
         try {
-            const result = await model.generateContent(prompt);
-            const rawText = result.response.text();
-            const parsed = this.extractJSON(rawText);
-            if (Array.isArray(parsed)) allResults = allResults.concat(parsed);
-            else allResults = allResults.concat(chunk);
+          const model = this.genAI.getGenerativeModel({ model: m });
+          const result = await model.generateContent(prompt);
+          const rawText = result.response.text();
+          const parsed = this.extractJSON(rawText);
+          if (Array.isArray(parsed)) {
+            chunkResult = parsed;
+            break;
+          }
         } catch (e) {
-            console.warn("  - Gemma 4 Translation Fallback:", e.message);
-            allResults = allResults.concat(chunk);
+          console.warn(`  - Gemma Translation Fallback: ${m} failed (${e.message}). Trying next...`);
         }
+      }
+
+      if (chunkResult) {
+        allResults = allResults.concat(chunkResult);
+      } else {
+        console.warn("  - All Gemma Translation models failed for chunk.");
+        allResults = allResults.concat(chunk);
+      }
     }
     return allResults;
   }
@@ -496,11 +505,11 @@ ${itemsToProcess.map(i => {
     // 2. Generate Latest Drafts (Live Aggregation - Daily Update Only)
     const kstDay = kst.getUTCDay(); // 0:Sun, 3:Wed, 4:Thu
     const isTransitionDay = (kstDay === 3 || kstDay === 4);
-    
+
     // v3.7.6 Smart Sync: If we just performed a FORCED archival run (forceArg) on a transition day,
     // skip the 'Aggregating' draft generation to keep the finalized report visible on the dashboard.
     const skipDraftSync = forceArg && isTransitionDay && (isWeekly || isMonthly || isYearly);
-    
+
     if ((isDaily || isWeekly || isMonthly || isYearly || forceAll) && !skipDraftSync) {
       const weeklyStartDay = currentWeekChunk === 1 ? 1 : currentWeekChunk === 2 ? 8 : currentWeekChunk === 3 ? 15 : 22;
       const weeklyStart = `${y}-${String(m).padStart(2, '0')}-${String(weeklyStartDay).padStart(2, '0')}`;
