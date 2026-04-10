@@ -93,7 +93,10 @@ Input: ${JSON.stringify(chunk)}`;
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
         try {
-          const model = this.genAI.getGenerativeModel({ model: m });
+          const model = this.genAI.getGenerativeModel({ 
+            model: m,
+            generationConfig: { responseMimeType: "application/json" }
+          });
           const result = await model.generateContent(prompt);
           const rawText = result.response.text();
           let parsed = this.extractJSON(rawText);
