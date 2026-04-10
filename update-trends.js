@@ -86,12 +86,14 @@ class TrendUpdater {
 
     let allResults = [];
     for (const chunk of chunks) {
+      const exampleArr = new Array(chunk.length).fill("translated string");
       const prompt = `You are a strict translation API. Translate the items in this JSON array into ${targetLangName}.
 CRITICAL RULES:
 1. ONLY return a JSON array of strings. NO objects or keys.
 2. Output MUST contain EXACTLY the same number of items as the input array (${chunk.length} items).
 3. NO markdown formatting or explanations.
-Input: ${JSON.stringify(chunk)}`;
+Input: ${JSON.stringify(chunk)}
+Example Format: ${JSON.stringify(exampleArr)}`;
 
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
