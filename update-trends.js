@@ -89,9 +89,9 @@ class TrendUpdater {
       const prompt = `You are a translation API. Translate the following ${chunk.length} distinct texts into ${targetLangName}.
 CRITICAL RULES:
 1. You MUST enclose each translated text precisely between an opening tag [TEXT_x_START] and a closing tag [TEXT_x_END], where x is the item number.
-2. Example for item 1:
+2. Example Format (DO NOT output the exact words "translated result..."):
 [TEXT_1_START]
-(your translated text for item 1 here)
+Translated result for item 1 goes here.
 [TEXT_1_END]
 3. Do not split paragraphs into multiple tags. Keep the entire translated text inside its corresponding tag block.
 4. Output EXACTLY ${chunk.length} translated blocks.
