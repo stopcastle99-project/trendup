@@ -86,9 +86,13 @@ class TrendUpdater {
 
     let allResults = [];
     for (const chunk of chunks) {
-      const prompt = `Translate this JSON array of strings into ${targetLangName}. 
-CRITICAL: You must return ONLY a raw JSON array of translated strings. Do not include markdown code blocks, explanations, or any other text.
-Input: ${JSON.stringify(chunk)}`;
+      const prompt = `You are a strict translation API. Translate the items in this JSON array into ${targetLangName}.
+CRITICAL RULES:
+1. ONLY return a JSON array of strings. NO objects or keys.
+2. Output MUST contain EXACTLY ${chunk.length} items.
+3. NO markdown formatting or explanations.
+Input: ${JSON.stringify(chunk)}
+Example Format: ["translated text 1", "translated text 2"]`;
 
       let chunkResult = null;
       for (const m of SUMMARIZER_MODELS) {
@@ -101,26 +105,64 @@ Input: ${JSON.stringify(chunk)}`;
           const rawText = result.response.text();
           let parsed = this.extractJSON(rawText);
           
-          if (!Array.isArray(parsed)) {
-            // Aggressive fallback extraction for JSON array of strings
-            const items = [...rawText.matchAll(/"([^"\\]*(?:\\.[^"\\]*)*)"/g)].map(m => m[1]);
-            if (items.length > 0) {
+          if (!Array.isArray(parsed) || parsed.length !== chunk.length) {
+            if (parsed && typeof parsed === 'object') {
+              const arrays = Object.values(parsed).filter(v => Array.isArray(v));
+              const exactMatch = arrays.find(arr => arr.length === chunk.length);
+              if (exactMatch) parsed = exactMatch;
+            }
+          }
+
+          if (!Array.isArray(parsed) || parsed.length !== chunk.length) {
+            let startIdx = rawText.indexOf('[');
+            while (startIdx !== -1) {
+              let endIdx = rawText.indexOf(']', startIdx);
+              while (endIdx !== -1) {
+                try {
+                  const arr = JSON.parse(rawText.substring(startIdx, endIdx + 1));
+                  if (Array.isArray(arr) && arr.length === chunk.length) {
+                    parsed = arr;
+                    break;
+                  }
+                } catch(e) {}
+                endIdx = rawText.indexOf(']', endIdx + 1);
+              }
+              if (Array.isArray(parsed) && parsed.length === chunk.length) break;
+              startIdx = rawText.indexOf('[', startIdx + 1);
+            }
+          }
+
+          if (!Array.isArray(parsed) || parsed.length !== chunk.length) {
+            let textToSearch = rawText;
+            const firstBracket = rawText.indexOf('[');
+            const firstCloseBracket = rawText.indexOf(']', firstBracket);
+            if (firstBracket !== -1 && firstCloseBracket !== -1) {
+              textToSearch = rawText.substring(firstBracket, firstCloseBracket + 1);
+            }
+            const items = [...textToSearch.matchAll(/"([^"\\]*(?:\\.[^"\\]*)*)"/g)].map(m => m[1]);
+            
+            if (items.length === chunk.length) {
               console.log(`  - [HEALED] Aggressively parsed translation array from ${m}`);
               parsed = items;
+            } else if (items.length > 0) {
+              parsed = items; // Used to trigger mismatch warning
             }
+          }
+
+          // Safety mapping if model returned an array of objects correctly sized
+          if (Array.isArray(parsed) && parsed.length === chunk.length && typeof parsed[0] === 'object' && parsed[0] !== null) {
+            parsed = parsed.map(obj => {
+              const vals = Object.values(obj).filter(v => typeof v === 'string');
+              return vals.length > 0 ? vals[vals.length - 1] : "";
+            });
+            console.log(`  - [HEALED] Flattened objects to strings from ${m}`);
           }
 
           if (Array.isArray(parsed) && parsed.length === chunk.length) {
             chunkResult = parsed;
             break;
           } else if (Array.isArray(parsed) && parsed.length > 0) {
-             console.warn(`  - [WARNING] Length mismatch from ${m}. Expected ${chunk.length}, got ${parsed.length}. Using partial/excess data.`);
-             chunkResult = parsed.slice(-chunk.length); // Try to salvage from the END (Gemma puts true output last)
-             // Pad if missing
-             while (chunkResult.length < chunk.length) {
-                 chunkResult.unshift(chunk[0]); // fallback if absolutely needed
-             }
-             break;
+             console.warn(`  - [WARNING] Length mismatch from ${m}. Expected ${chunk.length}, got ${parsed.length}. Array REJECTED, falling back to next model.`);
           } else {
             console.warn(`  - Gemma Translation: ${m} returned unparseable text: \n${rawText}`);
           }
