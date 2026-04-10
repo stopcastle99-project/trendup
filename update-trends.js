@@ -326,9 +326,6 @@ ${itemsToProcess.map(i => {
         await this.incrementGeminiUsage();
       }
 
-      const reportMap = {};
-      const itemsToIterate = Array.isArray(parsed) ? parsed : (parsed.items || []);
-      itemsToIterate.forEach(p => { if (p.keyword) reportMap[p.keyword] = p.summary; });
       return reportMap;
     } catch (e) {
       console.error(`🚨 [v3.6.0 ERROR] AI Batch Error for ${country}:`, e.message);
