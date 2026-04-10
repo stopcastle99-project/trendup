@@ -88,9 +88,13 @@ class TrendUpdater {
     for (const chunk of chunks) {
       const prompt = `You are a translation API. Translate the following ${chunk.length} distinct texts into ${targetLangName}.
 CRITICAL RULES:
-1. You MUST enclose each translated text with its specific numbered START and END tags (e.g., [TEXT_1_START] and [TEXT_1_END]).
-2. Do not split paragraphs into multiple tags. Keep the entire translated text inside its corresponding tag block.
-3. Output EXACTLY ${chunk.length} translated blocks.
+1. You MUST enclose each translated text precisely between an opening tag [TEXT_x_START] and a closing tag [TEXT_x_END], where x is the item number.
+2. Example for item 1:
+[TEXT_1_START]
+(your translated text for item 1 here)
+[TEXT_1_END]
+3. Do not split paragraphs into multiple tags. Keep the entire translated text inside its corresponding tag block.
+4. Output EXACTLY ${chunk.length} translated blocks.
 
 INPUT TEXTS TO TRANSLATE:
 ${chunk.map((t, idx) => `[TEXT_${idx + 1}_START]\n${t}\n[TEXT_${idx + 1}_END]`).join('\n\n')}`;
@@ -177,8 +181,8 @@ ${chunk.map((t, idx) => `[TEXT_${idx + 1}_START]\n${t}\n[TEXT_${idx + 1}_END]`).
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
     const countryName = countryNames[country] || country;
 
-    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 단 3문장 내외의 한국어로 명료하게 요약해주세요. 
-절대로 중간에 내용을 생략하거나 '...', '***' 등 상징적인 기호를 사용하여 요약을 대체하지 마세요. 모든 리스트에 대해 완전한 JSON 데이터를 작성해야 합니다.
+    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 반드시 3문장 이내(최대 150자 내외)의 한국어로 명료하고 짧게 요약해주세요. 
+절대로 부연 설명을 길게 덧붙이지 마세요. 중간에 내용을 생략하거나 '...', '***' 등 상징적인 기호를 사용하여 요약을 대체하지 마세요. 모든 리스트에 대해 완전한 JSON 데이터를 작성해야 합니다.
 
 반드시 아래의 JSON 배열 형식으로만 응답해야 하며, 절대 요약을 생략하지 마세요. "keyword"는 분석할 키워드의 원문 그대로 대소문자까지 유지해야 합니다.
 [
