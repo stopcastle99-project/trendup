@@ -44,6 +44,16 @@ class TrendUpdater {
     if (apiKey) this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
+  normalize(text) {
+    if (!text) return "";
+    return text.toLowerCase()
+      .normalize('NFC')
+      // Remove symbols but keep alphanumeric, CJK, and full-width Latin
+      .replace(/[^\w\s가-힣ㄱ-ㅎㅏ-ㅣぁ-ゔァ-ヴー々〆〤\uff10-\uff19\uff21-\uff3a\uff41-\uff5a]/g, '')
+      .replace(/\s+/g, '')
+      .trim();
+  }
+
   extractJSON(text) {
     if (!text) return null;
     try {
@@ -89,47 +99,59 @@ class TrendUpdater {
       const prompt = `You are a translation API. Translate the following ${chunk.length} distinct texts into ${targetLangName}.
 CRITICAL RULES:
 1. You MUST enclose each translated text precisely between an opening tag [TEXT_x_START] and a closing tag [TEXT_x_END], where x is the item number.
-2. Example Format (DO NOT output the exact words "translated result..."):
+2. Example Format:
 [TEXT_1_START]
 Translated result for item 1 goes here.
 [TEXT_1_END]
-3. Do not split paragraphs into multiple tags. Keep the entire translated text inside its corresponding tag block.
-4. Output EXACTLY ${chunk.length} translated blocks.
+3. Output EXACTLY ${chunk.length} translated blocks.
 
 INPUT TEXTS TO TRANSLATE:
 ${chunk.map((t, idx) => `[TEXT_${idx + 1}_START]\n${t}\n[TEXT_${idx + 1}_END]`).join('\n\n')}`;
 
-      let chunkResult = null;
+      let chunkResults = new Array(chunk.length).fill(null);
       for (const m of SUMMARIZER_MODELS) {
         try {
           const model = this.genAI.getGenerativeModel({ model: m });
           const result = await model.generateContent(prompt);
           let rawText = result.response.text().trim();
 
-          let parsed = [];
+          let successCount = 0;
           for (let i = 1; i <= chunk.length; i++) {
+            if (chunkResults[i - 1]) continue;
             const match = rawText.match(new RegExp(`\\[TEXT_${i}_START\\]([\\s\\S]*?)\\[TEXT_${i}_END\\]`, 'i'));
-            if (match) parsed.push(match[1].trim());
+            if (match) {
+              chunkResults[i - 1] = match[1].trim();
+              successCount++;
+            }
           }
 
-          if (parsed.length === chunk.length) {
-            chunkResult = parsed;
-            console.log(`  - Translation Success from ${m} using ||| delimiter.`);
+          if (chunkResults.every(r => r !== null)) {
+            console.log(`  - Translation complete from ${m}.`);
             break;
-          } else if (parsed.length > 0) {
-            console.warn(`  - [WARNING] Length mismatch from ${m}. Expected ${chunk.length}, got ${parsed.length}. REJECTED.`);
+          } else if (successCount > 0) {
+            console.log(`  - Harvested ${successCount}/${chunk.length} translations from ${m}.`);
           }
         } catch (e) {
-          console.warn(`  - Gemma Translation Fallback: ${m} failed (${e.message}).`);
+          console.warn(`  - Translation Fallback: ${m} failed (${e.message}).`);
         }
       }
 
-      if (chunkResult) {
-        allResults = allResults.concat(chunkResult);
-      } else {
-        console.warn("  - All Gemma Translation models failed for chunk.");
-        allResults = allResults.concat(chunk);
+      // Individual Retry for remaining nulls
+      for (let i = 0; i < chunk.length; i++) {
+        if (!chunkResults[i]) {
+          console.warn(`  - [RETRY] Translating item "${chunk[i].substring(0, 15)}..." individually.`);
+          try {
+            const retryPrompt = `Translate this text into ${targetLangName}: "${chunk[i]}"\nOutput ONLY the translated text, no preamble.`;
+            const model = this.genAI.getGenerativeModel({ model: SUMMARIZER_MODELS[0] });
+            const result = await model.generateContent(retryPrompt);
+            chunkResults[i] = result.response.text().trim();
+          } catch (e) {
+            console.error(`  - [RETRY FAILED] Individual translation failed: ${e.message}`);
+            chunkResults[i] = chunk[i]; 
+          }
+        }
       }
+      allResults = allResults.concat(chunkResults);
     }
     return allResults;
   }
@@ -273,9 +295,16 @@ ${itemsToProcess.map(i => {
             usedModel = m;
             success = true;
             itemsToIterate.forEach(p => { 
-              const kw = p.keyword || p.Keyword || p.KEYWORD || p.title || p.Name || p["키워드"] || (typeof p === 'object' ? Object.values(p)[0] : null);
+              let kw = p.keyword || p.Keyword || p.KEYWORD || p.title || p.Name || p["키워드"] || (typeof p === 'object' ? Object.values(p)[0] : null);
               const sm = p.summary || p.Summary || p.SUMMARY || p.description || p["요약"] || (typeof p === 'object' ? Object.values(p)[1] : null);
-              if (kw && sm) reportMap[kw] = sm; 
+              
+              if (kw && sm) {
+                // Remove numeric prefixes like "1. ", "1) ", etc.
+                if (typeof kw === 'string') {
+                  kw = kw.replace(/^\d+[\.\)\s]+/, '').trim();
+                }
+                reportMap[this.normalize(kw)] = sm; 
+              }
             });
             break;
           } else {
@@ -951,8 +980,10 @@ ${keywordsWithNews}
       const oldDoc = await docRef.get();
       const previousItems = oldDoc.exists ? oldDoc.data().items || [] : [];
       const itemsToProcess = items.filter(item => {
-        const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
-        const hasValidReport = existing && existing.aiReports && existing.aiReports.ko && !existing.aiReports.ko.includes("Hot Trend:");
+        const existing = previousItems.find(p => this.normalize(p.originalTitle || p.title) === this.normalize(item.originalTitle));
+        const hasValidReport = existing && existing.aiReports && existing.aiReports.ko && 
+                               !existing.aiReports.ko.includes("Hot Trend:") && 
+                               !existing.aiReports.ko.includes("No content");
         return !hasValidReport;
       });
 
@@ -975,12 +1006,22 @@ ${keywordsWithNews}
         if (hasValidReport) {
           item.aiReports.ko = existing.aiReports.ko;
         } else {
-          const itemTitleClean = item.originalTitle.trim().toLowerCase();
-          const matchKey = Object.keys(newReportsMap).find(k => {
-             const kClean = k.trim().toLowerCase();
-             return kClean === itemTitleClean || kClean.includes(itemTitleClean) || itemTitleClean.includes(kClean);
-          });
-          item.aiReports.ko = matchKey ? newReportsMap[matchKey] : `${code} Hot Trend: ${item.originalTitle}`;
+          const itemNorm = this.normalize(item.originalTitle);
+          const matchKey = Object.keys(newReportsMap).find(k => k === itemNorm || k.includes(itemNorm) || itemNorm.includes(k));
+          
+          if (matchKey) {
+            item.aiReports.ko = newReportsMap[matchKey];
+          } else {
+            // INDIVIDUAL RETRY: If batch failed for this item, try one last time individually
+            console.warn(`  - [INDIVIDUAL RETRY] Generating summary for "${item.originalTitle}"...`);
+            try {
+              const singleMap = await this.generateBatchAIReports([item], code, previousItems);
+              const singleKey = Object.keys(singleMap)[0];
+              item.aiReports.ko = singleKey ? singleMap[singleKey] : `${code} Hot Trend: ${item.originalTitle}`;
+            } catch (e) {
+              item.aiReports.ko = `${code} Hot Trend: ${item.originalTitle}`;
+            }
+          }
         }
       }
       for (const lang of langs) {
