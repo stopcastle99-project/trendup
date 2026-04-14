@@ -20,21 +20,21 @@ console.log("====================================================");
 
 // 2026 Next-Gen Pro AI Architecture (v3.7.1)
 const SUMMARIZER_MODELS = [
-  "models/gemma-4-26b-a4b-it",
-  "models/gemma-4-31b-it",
-  "models/gemma-3-27b-it",
-  "models/gemma-2-27b-it",
+  "models/gemini-2.5-flash",
   "models/gemini-3-flash-preview",
-  "models/gemini-2.5-flash"
+  "models/gemma-4-31b-it",
+  "models/gemma-4-26b-a4b-it",
+  "models/gemma-3-27b-it",
+  "models/gemma-2-27b-it"
 ];
 const REPORT_MODELS = [
-  "models/gemini-3.1-pro-preview",
-  "models/gemma-3-27b-it",        // Gemma 3 added for reasoning    // Peak Reasoning
-  "models/gemini-3-flash-preview",     // Next-Gen Speed/Quality
-  "models/gemini-2.5-pro",            // Stable High-Perf
   "models/gemini-2.5-flash",
+  "models/gemini-3.1-pro-preview",
+  "models/gemini-3-flash-preview",
+  "models/gemini-2.5-pro",
+  "models/gemma-3-27b-it",
   "models/gemini-2.5-flash-lite",
-  "models/gemini-2.0-pro-exp"         // Safety Fallback (2.0)
+  "models/gemini-2.0-pro-exp"
 ];
 
 class TrendUpdater {
@@ -96,37 +96,50 @@ class TrendUpdater {
 
     let allResults = [];
     for (const chunk of chunks) {
-      const prompt = `You are a translation API. Translate the following ${chunk.length} distinct texts into ${targetLangName}.
+      const prompt = `You are a strict translation API. Translate the provided list of texts into ${targetLangName}.
 CRITICAL RULES:
-1. You MUST enclose each translated text precisely between an opening tag [TEXT_x_START] and a closing tag [TEXT_x_END], where x is the item number.
-2. Example Format:
-[TEXT_1_START]
-Translated result for item 1 goes here.
-[TEXT_1_END]
-3. Output EXACTLY ${chunk.length} translated blocks.
+1. You MUST return ONLY a valid JSON array of strings containing the translations, in the exact same order.
+2. DO NOT output any markdown blocks (\`\`\`json) or extra conversational text.
+3. If the input has ${chunk.length} strings, the output MUST be a JSON array with exactly ${chunk.length} translated strings.
 
-INPUT TEXTS TO TRANSLATE:
-${chunk.map((t, idx) => `[TEXT_${idx + 1}_START]\n${t}\n[TEXT_${idx + 1}_END]`).join('\n\n')}`;
+INPUT JSON ARRAY:
+${JSON.stringify(chunk)}`;
 
       let chunkResults = new Array(chunk.length).fill(null);
       for (const m of SUMMARIZER_MODELS) {
         try {
           const model = this.genAI.getGenerativeModel({ model: m });
-          const result = await model.generateContent(prompt);
+          const result = await model.generateContent({
+             contents: [{ role: "user", parts: [{ text: prompt }] }],
+             generationConfig: { responseMimeType: "application/json" }
+          });
           let rawText = result.response.text().trim();
 
+          // Cleanup markdown if a bad model ignores responseMimeType
+          if (rawText.startsWith('```json')) rawText = rawText.substring(7);
+          if (rawText.startsWith('```')) rawText = rawText.substring(3);
+          if (rawText.endsWith('```')) rawText = rawText.substring(0, rawText.length - 3);
+          rawText = rawText.trim();
+
+          let parsed = null;
+          try {
+            parsed = JSON.parse(rawText);
+          } catch (e) {
+            console.warn(`  - [WARNING] JSON parse fail on ${m}.`);
+          }
+
           let successCount = 0;
-          for (let i = 1; i <= chunk.length; i++) {
-            if (chunkResults[i - 1]) continue;
-            const match = rawText.match(new RegExp(`\\[TEXT_${i}_START\\]([\\s\\S]*?)\\[TEXT_${i}_END\\]`, 'i'));
-            if (match) {
-              chunkResults[i - 1] = match[1].trim();
-              successCount++;
+          if (Array.isArray(parsed)) {
+            for (let i = 0; i < parsed.length && i < chunk.length; i++) {
+              if (typeof parsed[i] === 'string' && parsed[i].trim().length > 0) {
+                chunkResults[i] = parsed[i].trim();
+                successCount++;
+              }
             }
           }
 
           if (chunkResults.every(r => r !== null)) {
-            console.log(`  - Translation complete from ${m}.`);
+            console.log(`  - Translation complete from ${m} (Strict JSON).`);
             break;
           } else if (successCount > 0) {
             console.log(`  - Harvested ${successCount}/${chunk.length} translations from ${m}.`);
@@ -203,75 +216,55 @@ ${chunk.map((t, idx) => `[TEXT_${idx + 1}_START]\n${t}\n[TEXT_${idx + 1}_END]`).
     const countryNames = { KR: '대한민국', JP: '일본', US: '미국' };
     const countryName = countryNames[country] || country;
 
-    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 반드시 3문장 이내(최대 150자 내외)의 한국어로 명료하고 짧게 요약해주세요. 
-절대로 부연 설명을 길게 덧붙이지 마세요. 중간에 내용을 생략하거나 '...', '***' 등 상징적인 기호를 사용하여 요약을 대체하지 마세요. 모든 리스트에 대해 완전한 JSON 데이터를 작성해야 합니다.
+    const prompt = `당신은 글로벌 검색어 트렌드 분석 전문가입니다. 현재 ${countryName}에서 화제가 되고 있는 아래의 '트렌드 키워드 리스트'와 각 '키워드별 관련 뉴스 제목들'을 바탕으로, 각 키워드가 왜 트렌드인지 반드시 3문장 이내(최대 150자 내외)의 한국어로 명료하고 짧게 요약해 주세요.
 
-반드시 아래의 JSON 배열 형식으로만 응답해야 하며, 절대 요약을 생략하지 마세요. "keyword"는 분석할 키워드의 원문 그대로 대소문자까지 유지해야 합니다.
+## JSON 출력 규칙 (절대 준수)
+1. 어떠한 부연 설명이나 인사말, 마크다운 코드 블록(\`\`\`json) 없이 오직 순수한 JSON 배열만 반환할 것.
+2. 각 키워드의 "keyword" 속성은 주어진 원문 키워드(대소문자 포함)를 그대로 복사할 것.
+3. 주어진 모든 키워드에 대해 단 하나도 누락 없이 요약을 작성할 것. 요약 중간에 '...' 기호를 사용해 텍스트를 건너뛰지 말 것.
+
+## 입력 데이터
+${JSON.stringify(itemsToProcess.map(i => {
+  const rssNews = i.newsTitles.slice(0, 2).join(' / ');
+  const extraNews = (i.supplementaryNews || []).join(' / ');
+  return { 
+    keyword: i.originalTitle, 
+    news: rssNews + (extraNews ? ' / ' + extraNews : '') 
+  };
+}), null, 2)}
+
+## 기대되는 출력 JSON 포맷 예시:
 [
   { "keyword": "입력받은 키워드 원문 그대로", "summary": "이슈에 대한 3문장 요약..." }
-]
-
-분석할 키워드 리스트:
-${itemsToProcess.map(i => {
-      const rssNews = i.newsTitles.slice(0, 2).join(' / ');
-      const extraNews = (i.supplementaryNews || []).join(' / ');
-      return `- 키워드: ${i.originalTitle}\n  관련 기사: ${rssNews}${extraNews ? ' / ' + extraNews : ''}`;
-    }).join('\n\n')}
-`;
+]`;
 
     try {
       let reportMap = {};
       let usedModel = "";
       let success = false;
-      const modelsToTry = SUMMARIZER_MODELS;
+      const modelsToTry = REPORT_MODELS; // prioritizing gemini-2.5-flash which we fixed above
 
       for (const m of modelsToTry) {
         try {
           const model = this.genAI.getGenerativeModel({ model: m });
-          const result = await model.generateContent(prompt);
+          const result = await model.generateContent({
+             contents: [{ role: "user", parts: [{ text: prompt }] }],
+             generationConfig: { responseMimeType: "application/json" }
+          });
           const response = await result.response;
           let rawText = response.text().trim();
 
-          // Pre-parse Scrub: Remove invalid AI shorthands (Safe version)
-          let text = rawText.replace(/,\s*\.\.\.\s*\]/g, "]").replace(/\.\.\.\s*\}/g, "}").replace(/\*\*\*/g, "").trim();
-
-          // Robust JSON Extraction (Heal conversational prefix/suffix)
-          let jsonContent = text;
-          const startBracket = text.indexOf('[');
-          const startBrace = text.indexOf('{');
-          const firstStart = (startBracket !== -1 && (startBrace === -1 || startBracket < startBrace)) ? startBracket : startBrace;
-
-          if (firstStart !== -1) {
-            const lastBracket = text.lastIndexOf(']');
-            const lastBrace = text.lastIndexOf('}');
-            const lastEnd = Math.max(lastBracket, lastBrace);
-            if (lastEnd > firstStart) {
-              jsonContent = text.substring(firstStart, lastEnd + 1).trim();
-            }
-          }
+          // Cleanup markdown if a bad model ignores responseMimeType
+          if (rawText.startsWith('```json')) rawText = rawText.substring(7);
+          if (rawText.startsWith('```')) rawText = rawText.substring(3);
+          if (rawText.endsWith('```')) rawText = rawText.substring(0, rawText.length - 3);
+          rawText = rawText.trim();
 
           let parsed = null;
           try {
-            parsed = JSON.parse(jsonContent);
+            parsed = JSON.parse(rawText);
           } catch (parseErr) {
-            let tempContent = jsonContent.trim();
-            while (tempContent.length > 2) {
-              try {
-                parsed = JSON.parse(tempContent);
-                break;
-              } catch (e) {
-                const lastIdx = Math.max(tempContent.lastIndexOf(']'), tempContent.lastIndexOf('}'));
-                if (lastIdx === -1) break;
-                if (lastIdx === tempContent.length - 1) {
-                  tempContent = tempContent.slice(0, -1).trim();
-                } else {
-                  tempContent = tempContent.substring(0, lastIdx + 1).trim();
-                }
-              }
-            }
-            if (parsed) {
-               console.log(`  - [HEALED] AI JSON parse succeeded after cleaning trailing characters.`);
-            }
+            console.warn(`  - [WARNING] JSON parse fail on ${m}: ${parseErr.message}`);
           }
 
           let itemsToIterate = [];
