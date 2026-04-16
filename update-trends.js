@@ -1025,8 +1025,18 @@ ${keywordsWithNews}
           }
         }
       }
+      const nativeLang = code === 'KR' ? 'ko' : code === 'JP' ? 'ja' : 'en';
+
       for (const lang of langs) {
-        const missingTitles = items.filter(i => !i.translations || i.translations[lang] === undefined);
+        if (lang === nativeLang) {
+          items.forEach(item => {
+            item.translations = item.translations || {};
+            item.translations[lang] = item.originalTitle;
+          });
+          continue;
+        }
+
+        const missingTitles = items.filter(i => !i.translations || !i.translations[lang] || i.translations[lang] === i.originalTitle);
         if (missingTitles.length > 0) {
           const titlesToT = missingTitles.map(i => i.originalTitle);
           const tTitles = await this.translateBatch(titlesToT, lang);
@@ -1037,7 +1047,7 @@ ${keywordsWithNews}
         }
         
         if (lang !== 'ko') {
-          const missingReports = items.filter(i => !i.aiReports || i.aiReports[lang] === undefined);
+          const missingReports = items.filter(i => !i.aiReports || !i.aiReports[lang] || i.aiReports[lang] === i.aiReports.ko);
           if (missingReports.length > 0) {
             const reportsToT = missingReports.map(i => i.aiReports.ko);
             const tReports = await this.translateBatch(reportsToT, lang);
