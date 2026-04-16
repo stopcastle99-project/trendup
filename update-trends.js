@@ -121,10 +121,8 @@ ${JSON.stringify(chunk)}`;
           if (rawText.endsWith('```')) rawText = rawText.substring(0, rawText.length - 3);
           rawText = rawText.trim();
 
-          let parsed = null;
-          try {
-            parsed = JSON.parse(rawText);
-          } catch (e) {
+          let parsed = this.extractJSON(rawText);
+          if (!parsed) {
             console.warn(`  - [WARNING] JSON parse fail on ${m}.`);
           }
 
@@ -260,11 +258,9 @@ ${JSON.stringify(itemsToProcess.map(i => {
           if (rawText.endsWith('```')) rawText = rawText.substring(0, rawText.length - 3);
           rawText = rawText.trim();
 
-          let parsed = null;
-          try {
-            parsed = JSON.parse(rawText);
-          } catch (parseErr) {
-            console.warn(`  - [WARNING] JSON parse fail on ${m}: ${parseErr.message}`);
+          let parsed = this.extractJSON(rawText);
+          if (!parsed) {
+            console.warn(`  - [WARNING] JSON parse fail on ${m}.`);
           }
 
           let itemsToIterate = [];

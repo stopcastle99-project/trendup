@@ -21,7 +21,7 @@ const i18n = {
     labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록", analysis: "분석" },
     seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} 실시간 검색어 1위: \"{keyword}\". {summary}." },
     reports: {
-      title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기", latest: "최신 리포트", currAgg: "현재 집계 중", viewPast: "과거 내역 보기",
+      title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기", latest: "최신 리포트", currAgg: "현재 집계 중", viewPast: "과거 내역 보기", more: "더보기 >",
       status: { writing: "📊 집계 중", live: "🟢 실시간 집계", completed: "✅ 작성 완료" }
     },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" },
@@ -84,7 +84,7 @@ const i18n = {
     labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リポート分析", analysis: "分析" },
     seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} リアルタイムトレンド1位: \"{keyword}\". {summary}." },
     reports: {
-      title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る", latest: "最新レポート", currAgg: "現在集計中", viewPast: "過去履歴表示",
+      title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る", latest: "最新レポート", currAgg: "現在集計中", viewPast: "過去履歴表示", more: "もっと見る >",
       status: { writing: "📊 集計中", live: "🟢 リアルタイム集計", completed: "✅ 作成完了" }
     },
 
@@ -136,7 +136,7 @@ const i18n = {
     labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports", analysis: "Analysis" },
     seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} Real-time Trend #1: \"{keyword}\". {summary}." },
     reports: {
-      title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report", latest: "Latest Report", currAgg: "Aggregating Now", viewPast: "View Archive",
+      title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report", latest: "Latest Report", currAgg: "Aggregating Now", viewPast: "View Archive", more: "View More >",
       status: { writing: "📊 Aggregating", live: "🟢 Live", completed: "✅ Completed" }
     },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" },
@@ -668,7 +668,7 @@ class App {
                   <span>${pTitle}</span>
                 </span>
               </a>`;
-          }).join('') + (reportsToDisplay.length >= 3 ? `<a href="/report/?type=${type}&country=${this.currentCountry}" class="more-link" style="padding: 0.5rem; font-size: 0.8rem; color: var(--primary); text-decoration: none; display: block; text-align: right; font-weight: 700;">더보기 ></a>` : '');
+          }).join('') + (reportsToDisplay.length >= 3 ? `<a href="/report/?type=${type}&country=${this.currentCountry}" class="more-link" style="padding: 0.5rem; font-size: 0.8rem; color: var(--primary); text-decoration: none; display: block; text-align: right; font-weight: 700;">${t.reports.more || '더보기 >'}</a>` : '');
           safeSetStyle(pastCtn, { display: 'flex' });
         } else {
           pastCtn.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; opacity:0.6;">${t.reports.comingSoon}</div>`;
