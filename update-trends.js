@@ -126,11 +126,20 @@ ${JSON.stringify(chunk)}`;
             console.warn(`  - [WARNING] JSON parse fail on ${m}.`);
           }
 
-          let successCount = 0;
+          let parsedArray = null;
           if (Array.isArray(parsed)) {
-            for (let i = 0; i < parsed.length && i < chunk.length; i++) {
-              if (typeof parsed[i] === 'string' && parsed[i].trim().length > 0) {
-                chunkResults[i] = parsed[i].trim();
+            parsedArray = parsed;
+          } else if (parsed && typeof parsed === 'object') {
+            if (Array.isArray(parsed.translations)) parsedArray = parsed.translations;
+            else if (Array.isArray(parsed.items)) parsedArray = parsed.items;
+            else if (Array.isArray(parsed.data)) parsedArray = parsed.data;
+          }
+
+          let successCount = 0;
+          if (parsedArray && Array.isArray(parsedArray)) {
+            for (let i = 0; i < parsedArray.length && i < chunk.length; i++) {
+              if (typeof parsedArray[i] === 'string' && parsedArray[i].trim().length > 0) {
+                chunkResults[i] = parsedArray[i].trim();
                 successCount++;
               }
             }
@@ -993,8 +1002,11 @@ ${keywordsWithNews}
         const hasValidReport = existing && existing.aiReports && existing.aiReports.ko && !existing.aiReports.ko.includes("Hot Trend:");
 
         if (hasValidReport) {
-          item.aiReports.ko = existing.aiReports.ko;
+          item.aiReports = { ...existing.aiReports };
+          item.translations = { ...existing.translations };
         } else {
+          item.aiReports = {};
+          item.translations = {};
           const itemNorm = this.normalize(item.originalTitle);
           const matchKey = Object.keys(newReportsMap).find(k => k === itemNorm || k.includes(itemNorm) || itemNorm.includes(k));
           
@@ -1014,13 +1026,26 @@ ${keywordsWithNews}
         }
       }
       for (const lang of langs) {
-        const titlesToTranslate = items.map(i => i.originalTitle);
-        const translatedTitles = await this.translateBatch(titlesToTranslate, lang);
-        items.forEach((item, idx) => { item.translations[lang] = translatedTitles[idx] || item.originalTitle; });
+        const missingTitles = items.filter(i => !i.translations || i.translations[lang] === undefined);
+        if (missingTitles.length > 0) {
+          const titlesToT = missingTitles.map(i => i.originalTitle);
+          const tTitles = await this.translateBatch(titlesToT, lang);
+          missingTitles.forEach((item, idx) => {
+            item.translations = item.translations || {};
+            item.translations[lang] = tTitles[idx] || item.originalTitle;
+          });
+        }
+        
         if (lang !== 'ko') {
-          const reportsToTranslate = items.map(i => i.aiReports.ko);
-          const translatedReports = await this.translateBatch(reportsToTranslate, lang);
-          items.forEach((item, idx) => { item.aiReports[lang] = translatedReports[idx] || item.aiReports.ko; });
+          const missingReports = items.filter(i => !i.aiReports || i.aiReports[lang] === undefined);
+          if (missingReports.length > 0) {
+            const reportsToT = missingReports.map(i => i.aiReports.ko);
+            const tReports = await this.translateBatch(reportsToT, lang);
+            missingReports.forEach((item, idx) => {
+              item.aiReports = item.aiReports || {};
+              item.aiReports[lang] = tReports[idx] || item.aiReports.ko;
+            });
+          }
         }
       }
       await Promise.all(items.map(async (item) => {
