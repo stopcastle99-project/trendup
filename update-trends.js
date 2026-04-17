@@ -37,6 +37,8 @@ const REPORT_MODELS = [
   "models/gemini-2.0-pro-exp"
 ];
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 class TrendUpdater {
   constructor() {
     this.genAI = null;
@@ -130,9 +132,8 @@ ${JSON.stringify(chunk)}`;
           if (Array.isArray(parsed)) {
             parsedArray = parsed;
           } else if (parsed && typeof parsed === 'object') {
-            if (Array.isArray(parsed.translations)) parsedArray = parsed.translations;
-            else if (Array.isArray(parsed.items)) parsedArray = parsed.items;
-            else if (Array.isArray(parsed.data)) parsedArray = parsed.data;
+            const innerArray = Object.values(parsed).find(val => Array.isArray(val));
+            if (innerArray) parsedArray = innerArray;
           }
 
           let successCount = 0;
@@ -172,6 +173,7 @@ ${JSON.stringify(chunk)}`;
         }
       }
       allResults = allResults.concat(chunkResults);
+      await sleep(1500); // Prevent AI rate limit explosion
     }
     return allResults;
   }
@@ -276,10 +278,9 @@ ${JSON.stringify(itemsToProcess.map(i => {
           if (Array.isArray(parsed)) {
             itemsToIterate = parsed;
           } else if (parsed && typeof parsed === 'object') {
-            if (parsed.items && Array.isArray(parsed.items)) {
-              itemsToIterate = parsed.items;
-            } else if (parsed.analyses && Array.isArray(parsed.analyses)) {
-              itemsToIterate = parsed.analyses;
+            const innerArray = Object.values(parsed).find(val => Array.isArray(val));
+            if (innerArray) {
+              itemsToIterate = innerArray;
             } else {
               // Heuristic: The LLM might have returned a key-value dict { "Keyword": "Summary" }
               itemsToIterate = Object.entries(parsed).map(([k, v]) => ({
@@ -310,6 +311,7 @@ ${JSON.stringify(itemsToProcess.map(i => {
           }
         } catch (err) {
           console.log(`  - Model fallback: ${m} failed (${err.message}). Trying next...`);
+          await sleep(2000); // 2 second cool-down before trying the next model
         }
       }
 
@@ -999,14 +1001,13 @@ ${keywordsWithNews}
       for (const item of items) {
         allKeywords.push(item.originalTitle);
         const existing = previousItems.find(p => p.originalTitle === item.originalTitle);
-        const hasValidReport = existing && existing.aiReports && existing.aiReports.ko && !existing.aiReports.ko.includes("Hot Trend:");
+        
+        item.translations = (existing && existing.translations) ? { ...existing.translations } : {};
+        item.aiReports = (existing && existing.aiReports) ? { ...existing.aiReports } : {};
 
-        if (hasValidReport) {
-          item.aiReports = { ...existing.aiReports };
-          item.translations = { ...existing.translations };
-        } else {
-          item.aiReports = {};
-          item.translations = {};
+        const hasValidReport = item.aiReports.ko && !item.aiReports.ko.includes("Hot Trend:");
+
+        if (!hasValidReport) {
           const itemNorm = this.normalize(item.originalTitle);
           const matchKey = Object.keys(newReportsMap).find(k => k === itemNorm || k.includes(itemNorm) || itemNorm.includes(k));
           
