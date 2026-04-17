@@ -1,4 +1,4 @@
-console.log("GlobalTrendUp v3.4.68 Loaded");
+console.log("GlobalTrendUp v3.7.7 Loaded");
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, Timestamp, initializeFirestore, query, where, limit, orderBy } from 'firebase/firestore';
 
@@ -21,7 +21,7 @@ const i18n = {
     labels: { trends: "국가:", language: "언어:", featuredReports: "📅 분석 리포트 수록", analysis: "분석" },
     seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} 실시간 검색어 1위: \"{keyword}\". {summary}." },
     reports: {
-      title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기", latest: "최신 리포트", currAgg: "현재 집계 중", viewPast: "과거 내역 보기",
+      title: "트렌드 리포트", weekly: "주간 리포트", monthly: "월간 리포트", yearly: "년간 리포트", comingSoon: "데이터 집계 중...", pastReports: "과거 리포트 모아보기", view: "리포트 보기", latest: "최신 리포트", currAgg: "현재 집계 중", viewPast: "과거 내역 보기", more: "더보기 >",
       status: { writing: "📊 집계 중", live: "🟢 실시간 집계", completed: "✅ 작성 완료" }
     },
     menu: { about: "TrendUp 소개", privacy: "개인정보처리방침", terms: "이용약관", contact: "문의하기", siteInfo: "사이트 정보" },
@@ -84,7 +84,7 @@ const i18n = {
     labels: { trends: "国:", language: "言語:", featuredReports: "📅 掲載リポート分析", analysis: "分析" },
     seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} リアルタイムトレンド1位: \"{keyword}\". {summary}." },
     reports: {
-      title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る", latest: "最新レポート", currAgg: "現在集計中", viewPast: "過去履歴表示",
+      title: "トレンドレポート", weekly: "週間レポート", monthly: "月間レポート", yearly: "年間レポート", comingSoon: "データ集計中...", pastReports: "過去のレポート", view: "レポートを見る", latest: "最新レポート", currAgg: "現在集計中", viewPast: "過去履歴表示", more: "もっと見る >",
       status: { writing: "📊 集計中", live: "🟢 リアルタイム集計", completed: "✅ 作成完了" }
     },
 
@@ -136,7 +136,7 @@ const i18n = {
     labels: { trends: "Country:", language: "Language:", featuredReports: "📅 Featured in Reports", analysis: "Analysis" },
     seo: { title: "GlobalTrendUp | {country} #1: {keyword}", desc: "{country} Real-time Trend #1: \"{keyword}\". {summary}." },
     reports: {
-      title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report", latest: "Latest Report", currAgg: "Aggregating Now", viewPast: "View Archive",
+      title: "Trend Reports", weekly: "Weekly Report", monthly: "Monthly Report", yearly: "Yearly Report", comingSoon: "Aggregating Data...", pastReports: "Past Reports", view: "View Report", latest: "Latest Report", currAgg: "Aggregating Now", viewPast: "View Archive", more: "View More >",
       status: { writing: "📊 Aggregating", live: "🟢 Live", completed: "✅ Completed" }
     },
     menu: { about: "About TrendUp", privacy: "Privacy Policy", terms: "Terms of Service", contact: "Contact Us", siteInfo: "Site Info" },
@@ -394,7 +394,7 @@ class App {
     this.init();
   }
   async init() {
-    console.log("App Init: v3.4.68");
+    console.log("App Init: v3.7.7");
     try {
       this.initThemeIcons();
       this.applyTheme(this.themeMode);
@@ -402,7 +402,6 @@ class App {
       document.body.appendChild(this.modal);
       this.initSideMenu();
       this.initThemeMenu();
-      this.initInfoModals();
       this.initCookieBanner();
       this.renderNavs();
       this.refreshUIText();
@@ -480,7 +479,7 @@ class App {
       document.documentElement.setAttribute('lang', this.currentLang);
       document.getElementById('current-country-title').textContent = t.title;
       const footerContent = document.querySelector('.footer-content p');
-      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.4.68) <span id="ai-usage" class="ai-usage-footer"></span>`;
+      if (footerContent) footerContent.innerHTML = `&copy; 2026 GlobalTrendUp. All rights reserved. (v3.7.7) <span id="ai-usage" class="ai-usage-footer"></span>`;
       const menuTitles = document.querySelectorAll('.menu-section .menu-title');
       if (menuTitles[0]) menuTitles[0].textContent = t.T || "Trend Settings";
       if (menuTitles[1]) menuTitles[1].textContent = t.menu.siteInfo;
@@ -580,19 +579,7 @@ class App {
     banner.classList.remove('hidden');
     banner.querySelector('button')?.addEventListener('click', () => { localStorage.setItem('cookies-accepted', 'true'); banner.classList.add('hidden'); });
   }
-  initInfoModals() {
-    const overlay = document.getElementById('info-modal');
-    const body = document.getElementById('info-modal-body');
-    document.querySelectorAll('.info-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const t = i18n[this.currentLang] || i18n.en;
-        if (t.pages && t.pages[link.dataset.page] && body && overlay) { body.innerHTML = t.pages[link.dataset.page].content; overlay.classList.remove('hidden'); }
-      });
-    });
-    document.querySelector('.info-modal-close')?.addEventListener('click', () => overlay.classList.add('hidden'));
-    overlay?.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.add('hidden'); });
-  }
+
   renderNavs() {
     try {
       const renderGroup = (id, items, current, onSelect) => {
@@ -681,14 +668,14 @@ class App {
                   <span>${pTitle}</span>
                 </span>
               </a>`;
-          }).join('') + (reportsToDisplay.length >= 3 ? `<a href="/report/?type=${type}&country=${this.currentCountry}" class="more-link" style="padding: 0.5rem; font-size: 0.8rem; color: var(--primary); text-decoration: none; display: block; text-align: right; font-weight: 700;">더보기 ></a>` : '');
+          }).join('') + (reportsToDisplay.length >= 3 ? `<a href="/report/?type=${type}&country=${this.currentCountry}" class="more-link" style="padding: 0.5rem; font-size: 0.8rem; color: var(--primary); text-decoration: none; display: block; text-align: right; font-weight: 700;">${t.reports.more || '더보기 >'}</a>` : '');
           safeSetStyle(pastCtn, { display: 'flex' });
         } else {
           pastCtn.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; opacity:0.6;">${t.reports.comingSoon}</div>`;
           safeSetStyle(pastCtn, { display: 'flex' });
         }
       } catch (err) {
-        console.warn(`[v3.4.68] Failed to refresh ${type} report card:`, err);
+        console.warn(`[v3.7.7] Failed to refresh ${type} report card:`, err);
       }
     }
   }
